@@ -1,6 +1,6 @@
-|Datum|Dauer|Tätigkeit|Notizen|
-|-----|-----|---------|-------|
-|27.01.2026|1.0|Vorbesprechung|/|
-|27.01.2026|1.0|Paper lesen|/|
-|14.02.2026|2.0|Paper lesen & Thema definieren|/|
-|16.02.2026|1.0|Paper lesen & Thema definieren|/|
+Datum;Dauer;Tätigkeit;Notizen
+27.01.2026;1.0;Vorbesprechung;
+27.01.2026;1.0;Paper lesen;
+14.02.2026;2.0;Paper lesen & Thema definieren;
+16.02.2026;1.0;Paper lesen & Thema definieren;
+24.02.2026;5.0;AST Prototyp bauen; Klassen und Methoden werden erkannt
