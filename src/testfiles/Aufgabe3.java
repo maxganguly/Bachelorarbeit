@@ -18,8 +18,10 @@ private static double[][] genCircleFilter(int n, double radius) {
 
     int midPoint = n / 2;
 
+    OuterLoop:
     for (int x = 0; x < n; x++) {
-        for (int y = 0; y < n; y++) {
+        InnerLoop:
+    	for (int y = 0; y < n; y++) {
             if (Math.sqrt(Math.pow(x - midPoint, 2) + Math.pow(y - midPoint, 2)) < radius) {
                 myFilter[x][y] = 1;
             }

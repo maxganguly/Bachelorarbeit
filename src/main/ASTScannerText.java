@@ -7,41 +7,41 @@ import com.sun.source.util.TreeScanner;
 
 public class ASTScannerText extends TreeScanner<String, Integer> {
 	public static final String OFFSET = "    ";
+	public static final boolean DEBUG = false;
+	public static final boolean ALWAYSDISPLAYVARIABLES = true;
 	@Override
 	public String reduce(String r1, String r2) {
-		if (r1 == null && r2 == null) {
+		if ((r1 == null || r1.isBlank()) && (r2 == null || r2.isBlank())) {
 			return null;
 		}
-		if(r1 == null)
+		if(r1 == null || r1.isBlank())
 			return r2;
-		if(r2 == null)
+		if(r2 == null || r2.isBlank())
 			return r1;
 		return r1+'\n'+r2;
 	}
 
 	@Override
 	public String visitCompilationUnit(CompilationUnitTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Compilation");
+		debugOutput("Compilation");
 		return node.getSourceFile().getName() + "\n" +super.visitCompilationUnit(node, p);
 	}
 
 	@Override
 	public String visitPackage(PackageTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Package");
+		debugOutput("Package");
 		return super.visitPackage(node, p);
 	}
 
 	@Override
 	public String visitImport(ImportTree node, Integer p) {
-		System.out.println("Import");
+		debugOutput("Import");
 		return OFFSET.repeat(p)+"<import=\""+ node.getClass().getName() +"\">"  + "\n" + super.visitImport(node, p);
 	}
 
 	@Override
 	public String visitClass(ClassTree node, Integer p) {
-		System.out.println("Class");
+		debugOutput("Class");
 		// Does ignore visibility, modifiers, interfaces, inheritance and will not work if anonymous
 		String result = OFFSET.repeat(p)+"<class=\""+node.getSimpleName()+"\">\n";
 		//result += node.accept(this, p+1)+'\n';
@@ -54,191 +54,284 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 
 	@Override
 	public String visitMethod(MethodTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Method");
+		debugOutput("Method");
 		String result = OFFSET.repeat(p)+"<method=\""+node.getName()+
 		node.getParameters().stream().sequential().map(t -> (t.getType().toString())).collect(Collectors.joining(",","(",")"))
 		+"\">\n";
 		//result += node.accept(this, p+1)+'\n';
 		result += node.getBody().accept(this, p+1)+'\n';
 		result += OFFSET.repeat(p)+"</method>";
-		return result  + "\n";// + super.visitMethod(node, p);
+		return result;// + super.visitMethod(node, p);
 		//return super.visitMethod(node, p);
 	}
 
 	@Override
 	public String visitVariable(VariableTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Variable");
-		
-		return OFFSET.repeat(p)+ "<var=\""+ node.getName() +"\" type=\""+node.getType()+" \\>" + super.visitVariable(node, p);
+		debugOutput("Variable");
+		if (ALWAYSDISPLAYVARIABLES) {
+			boolean init = node.getInitializer() != null;
+			return OFFSET.repeat(p)+ "<var=\""+ node.getName() +"\" type=\""+node.getType()+" "+ 
+					(init?"init=\""+node.getInitializer().toString()+"\"":"") +"\\>\n";// + super.visitVariable(node, p);
+		}
+		return super.visitVariable(node, p);
 	}
 
 	@Override
 	public String visitEmptyStatement(EmptyStatementTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("EmptyStatement");
+		debugOutput("EmptyStatement");
 		return super.visitEmptyStatement(node, p);
 	}
 
 	@Override
 	public String visitBlock(BlockTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Block");
-		return super.visitBlock(node, p);
+		debugOutput("Block");
+		String result = OFFSET.repeat(p)+"<block>\n";
+				//result += node.accept(this, p+1)+'\n';
+		for (Tree t : node.getStatements()) {
+			result += t.accept(this, p+1)+'\n';
+		}
+		result += OFFSET.repeat(p)+"</block>";
+		return result;//super.visitBlock(node, p);
 	}
-
+	
 	@Override
 	public String visitDoWhileLoop(DoWhileLoopTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("DoWhileLoop");
-		return super.visitDoWhileLoop(node, p);
+		debugOutput("DoWhileLoop");
+		StringBuilder result = new StringBuilder();
+		result.append(OFFSET.repeat(p)+"<dowhile >\n");
+		result.append(OFFSET.repeat(p+1)+"<condition>");
+		result.append(node.getCondition().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</condition>");
+		//result += node.accept(this, p+1)+'\n';
+		result.append(node.getStatement().accept(this, p+1)+'\n');
+		result.append(OFFSET.repeat(p)+"</dowhile>");
+		return result.toString();//result.append("\n") + super.visitDoWhileLoop(node, p);
 	}
 
 	@Override
 	public String visitWhileLoop(WhileLoopTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("WhileLoop");
-		return super.visitWhileLoop(node, p);
+		debugOutput("WhileLoop");
+		StringBuilder result = new StringBuilder();
+		result.append(OFFSET.repeat(p)+"<while >\n");
+		result.append(OFFSET.repeat(p+1)+"<condition>\n");
+		result.append(node.getCondition().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</condition>\n");
+		//result += node.accept(this, p+1)+'\n';
+		result.append(node.getStatement().accept(this, p+1)+'\n');
+		result.append(OFFSET.repeat(p)+"</while>\n");
+		return result.toString();//result.append(super.visitWhileLoop(node, p)).toString();
 	}
 
 	@Override
 	public String visitForLoop(ForLoopTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("ForLoop");
-		return super.visitForLoop(node, p);
+		debugOutput("ForLoop");
+		StringBuilder result = new StringBuilder();
+		result.append(OFFSET.repeat(p)+"<forloop>\n");
+		result.append(OFFSET.repeat(p+1)+"<head>\n");
+		result.append(OFFSET.repeat(p+2)+"<init>\n");
+		for (Tree t : node.getInitializer()) {
+			result.append(t.accept(this, p+3)+'\n');
+		}
+		result.append(OFFSET.repeat(p+2)+"</init>\n");
+		result.append(OFFSET.repeat(p+2)+"<condition>\n");
+		result.append(node.getCondition().accept(this, p+3)+'\n');
+		result.append(OFFSET.repeat(p+2)+"</condition>\n");
+		result.append(OFFSET.repeat(p+2)+"<update>\n");
+		for (Tree t : node.getUpdate()) {
+			result.append(t.accept(this, p+3)+'\n');
+		}
+		result.append(OFFSET.repeat(p+2)+"</update>\n");
+		result.append(node.getCondition().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		//result += node.accept(this, p+1)+'\n';
+		result.append(node.getStatement().accept(this, p+1)+'\n');
+		result.append(OFFSET.repeat(p)+"</forloop>\n");
+		return result.toString(); //result.append(super.visitForLoop(node, p)).toString();
 	}
 
 	@Override
 	public String visitEnhancedForLoop(EnhancedForLoopTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("EnhancedForLoop");
-		return super.visitEnhancedForLoop(node, p);
+		debugOutput("EnhancedForLoop");
+		StringBuilder result = new StringBuilder();
+		result.append(OFFSET.repeat(p)+"<forloop>\n");
+		result.append(OFFSET.repeat(p+1)+"<head>\n");
+		result.append(OFFSET.repeat(p+2)+"<iteration=\""+ node.getVariable().getName() +"\" type=\""+ node.getVariable().getType().toString() +"\">\n");
+		result.append(OFFSET.repeat(p+2)+"</iteration>\n");
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		//result += node.accept(this, p+1)+'\n';
+		result.append(node.getStatement().accept(this, p+1)+'\n');
+		result.append(OFFSET.repeat(p)+"</forloop>\n");
+		return result.toString(); //result.append(super.visitForLoop(node, p)).toString();
 	}
 
 	@Override
 	public String visitLabeledStatement(LabeledStatementTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("LabeledStatement");
-		return super.visitLabeledStatement(node, p);
+		debugOutput("LabeledStatement");
+		return OFFSET.repeat(p) + "<label=\""+node.getLabel().toString() + "\"/>\n" + super.visitLabeledStatement(node, p);
 	}
 
 	@Override
 	public String visitSwitch(SwitchTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Switch");
-		return super.visitSwitch(node, p);
+		debugOutput("Switch");
+		StringBuilder result = new StringBuilder(OFFSET.repeat(p)+"<switch>");
+		result.append(OFFSET.repeat(p+1)+"<head>\n");
+		result.append(node.getExpression().accept(this, p+1));
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		result.append(OFFSET.repeat(p+1)+"<body>\n");
+		for (Tree t : node.getCases()) {
+			result.append(t.accept(this, p+2)+'\n');
+		}
+		result.append(OFFSET.repeat(p+1)+"</body>\n");
+		result.append(OFFSET.repeat(p)+"</switch>\n");
+		return result.toString(); //super.visitSwitch(node, p);
 	}
 
 	@Override
 	public String visitSwitchExpression(SwitchExpressionTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("SwitchExpression");
+		debugOutput("SwitchExpression");
+		//Already in visitSwitch defined?
 		return super.visitSwitchExpression(node, p);
 	}
 
 	@Override
 	public String visitCase(CaseTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Case");
-		return super.visitCase(node, p);
+		debugOutput("Case");
+		StringBuilder result = new StringBuilder(OFFSET.repeat(p)+"<case>");
+		result.append(OFFSET.repeat(p+1)+"<head>\n");
+		for (Tree t : node.getExpressions()) {
+			result.append(t.accept(this, p+2)+'\n');
+		}
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		result.append(OFFSET.repeat(p+1)+"<body>\n");
+		result.append(node.getBody().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</body>\n");
+		result.append(OFFSET.repeat(p)+"</case>\n");
+		return result.toString(); //super.visitCase(node, p);
 	}
 
 	@Override
 	public String visitSynchronized(SynchronizedTree node, Integer p) {
-		// TODO Auto-generated method stub
-		System.out.println("Synchronized");
+		debugOutput("Synchronized");
+		//Not currently needed
 		return super.visitSynchronized(node, p);
 	}
 
 	@Override
 	public String visitTry(TryTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("Try");
-		return super.visitTry(node, p);
+		debugOutput("Try");
+		StringBuilder result = new StringBuilder(OFFSET.repeat(p)+"<try>");
+		result.append(node.getBlock().accept(this, p+1)+'\n');
+		result.append(OFFSET.repeat(p)+"</try>\n");
+		return result.toString();//super.visitTry(node, p);
 	}
 
 	@Override
 	public String visitCatch(CatchTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("Catch");
-		return super.visitCatch(node, p);
+		debugOutput("Catch");
+		StringBuilder result = new StringBuilder(OFFSET.repeat(p)+"<catch=\""+ node.getParameter().toString() +"\">");
+		result.append(node.getBlock().accept(this, p+1)+'\n');
+		result.append(OFFSET.repeat(p)+"</catch>\n");
+		return result.toString();//super.visitCatch(node, p);
 	}
 
 	@Override
 	public String visitConditionalExpression(ConditionalExpressionTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("ConditionalExpression");
-		return super.visitConditionalExpression(node, p);
+		debugOutput("ConditionalExpression");
+		StringBuilder result = new StringBuilder(OFFSET.repeat(p)+"<ternary>");
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		result.append(node.getCondition().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		result.append(OFFSET.repeat(p+1)+"</then>\n");
+		result.append(node.getTrueExpression().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</then>\n");
+		result.append(OFFSET.repeat(p+1)+"</else>\n");
+		result.append(node.getFalseExpression().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</else>\n");
+		result.append(OFFSET.repeat(p)+"</ternary>\n");
+		return result.toString();//super.visitConditionalExpression(node, p);
 	}
 
 	@Override
 	public String visitIf(IfTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("If");
-		return super.visitIf(node, p);
+		debugOutput("If");
+		StringBuilder result = new StringBuilder(OFFSET.repeat(p)+"<ternary>");
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		result.append(node.getCondition().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</head>\n");
+		result.append(OFFSET.repeat(p+1)+"</branchtrue>\n");
+		result.append(node.getThenStatement().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</branchtrue>\n");
+		result.append(OFFSET.repeat(p+1)+"</branchfalse>\n");
+		result.append(node.getElseStatement().accept(this, p+2)+'\n');
+		result.append(OFFSET.repeat(p+1)+"</branchfalse>\n");
+		result.append(OFFSET.repeat(p)+"</ternary>\n");
+		return result.toString();//super.visitConditionalExpression(node, p);
 	}
 
 	@Override
 	public String visitExpressionStatement(ExpressionStatementTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("ExpressionStatement");
+		debugOutput("ExpressionStatement");
 		return super.visitExpressionStatement(node, p);
 	}
 
 	@Override
 	public String visitBreak(BreakTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("Break");
+		debugOutput("Break");
 		return super.visitBreak(node, p);
 	}
 
 	@Override
 	public String visitContinue(ContinueTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("Continue");
+		debugOutput("Continue");
 		return super.visitContinue(node, p);
 	}
 
 	@Override
 	public String visitReturn(ReturnTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("Return");
+		debugOutput("Return");
 		return super.visitReturn(node, p);
 	}
 
 	@Override
 	public String visitThrow(ThrowTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("Throw");
+		debugOutput("Throw");
 		return super.visitThrow(node, p);
 	}
 
 	@Override
 	public String visitAssert(AssertTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("Assert");
+		debugOutput("Assert");
 		return super.visitAssert(node, p);
 	}
 
 	@Override
 	public String visitMethodInvocation(MethodInvocationTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("MethodInvocation");
+		debugOutput("MethodInvocation");
 		return super.visitMethodInvocation(node, p);
 	}
 
 	@Override
 	public String visitNewClass(NewClassTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("NewClass");
+		debugOutput("NewClass");
 		return super.visitNewClass(node, p);
 	}
 
 	@Override
 	public String visitNewArray(NewArrayTree node, Integer p) {
 		// TODO Auto-generated method stub
-		System.out.println("NewArray");
+		debugOutput("NewArray");
 		return super.visitNewArray(node, p);
 	}
 
@@ -476,6 +569,9 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 		return super.visitYield(node, p);
 	}
 	
-	
+	private static void debugOutput(String output) {
+		if(DEBUG)
+			System.out.println(output);
+	}
 
 }
