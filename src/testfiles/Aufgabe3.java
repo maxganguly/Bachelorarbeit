@@ -1,5 +1,7 @@
 package testfiles;
 
+import java.util.Random;
+
 /*
 Aufgabe 3) Zweidimensionale Arrays - Sortieren und Filtern
 */
@@ -13,10 +15,12 @@ private static double[][] genCircleFilter(int n, double radius) {
     if ((n % 2) == 0 || n < 1) {
         return null;
     }
-
+    Random r = new Random();
+    r.nextInt();
     double[][] myFilter = new double[n][n];
 
-    int midPoint = n / 2;
+    int midPoint;
+    midPoint = n / 2;
 
     OuterLoop:
     for (int x = 0; x < n; x++) {

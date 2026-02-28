@@ -6,7 +6,8 @@ public class Test {
 		System.out.println("Beginning");
 		{
 		int x = 2;
-		double b = 12;
+		double b = 12.3;
+		int c = (int)b;
 		System.out.println(Math.pow(b, x));
 		switch(x) {
 			case 2-> System.out.println(2);

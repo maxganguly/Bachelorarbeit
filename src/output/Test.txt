@@ -1,0 +1,70 @@
+<class="Test">
+    <method="main(String[])">
+        <block>
+            <mc="System.out.println">
+                <lit>[[Beginning]]</lit>
+            </mc>
+            <block>
+                <var="x" type="int">
+                    <lit>[[2]]</lit>
+                </var>
+                <var="b" type="double">
+                    <lit>[[12.3]]</lit>
+                </var>
+                <var="c" type="int">
+                    <cast to="int">
+                        <var="b"/>
+                    </cast>
+                </var>
+                <mc="System.out.println">
+                    <mc="Math.pow">
+                        <var="b"/>
+                        <var="x"/>
+                    </mc>
+                </mc>
+                <switch>
+                    <head>
+                    <var="x"/>
+                    </head>
+                    <body>
+                        <case>
+                            <head>
+                                <lit>[[2]]</lit>
+                            </head>
+                            <body>
+                                <mc="System.out.println">
+                                    <lit>[[2]]</lit>
+                                </mc>
+                            </body>
+                        </case>
+                        <case>
+                            <head>
+                                <lit>[[1]]</lit>
+                            </head>
+                            <body>
+                                <mc="System.out.println">
+                                    <lit>[[1]]</lit>
+                                </mc>
+                            </body>
+                        </case>
+                        <case>
+                            <head>
+                                <lit>[[0]]</lit>
+                            </head>
+                            <body>
+                                <mc="System.out.println">
+                                    <lit>[[0]]</lit>
+                                </mc>
+                            </body>
+                        </case>
+                    </body>
+                </switch>
+            </block>
+            <var="x" type="String">
+                <lit>[[12]]</lit>
+            </var>
+        </block>
+    </method>
+</class>
+
+<var="testfiles"/>

@@ -12,44 +12,47 @@ public class Main {
     public static void main(String[] args) throws Exception {
         // a single argument that is directory from which .java sources are scanned.
         // If no argument supplied, use the current directory
-    	String file = "src/testfiles/Aufgabe3.java";
-        Path path = Paths.get(file);
-
-        // walk the file system from the given path recursively
-        Files.walkFileTree(path, new SimpleFileVisitor<Path>() {
-            @Override
-            public FileVisitResult postVisitDirectory(Path dir, IOException exc) {
-                // if exception (say non-readable dir), just print and continue scanning.
-                if (exc != null) {
-                    System.err.printf("dir visit failed for %s : %s\n", dir, exc);
-                }
-                return FileVisitResult.CONTINUE;
+    	/*
+    	String input = "src/testfiles/Aufgabe3.java";
+    	String output = "src/output/Aufgabe3.txt";
+    	//*/ 
+    	
+    	//*
+    	String input = "src/testfiles/Test.java";
+    	String output = "src/output/Test.txt";
+    	//*/
+    	Path path = Paths.get(input);
+        String result = "";
+        if (path.toFile().exists()) {
+        if (input.endsWith(".java")) {
+            try {
+                // check for ++i and --i pattern and report
+            	result = generateAST(path);
+            } catch (IOException exc) {
+                // report parse failures and continue scanning other files
+                System.err.printf("parsing failed for %s : %s\n", path.toAbsolutePath().toString(), exc);
             }
-
-            @Override
-            public FileVisitResult visitFileFailed(Path file, IOException exc) {
-                // if a file cannot be read, just print error and continue scanning
-                if (exc != null) {
-                    System.err.printf("file visit failed for %s : %s\n", file, exc);
-                }
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) {
-                // is this a .java file?
-                if (file.getFileName().toString().endsWith(".java")) {
-                    try {
-                        // check for ++i and --i pattern and report
-                    	generateAST(file.toAbsolutePath());
-                    } catch (IOException exc) {
-                        // report parse failures and continue scanning other files
-                        System.err.printf("parsing failed for %s : %s\n", file, exc);
-                    }
-                }
-                return FileVisitResult.CONTINUE;
-            }
-        });
+        }else {
+        	System.err.println("Given file <"+ input +"> is not a Java file");
+        	return;
+        }
+        } else {
+        	System.err.println("Given file <"+ input +"> does not exist");
+        	return;
+        }
+        System.out.println(printToFile(Paths.get(output), result));
+        
+    }
+    
+    public static boolean printToFile(Path file, String content) {
+    	try {
+			Files.write(file, content.getBytes());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+    	return true;
     }
 
     // major version of JDK such as 16, 17, 18 etc.
