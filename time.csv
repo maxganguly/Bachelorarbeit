@@ -4,6 +4,10 @@ Datum;Dauer;Tätigkeit;Notizen
 14.02.2026;2.0;Paper lesen & Thema definieren;
 16.02.2026;1.0;Paper lesen & Thema definieren;
 24.02.2026;5.0;AST Prototyp bauen; Klassen und Methoden werden erkannt
-25.02.2026;3.0;AST Prototyp bauen; AST Generation
-26.02.2026;2.0;AST Prototyp bauen; AST Generation
+25.02.2026;3.0;AST Prototyp bauen; AST Generation text
+26.02.2026;2.0;AST Prototyp bauen; AST Generation text
 28.02.2026;4.0;AST Prototyp bauen; AST Generation grundsätzlich fertig
+01.03.2026;2.0;Paper lesen; Strongest Postcondition
+05.03.2026;3.0;AST Prototyp bauen; AST Generation text
+06.03.2026;4.0;AST Prototyp bauen; AST Generalisierung
+08.03.2026;4.0;AST Prototyp bauen; AST Serialisierung

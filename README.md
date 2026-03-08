@@ -3,9 +3,15 @@ Ein Reopsitory um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 
 ### TODO
 
-+ Prototyp AST
-+ Prototyp weakest Precondition
-+ Papers Lesen
++ [ ] Prototyp AST
+  + [x] AST Generation
+  + [ ] AST Vergleich
+
++ [ ] Prototyp strongest Postcondition
+  + [ ] WP berechnen
+
++ [ ] Generate Testcases
++ [ ] Papers Lesen
 
 
 

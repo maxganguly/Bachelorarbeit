@@ -1,4 +1,4 @@
-package main;
+package main.ast;
 
 import java.util.stream.Collectors;
 
@@ -11,6 +11,7 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 	public static final boolean ALWAYSDISPLAYVARIABLES = true;
 	@Override
 	public String reduce(String r1, String r2) {
+		System.out.println("concat");
 		if ((r1 == null || r1.isBlank()) && (r2 == null || r2.isBlank())) {
 			return null;
 		}
@@ -30,7 +31,7 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 	@Override
 	public String visitPackage(PackageTree node, Integer p) {
 		debugOutput(node);
-		return super.visitPackage(node, p);
+		return "";//super.visitPackage(node, p);
 	}
 
 	@Override
@@ -221,7 +222,10 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 		debugOutput(node);
 		StringBuilder result = new StringBuilder(OFFSET.repeat(p)+"<try>\n");
 		result.append(node.getBlock().accept(this, p+1)+'\n');
-		result.append(OFFSET.repeat(p)+"</try>");
+		result.append(OFFSET.repeat(p)+"</try>\n");
+		for (Tree t : node.getCatches()) {
+			result.append(t.accept(this, p));
+		}
 		return result.toString();//super.visitTry(node, p);
 	}
 
@@ -410,10 +414,10 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 	@Override
 	public String visitBinary(BinaryTree node, Integer p) {
 		debugOutput(node);
-		return OFFSET.repeat(p) + "<binary>"+
-		node.getLeftOperand().toString() + " " +
-		node.getKind().toString() + " " +
-		node.getRightOperand().toString() + "</binary>";
+		return OFFSET.repeat(p) + "<binary type=\""+ node.getKind().toString() +"\">\n"+
+		node.getLeftOperand().accept(this, p+1) + "\n" +
+		node.getRightOperand().accept(this, p+1) + "\n" +
+		OFFSET.repeat(p) + "</binary>";
 		//return super.visitBinary(node, p);
 	}
 
