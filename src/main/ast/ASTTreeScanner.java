@@ -1,6 +1,5 @@
 package main.ast;
 
-import java.util.LinkedList;
 import java.util.stream.Collectors;
 
 import com.sun.source.tree.*;
@@ -382,6 +381,14 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		debugOutput(node);
 		return new ASTTree("lit", node.getValue()!=null?node.getValue():"null", null,p);
 	}
+	
+	@Override
+	public ASTTree visitCompoundAssignment(CompoundAssignmentTree node, ASTTree p) {
+		debugOutput(node);
+		ASTTree result = new ASTTree("assigncomp", node.getVariable(), node.getKind(), p);
+		result.children.add(node.getExpression().accept(this, result));
+		return result;
+	}
 
 	@SuppressWarnings("unused")
 	private static void debugOutput(ASTTree output) {
@@ -394,4 +401,6 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 			System.out.println(output.getKind().toString());
 	}
 
+	
+	
 }

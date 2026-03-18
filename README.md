@@ -1,16 +1,16 @@
 # Bachelorarbeit
-Ein Reopsitory um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentieren
+Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentieren
 
 ### TODO
 
 + [ ] Prototyp AST
   + [x] AST Generation
-  + [ ] AST Vergleich
-
+  + [x] AST Vergleich
+    + [ ] Error messages 
 + [ ] Prototyp strongest Postcondition
-  + [ ] WP berechnen
-
-+ [ ] Generate Testcases
+  + [ ] SP berechnen
+    + [ ] Side effects?
+  + [ ] Generate Testcases
 + [ ] Papers Lesen
 
 
@@ -33,7 +33,6 @@ Folgende Teile werden nicht in den AST übernommen:
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
 | visitNewClass                                                | Nicht benötigt wird als Methodenaufruf behandelt             |
 | visitParenthesized                                           | Es werden keine generischen Objekte verwendet                |
-| visitCompoundAssignment                                      | Wird durch normale Assignments behandelt                     |
 | visitInstanceOf, <br />visitBindingPattern                   | Es sollte nicht mit Polymorphie gearbeitet werden            |
 | visitAnyPattern, <br />visitStringTemplate                   | Preview nicht entschieden, vielleicht benötigt               |
 | visitDefaultCaseLabel, <br />visitConstantCaseLabel          | Label in diesem Ausmaß nicht erforderlich                    |

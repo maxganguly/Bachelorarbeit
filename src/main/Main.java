@@ -6,7 +6,10 @@ import java.util.*;
 import javax.tools.*;
 import com.sun.source.util.*;
 import main.ast.*;
+import main.dynamic.Executor;
 public class Main {
+	public static final PrintStream SYSOUT = System.out;
+	
     public static void main(String[] args) throws Exception {
         // a single argument that is directory from which .java sources are scanned.
         // If no argument supplied, use the current directory
@@ -18,7 +21,11 @@ public class Main {
     	//*
     	String input = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
-    	//*/
+    	String changed = "src/output/Testcases.txt";
+    	
+    	Executor e = new Executor(input, "Test");
+    	e.runMain();
+    	/*
     	Path path = Paths.get(input);
         String result = "";
         ASTTree tree = null;
@@ -40,7 +47,9 @@ public class Main {
         	System.err.println("Given file <"+ input +"> does not exist");
         	return;
         }
-        //System.out.println(printToFile(Paths.get(output), trees.getFirst().toString()));
+        ASTTree cases = ASTTree.getFromPath(Paths.get(output));
+        System.out.println(printToFile(Paths.get(output), tree.toString()));
+        System.out.println(printToFile(Paths.get(output), cases.toString()));
         
         ASTTree rebuilt = new ASTTree(tree.toString());
         System.out.println(tree.equals(tree));
@@ -88,7 +97,7 @@ public class Main {
         System.out.println(general[1].containsExact(meth[2]));
         System.out.println(meth[2].containsExact(general[1]));
         System.out.println(meth[1].containsExact(general[2]));
-        
+        //*/
         
     }
     public static boolean printToFile(Path file, String content) {
@@ -144,4 +153,30 @@ public class Main {
 
     	return sb.toString();
     }
+    public static String getFromPath(Path p) throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(p.toAbsolutePath().toString()));
+		StringBuilder sb = new StringBuilder();
+		String line = br.readLine();
+
+		while (line != null) {
+			sb.append(line);
+			sb.append(System.lineSeparator());
+			line = br.readLine();
+		}
+		return sb.toString();
+	}
+
+    public static String getFromPath(String p) throws IOException {
+		BufferedReader br = new BufferedReader(new FileReader(Path.of(p).toAbsolutePath().toString()));
+		StringBuilder sb = new StringBuilder();
+		String line = br.readLine();
+
+		while (line != null) {
+			sb.append(line);
+			sb.append(System.lineSeparator());
+			line = br.readLine();
+		}
+		return sb.toString();
+	}
+
 }

@@ -1,0 +1,21 @@
+Original
+KorrekturTests
+	testcases mit Punkten
+	Semantic Similarity zu Musterlösung
+		ast Structure comparison
+		weakest precondition/strongest postcondition (Edge case detection)
+	maybe
+		testing if variables with correct value exist (JPDA debugger)
+		code correction
+
+Brainstorming
+Give generated AST to modify to specify parts that are needed or forbidden
+Side-effects (sysout) when calculating semantic similarity (post condition)
+
+
+Changes
+Fully automatic -> Semi automatic
+	A tool for the better generation of Testcases
+
+Weakest precondition -> Strongest postcondition
+	The precondition is always given and the postcondtition needs to match

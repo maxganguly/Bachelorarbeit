@@ -1,4 +1,18 @@
 <class="Test">
+    <method="condition(boolean)">
+        <block>
+            <if>
+                <else>
+                </else>
+            </if>
+        </block>
+    </method>
+    
+    <method="condition(boolean)">
+                    <var="con">
+                    </var>
+    </method>
+    
     <method="main(String[])">
         <block>
             <mc="System.out.println">
@@ -63,7 +77,7 @@
                         </binary>
                     </condition>
                 </head>
-                <condition>
+                <body>
                     <block>
                         <mc="System.out.println">
                             <var="x">
@@ -74,7 +88,7 @@
                             </var>
                         </unary>
                     </block>
-                </condition>
+                </body>
             </while>
             <forloop>
                 <head>
@@ -86,13 +100,15 @@
                     </init>
                     <condition>
                         <binary="GREATER_THAN">
-                            <var="y">
+                            <var="b">
                             </var>
                             <lit>[[1]]</lit>
                         </binary>
                     </condition>
                     <update>
-                        <lit>[[2]]</lit>
+                        <assigncomp="b" type="DIVIDE_ASSIGNMENT">
+                            <lit>[[2]]</lit>
+                        </assigncomp>
                     </update>
                 </head>
                 <body>
@@ -100,7 +116,7 @@
                         <mc="System.out.println">
                             <binary="PLUS">
                                 <lit>[[Y is:]]</lit>
-                                <var="y">
+                                <var="b">
                                 </var>
                             </binary>
                         </mc>
@@ -139,7 +155,7 @@
             </block>
         </block>
     </method>
-    <method="calc(int)">
+    <method="calc1(int)">
         <block>
             <var="y" type="int">
                 <binary="PLUS">
@@ -176,6 +192,169 @@
             </if>
             <return>
                 <var="y">
+                </var>
+            </return>
+        </block>
+    </method>
+    <method="calc2(int)">
+        <block>
+            <if>
+                <head>
+                    <binary="GREATER_THAN">
+                        <var="a">
+                        </var>
+                        <lit>[[0]]</lit>
+                    </binary>
+                </head>
+                <then>
+                    <binary="GREATER_THAN">
+                        <var="a">
+                        </var>
+                        <lit>[[0]]</lit>
+                    </binary>
+                </then>
+                <else>
+                    <binary="GREATER_THAN">
+                        <var="a">
+                        </var>
+                        <lit>[[0]]</lit>
+                    </binary>
+                </else>
+            </if>
+            <return>
+                <var="a">
+                </var>
+            </return>
+        </block>
+    </method>
+    <method="calc3(int)">
+        <block>
+            <var="sum" type="int">
+                <var="a">
+                </var>
+            </var>
+            <forloop>
+                <head>
+                    <init>
+                        <var="i" type="int">
+                            <lit>[[0]]</lit>
+                        </var>
+                    </init>
+                    <condition>
+                        <binary="LESS_THAN">
+                            <var="i">
+                            </var>
+                            <binary="MULTIPLY">
+                                <var="a">
+                                </var>
+                                <var="a">
+                                </var>
+                            </binary>
+                        </binary>
+                    </condition>
+                    <update>
+                        <unary>
+                            <var="i">
+                            </var>
+                        </unary>
+                    </update>
+                </head>
+                <body>
+                    <block>
+                        <if>
+                            <head>
+                                <binary="LESS_THAN">
+                                    <var="a">
+                                    </var>
+                                    <lit>[[0]]</lit>
+                                </binary>
+                            </head>
+                            <then>
+                                <binary="LESS_THAN">
+                                    <var="a">
+                                    </var>
+                                    <lit>[[0]]</lit>
+                                </binary>
+                            </then>
+                            <else>
+                                <binary="LESS_THAN">
+                                    <var="a">
+                                    </var>
+                                    <lit>[[0]]</lit>
+                                </binary>
+                            </else>
+                        </if>
+                    </block>
+                </body>
+            </forloop>
+            <return>
+                <var="sum">
+                </var>
+            </return>
+        </block>
+    </method>
+    <method="calc4(int)">
+        <block>
+            <var="sum" type="int">
+                <var="a">
+                </var>
+            </var>
+            <forloop>
+                <head>
+                    <init>
+                        <var="i" type="int">
+                            <lit>[[0]]</lit>
+                        </var>
+                    </init>
+                    <condition>
+                        <binary="LESS_THAN">
+                            <var="i">
+                            </var>
+                            <binary="MULTIPLY">
+                                <var="a">
+                                </var>
+                                <var="a">
+                                </var>
+                            </binary>
+                        </binary>
+                    </condition>
+                    <update>
+                        <unary>
+                            <var="i">
+                            </var>
+                        </unary>
+                    </update>
+                </head>
+                <body>
+                    <block>
+                        <if>
+                            <head>
+                                <binary="LESS_THAN">
+                                    <var="a">
+                                    </var>
+                                    <lit>[[0]]</lit>
+                                </binary>
+                            </head>
+                            <then>
+                                <binary="LESS_THAN">
+                                    <var="a">
+                                    </var>
+                                    <lit>[[0]]</lit>
+                                </binary>
+                            </then>
+                            <else>
+                                <binary="LESS_THAN">
+                                    <var="a">
+                                    </var>
+                                    <lit>[[0]]</lit>
+                                </binary>
+                            </else>
+                        </if>
+                    </block>
+                </body>
+            </forloop>
+            <return>
+                <var="sum">
                 </var>
             </return>
         </block>
