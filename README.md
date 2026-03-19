@@ -11,6 +11,13 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
   + [ ] SP berechnen
     + [ ] Side effects?
   + [ ] Generate Testcases
++ [ ] Dynamic Execution
+  + [x] Run Methods dynamically
+  + [ ] Run Testcases
+    + [x] Validate (True/False)
+    + [ ] Evaluate (What went wrong)
+
++ [ ] Document all currently available Code
 + [ ] Papers Lesen
 
 
@@ -23,7 +30,7 @@ Der geschriebene Teil ist unter [https://www.overleaf.com/read/btwrzntmdvjs#aa6c
 
 ### AST
 
-Die Generation eines AST wird durch [ASTScannerText.java](./src/main/ASTScannerText.java) definiert. Einige Tags werden nicht generiert da diese für diesen Kurs und daher die Überprüfung nicht erforderlich sind.
+Die Generation eines AST wird durch [ASTScannerText.java](./src/main/ASTScannerText.java) und [ASTTreeScanner.java](./src/main/ASTTreeScanner.java) definiert. Einige Tags werden nicht generiert da diese für diesen Kurs und daher die Überprüfung nicht erforderlich sind.
 
 Folgende Teile werden nicht in den AST übernommen:
 
