@@ -7,6 +7,7 @@ import javax.tools.*;
 import com.sun.source.util.*;
 import main.ast.*;
 import main.dynamic.DynamicTester;
+import main.dynamic.DynamicTester.Pair;
 import main.dynamic.DynamicTester.Result;
 import main.dynamic.Executor;
 import testfiles.Test;
@@ -30,12 +31,11 @@ public class Main {
     	Executor e1 = new Executor(input, "Test");
     	Executor e2 = new Executor(input, "Test");
     	DynamicTester dt = new DynamicTester(e1, e2, testcases);
-    	List<Result> results = dt.runTestcases();
-    	for( Result r : results) {
-    		System.out.println(r.toString());
+    	List<Pair<Result, String>> results = dt.runAndAnalyzeTestcases();
+    	for(Pair<Result, String> r : results) {
+    		System.out.println(r.second);
     	}
-    	Object o = e1.runMethod("calc2", Integer.valueOf(12));
-    	System.out.println(o.toString());
+
     	/*
     	Path path = Paths.get(input);
         String result = "";
