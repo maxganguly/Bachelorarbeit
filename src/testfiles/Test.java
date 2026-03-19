@@ -40,7 +40,6 @@ public class Test {
 		}
 	}
 	
-	//{ x < −4 }
 	public static int calc1(int x) {
 		int y = 2 * x + 1;
 		if(y > 0)
@@ -50,7 +49,7 @@ public class Test {
 		}
 		return y;
 	}
-	//{ y > x + 5 }
+	
 	public static int calc2(int a) {
 		if (a > 0) {
 			return a;
@@ -82,5 +81,10 @@ public class Test {
 		}
 		return sum;
 	}
+	
+	public static int calc5(int a, int b) {
+		return (a*b)/(a+b);
+	}
+	
 
 }

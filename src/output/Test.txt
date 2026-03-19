@@ -1,4 +1,5 @@
 <class="Test">
+
     <method="condition(boolean)">
         <block>
             <if>

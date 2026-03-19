@@ -11,11 +11,11 @@ KorrekturTests
 Brainstorming
 Give generated AST to modify to specify parts that are needed or forbidden
 Side-effects (sysout) when calculating semantic similarity (post condition)
-
+Remove not working methods from compilation 
 
 Changes
 Fully automatic -> Semi automatic
 	A tool for the better generation of Testcases
 
-Weakest precondition -> Strongest postcondition
+Weakest precondition -> Strongest postcondition -> ?Symbolic Execution?
 	The precondition is always given and the postcondtition needs to match

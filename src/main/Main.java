@@ -6,7 +6,11 @@ import java.util.*;
 import javax.tools.*;
 import com.sun.source.util.*;
 import main.ast.*;
+import main.dynamic.DynamicTester;
+import main.dynamic.DynamicTester.Result;
 import main.dynamic.Executor;
+import testfiles.Test;
+
 public class Main {
 	public static final PrintStream SYSOUT = System.out;
 	
@@ -22,9 +26,16 @@ public class Main {
     	String input = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
     	String changed = "src/output/Testcases.txt";
-    	
-    	Executor e = new Executor(input, "Test");
-    	e.runMain();
+    	String testcases = "src/testfiles/testcases.txt";
+    	Executor e1 = new Executor(input, "Test");
+    	Executor e2 = new Executor(input, "Test");
+    	DynamicTester dt = new DynamicTester(e1, e2, testcases);
+    	List<Result> results = dt.runTestcases();
+    	for( Result r : results) {
+    		System.out.println(r.toString());
+    	}
+    	Object o = e1.runMethod("calc2", Integer.valueOf(12));
+    	System.out.println(o.toString());
     	/*
     	Path path = Paths.get(input);
         String result = "";

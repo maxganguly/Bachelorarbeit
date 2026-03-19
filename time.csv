@@ -6,15 +6,17 @@ Datum;Dauer;Tätigkeit;Notizen
 24.02.2026;5.0;AST Prototyp bauen; Klassen und Methoden werden erkannt
 25.02.2026;3.0;AST Prototyp bauen; AST Generation text
 26.02.2026;2.0;AST Prototyp bauen; AST Generation text
-28.02.2026;4.0;AST Prototyp bauen; AST Generation grundsätzlich fertig
+28.02.2026;4.0;Prototyp bauen; AST Generation grundsätzlich fertig
 01.03.2026;2.0;Research; Strongest Postcondition
-05.03.2026;3.0;AST Prototyp bauen; AST Generation text
-06.03.2026;4.0;AST Prototyp bauen; AST Generalisierung
-08.03.2026;4.0;AST Prototyp bauen; AST Serialisierung
+05.03.2026;3.0;Prototyp bauen; AST Generation text
+06.03.2026;4.0;Prototyp bauen; AST Generalisierung
+08.03.2026;4.0;Prototyp bauen; AST Serialisierung
 09.03.2026;1.0;Besprechung; Zwischenstand
 18.03.2026;2.0;Research; Strongest Postcondition- Semantic Correctness
 18.03.2026;2.0;Test Generation; Grundstruktur 
 15.03.2026;3.0;Research; Executing Methods from Code
 18.03.2026;2.0;Research; Dynamic Execution
-18.03.2026;5.0;Executor Prototyp Bauen; Dynamic Execution
+18.03.2026;5.0;Prototyp Bauen; Dynamic Execution
+18.03.2026;2.0;Research; Symbolic Execution
+19.03.2026;7.0;Prototyp Bauen; Dynamic Execution
 

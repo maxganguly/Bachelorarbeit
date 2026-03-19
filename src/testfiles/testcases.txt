@@ -1,0 +1,4 @@
+int calc2(int 0)
+int calc2(int -12)
+int calc2(int 32)
+int calc5(int 10, int 32)

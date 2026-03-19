@@ -18,7 +18,7 @@ public class InMemoryClassLoader extends ClassLoader{
 
         Map<String, JavaClassAsBytes> compiledClasses = manager.getBytesMap();
         for(String n : compiledClasses.keySet()) {
-        	System.out.println(n);
+        	//System.out.println(n);
         	if(n.contains(name)) {
         		name = n;
         		break;

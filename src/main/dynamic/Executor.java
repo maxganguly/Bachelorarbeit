@@ -49,7 +49,7 @@ public class Executor {
 	public void runMain() {
 		Method[] meth = clazz.getDeclaredMethods();
 		for(Method m : meth) {
-			System.out.println(m.getName());
+			//System.out.println(m.getName());
 			if(m.getName().equals("main")) {
 				try {
 					m.invoke(null, (Object) (new String[] {}));
@@ -70,7 +70,7 @@ public class Executor {
 			System.setOut(os);
 		Object ret = null;
 		for(Method m : meth) {
-			System.out.println(m.getName());
+			//System.out.println(m.getName());
 			if(m.getName().equals(methodname)) {
 				try {
 					ret = m.invoke(null, params);
