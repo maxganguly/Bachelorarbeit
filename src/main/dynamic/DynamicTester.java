@@ -1,7 +1,6 @@
 package main.dynamic;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,10 +10,10 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import main.Main;
@@ -29,16 +28,34 @@ public class DynamicTester {
 	PrintStream ps;
 	BufferedReader br;
 	static final Map<String, Function<String, Object>> mapping = Map.of(
-			"byte", s -> (Object)Byte.valueOf(s),
-			"short", s -> (Object)Short.valueOf(s),
-			"char", s -> (Object)Character.valueOf(s.charAt(0)),
-			"int", s -> (Object)Integer.valueOf(s),
-			"float", s -> (Object)Float.valueOf(s),
-			"long", s -> (Object)Long.valueOf(s),
-			"double", s -> (Object)Double.valueOf(s),
-			"boolean", s -> (Object)Boolean.valueOf(s),
-			"String", s -> (Object)s);
-	
+			"byte", s -> Byte.valueOf(s.trim()),
+			"short", s -> Short.valueOf(s.trim()),
+			"char", s -> Character.valueOf(s.trim().charAt(0)),
+			"int", s -> Integer.valueOf(s.trim()),
+			"float", s -> Float.valueOf(s.trim()),
+			"long", s -> Long.valueOf(s.trim()),
+			"double", s -> Double.valueOf(s.trim()),
+			"boolean", s -> Boolean.valueOf(s.trim()),
+			"String", s -> s);
+	static final Map<String, Function<String, ?>> toprimitive = Map.of(
+			"byte", s -> Byte.valueOf(s.trim()).byteValue(),
+			"short", s -> Short.valueOf(s.trim()).shortValue(),
+			"char", s -> Character.valueOf(s.trim().charAt(0)).charValue(),
+			"int", s -> Integer.valueOf(s.trim()).intValue(),
+			"float", s ->Float.valueOf(s.trim()).floatValue(),
+			"long", s -> Long.valueOf(s.trim()).longValue(),
+			"double", s -> Double.valueOf(s.trim()).doubleValue(),
+			"boolean", s -> Boolean.valueOf(s.trim()).booleanValue(),
+			"String", s -> s);
+	static final Set<Class<?>> primitives = Set.of(
+			byte[].class,
+			short[].class,
+			int[].class,
+			long[].class,
+			float[].class,
+			double[].class,
+			char[].class,
+			boolean[].class);
 	public DynamicTester(Executor solution, Executor test, String path) {
 		this.pathToTestcases = path;
 		this.solution = solution;
@@ -103,8 +120,14 @@ public class DynamicTester {
 		sb.append(test);
 		if(!isEqual(testcase.expectedResult,testcase.gottenResult)) {
 			sb.append(" expected: ");
+			if (testcase.expectedResult.getClass().isArray()) 
+				sb.append(Arrays.deepToString((Object[])testcase.expectedResult));
+			else
 			sb.append(testcase.expectedResult);
 			sb.append(" but recieved: ");
+			if (testcase.gottenResult.getClass().isArray()) 
+				sb.append(Arrays.deepToString((Object[])testcase.gottenResult));
+			else
 			sb.append(testcase.gottenResult);
 			sb.append(" | ");
 		}
@@ -117,13 +140,49 @@ public class DynamicTester {
 		return sb.toString();
 	}
 	
-	public boolean isEqual(Object o1, Object o2) {
+	public static boolean isEqual(Object o1, Object o2) {
 		if(o1 == null ^ o2 == null)
 			return false;
 		if(o1 == null && o2 == null)
 			return true;
+		if(o1.getClass() != o2.getClass())
+			return false;
+		if (o1.getClass().isArray()) {
+			if(isPrimitiveArray(o1)) {
+				//char type = o1.getClass().getName().charAt(o1.getClass().getName().length()-1);
+				switch (o1.getClass().getName()) {//Dont know why I cant just compare the classes
+				case "class [B": return Arrays.equals((byte[])o1, (byte[])o2);
+				case "class [S": return Arrays.equals((short[])o1, (short[])o2);
+				case "class [I": return Arrays.equals((int[])o1, (int[])o2);
+				case "class [J": return Arrays.equals((long[])o1, (long[])o2);
+				case "class [F": return Arrays.equals((float[])o1, (float[])o2);
+				case "class [D": return Arrays.equals((double[])o1, (double[])o2);
+				case "class [C": return Arrays.equals((char[])o1, (char[])o2);
+				case "class [Z": return Arrays.equals((boolean[])o1, (boolean[])o2);
+				default:
+					throw new IllegalArgumentException("Unexpected value: " + o1.getClass().getName());
+				}
+			}
+			//Currently it only allows primitive Datatypes, so if it isn't a primitive dt It must be an Array of (multidimensional array)
+			switch (o1.getClass().getName()) {
+			case "class [[B": return Arrays.deepEquals((byte[][])o1, (byte[][])o2);
+			case "class [[S": return Arrays.deepEquals((short[][])o1, (short[][])o2);
+			case "class [[I": return Arrays.deepEquals((int[][])o1, (int[][])o2);
+			case "class [[J": return Arrays.deepEquals((long[][])o1, (long[][])o2);
+			case "class [[F": return Arrays.deepEquals((float[][])o1, (float[][])o2);
+			case "class [[D": return Arrays.deepEquals((double[][])o1, (double[][])o2);
+			case "class [[C": return Arrays.deepEquals((char[][])o1, (char[][])o2);
+			case "class [[Z": return Arrays.deepEquals((boolean[][])o1, (boolean[][])o2);
+			default:
+				throw new IllegalArgumentException("Unexpected value: " + o1.getClass().getName());
+			}
+		}
 		return o1.equals(o2);
 	}
+	public static boolean isPrimitiveArray(Object o) {
+		return primitives.contains(o.getClass());
+	}
+	
 	public Result runTestcase(String testcase) throws IOException {
 		Object[] params = Arrays.stream(testcase.substring(testcase.indexOf('(')+1, testcase.lastIndexOf(')')).split(", ")).map(s -> getParam(s)).toArray();
 		String name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));
@@ -142,7 +201,7 @@ public class DynamicTester {
 		return sb.toString();
 	}
 	
-	public Object getParam(String param) {
+	public static Object getParam(String param) {
 		String type = param.substring(0, param.indexOf(' '));
 		String value = param.substring(param.indexOf(' ')+1);
 		if(type.equals("null"))
@@ -150,15 +209,183 @@ public class DynamicTester {
 		if(mapping.containsKey(type)) {
 			return mapping.get(type).apply(value);
 		}
+		//Cannot cast [Ljava.lang.Object; to [I
 		int dimensions = type.length() - type.replace("[]", "|").length();
-		int[] depth = new int[] {0};
-		return null;
-	}
-	//the depth is saved at index 0 of the depth array
-	private Object[] getArray(String content, int[] depth) {
-		return null;
+		type = type.replace("[]", "");
+		if(!mapping.containsKey(type)) {
+			throw new IllegalArgumentException("No valid Datatype found:" +param);
+		}
+		Object parm = getArray(value, dimensions, type);
+		return parm;
 	}
 	
+	private static Object get1DArray(String c, String type) {
+		String content = c.substring(1, c.length()-1);
+			switch(type) { //Oneliners simple
+				case "int": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
+				case "long": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToLong(i -> ((Long)i).longValue()).toArray();
+				case "double": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
+				case "String": return content.split(",");
+				default: break;
+			}
+			if(type.equals("byte") || type.equals("short")) {
+				int[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
+				if (type.equals("byte")) {
+					byte[] barr = new byte[arr.length];
+					for(int i = 0; i < arr.length;i++) {
+						barr[i] = (byte) arr[i];
+					}
+					return barr;
+				} else {
+					short[] barr = new short[arr.length];
+					for(int i = 0; i < arr.length;i++) {
+						barr[i] = (short) arr[i];
+					}
+					return barr;
+				}
+			} else if(type.equals("float")) {
+				double[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
+				float[] barr = new float[arr.length];
+				for(int i = 0; i < arr.length;i++) {
+					barr[i] = (float) arr[i];
+				}
+				return barr;
+			} else if(type.equals("boolean")) {
+				Boolean[] arr = (Boolean[]) Arrays.stream(content.split(",")).map(mapping.get(type)).toArray();
+				boolean[] barr = new boolean[arr.length];
+				for(int i = 0; i < arr.length;i++) {
+					barr[i] = arr[i].booleanValue();
+				}
+				return barr;
+			} else {
+				throw new IllegalArgumentException("No valid datatype: "+ type);
+				//return null;
+			}
+	}
+	private static Object getArray(String c, int dimensions, String type) {
+		if(dimensions == 1)
+			return get1DArray(c, type);
+
+		String content = c.substring(1, c.length()-1);
+		StringBuilder temp = new StringBuilder();
+		List<String> elements = new LinkedList<String>();
+		int brackets = 0;
+		for(int i = 0; i < content.length(); i++) {
+			if(content.charAt(i) == '{') {
+				if(brackets == 0) {
+					temp = new StringBuilder();
+				}
+				brackets++;
+			}
+			if(content.charAt(i) == '}') {
+				brackets--;
+				if(brackets == 0) {
+					temp.append('}');
+					elements.add(temp.toString());
+				}
+			}
+			if(brackets < 0)
+				throw new IllegalArgumentException("Invalid Brackets at Array input: "+c);
+			temp.append(content.charAt(i));
+		}
+		Object array;
+		int[] i = {0};
+		if (type.equals("int")) {
+			if(dimensions == 2) {
+				array = new int[elements.size()][];
+				elements.stream().forEach(e -> {((int[][])array)[i[0]++] = (int[])getArray(e,dimensions-1,type);});
+			} else if(dimensions == 3) {
+				array = new int[elements.size()][][];
+				elements.stream().forEach(e -> {((int[][][])array)[i[0]++] = (int[][])getArray(e,dimensions-1,type);});
+			} else if(dimensions == 4) {
+				array = new int[elements.size()][][][];
+				elements.stream().forEach(e -> {((int[][][][])array)[i[0]++] = (int[][][])getArray(e,dimensions-1,type);});
+			}else {
+				throw new IllegalArgumentException("Arrays with more than 4 dimensions are currently not allowed, feel free to add them in the function DynamicTester.getArray");
+			}
+		}else {
+			throw new IllegalArgumentException("Type: "+type+"not currently implemented");
+		}
+		
+		return array;//elements.stream().map(s -> getArray(s, dimensions-1, type)).toArray();
+		
+	}
+	//**
+	//Does not work as it creates Wrapper[] which are unable to be casted
+	//the depth is saved at index 0 of the depth array
+	private static Object getArray(String c, int[] depth, String type) {
+		List<String> elements = new LinkedList<String>();
+		String content = c.substring(1, c.length()-1);
+		StringBuilder temp = new StringBuilder();
+		int brackets = 0;
+		for(int i = 0; i < content.length(); i++) {
+			if(content.charAt(i) == '{') {
+				if(brackets == 0) {
+					temp = new StringBuilder();
+				}
+				brackets++;
+			}
+			if(content.charAt(i) == '}') {
+				brackets--;
+				if(brackets == 0) {
+					temp.append('}');
+					elements.add(temp.toString());
+				}
+			}
+			if(brackets < 0)
+				throw new IllegalArgumentException("Invalid Brackets at Array input: "+c);
+			temp.append(content.charAt(i));
+		}
+		depth[0]++;//Increase depth
+		if(elements.size() == 0) {//Contains only "primitives"
+			switch(type) { //Oneliners simple
+				case "int": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
+				case "long": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToLong(i -> ((Long)i).longValue()).toArray();
+				case "double": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
+				case "String": return content.split(",");
+				default: break;
+			}
+			if(type.equals("byte") || type.equals("short")) {
+				int[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
+				if (type.equals("byte")) {
+					byte[] barr = new byte[arr.length];
+					for(int i = 0; i < arr.length;i++) {
+						barr[i] = (byte) arr[i];
+					}
+					return barr;
+				} else {
+					short[] barr = new short[arr.length];
+					for(int i = 0; i < arr.length;i++) {
+						barr[i] = (short) arr[i];
+					}
+					return barr;
+				}
+			} else if(type.equals("float")) {
+				double[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
+				float[] barr = new float[arr.length];
+				for(int i = 0; i < arr.length;i++) {
+					barr[i] = (float) arr[i];
+				}
+				return barr;
+			} else if(type.equals("boolean")) {
+				Boolean[] arr = (Boolean[]) Arrays.stream(content.split(",")).map(mapping.get(type)).toArray();
+				boolean[] barr = new boolean[arr.length];
+				for(int i = 0; i < arr.length;i++) {
+					barr[i] = arr[i].booleanValue();
+				}
+				return barr;
+			} else {
+				throw new IllegalArgumentException("No valid datatype: "+ type);
+				//return null;
+			}
+		}
+		
+		depth[0] -= elements.size()-1;	//So that only one of the elements increases the depth
+		
+		return elements.stream().map(s -> getArray(s, depth, type)).toArray();
+	}
+
+	//*/
 	public record Result(String method, Object expectedResult, Object gottenResult, String expectedOutput, String gottenOutput){}
 
 	public class Pair<F,S> {

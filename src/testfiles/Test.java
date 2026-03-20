@@ -1,5 +1,7 @@
 package testfiles;
 
+import java.util.Arrays;
+
 public class Test {
 
 	public static void condition(boolean con) {
@@ -86,5 +88,15 @@ public class Test {
 		return (a*b)/(a+b);
 	}
 	
-
+	public static int sum(int[] a) {
+		return Arrays.stream(a).sum();
+	}
+	
+	public static void print(float c) {
+		System.out.println("float: " + c);
+	}
+	
+	public static int[] dimensions(int[][] arr) {
+		return new int[] {arr.length, arr[0].length};
+	}
 }

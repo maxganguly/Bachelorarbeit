@@ -24,12 +24,31 @@ public class Main {
     	//*/ 
     	
     	//*
+    	System.out.println(byte[].class);
+    	System.out.println(short[].class);
+    	System.out.println(int[].class);
+    	System.out.println(long[].class);
+    	System.out.println(float[].class);
+    	System.out.println(double[].class);
+    	System.out.println(char[].class);
+    	System.out.println(boolean[].class);
+    	System.out.println(byte[][].class);
+    	System.out.println(short[][].class);
+    	System.out.println(int[][].class);
+    	System.out.println(long[][].class);
+    	System.out.println(float[][].class);
+    	System.out.println(double[][].class);
+    	System.out.println(char[][].class);
+    	System.out.println(boolean[][].class);
     	String input = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
     	String changed = "src/output/Testcases.txt";
     	String testcases = "src/testfiles/testcases.txt";
     	Executor e1 = new Executor(input, "Test");
     	Executor e2 = new Executor(input, "Test");
+    	int[][] arr = new int[][] {{1,2,3},{4,5,6}};
+    	Object ret = e1.runMethod("dimensions", (Object)arr);
+    	System.out.println(Arrays.toString((int[])ret));
     	DynamicTester dt = new DynamicTester(e1, e2, testcases);
     	List<Pair<Result, String>> results = dt.runAndAnalyzeTestcases();
     	for(Pair<Result, String> r : results) {
@@ -189,5 +208,12 @@ public class Main {
 		}
 		return sb.toString();
 	}
-
+    
+    private void test(int[] a) {
+    	System.out.println(Arrays.toString(a));
+    }
+    
+    private void test(int[][] a) {
+    	System.out.println(Arrays.deepToString(a));
+    }
 }

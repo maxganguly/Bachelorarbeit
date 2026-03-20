@@ -26,7 +26,13 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 
 Der geschriebene Teil ist unter [https://www.overleaf.com/read/btwrzntmdvjs#aa6c3d](https://www.overleaf.com/read/btwrzntmdvjs#aa6c3d) aufzufinden.
 
+### Dynamic Execution
 
+Testfälle können im Schema `returntyp methodenname(parametertyp parameterwert)` mit beliebig vielen mit `,` getrennten Variablentupeln beschrieben werden.
+
+Arrays werden mittels `arraytyp[] {v1,v2,v3}` (für 1 dimensionale Arrays)  angeschrieben.
+
+Momentan können nur bis zu 4-dimensionale Arrays eingelesen und bis zu 3-dimensionale Arrays ausgelesen werden. 
 
 ### AST
 
