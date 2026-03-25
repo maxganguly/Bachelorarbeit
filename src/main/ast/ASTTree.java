@@ -52,6 +52,12 @@ public class ASTTree {
 		this(source, null);
 	}
 
+	/**
+	 * Generates an ASTTree from the xml in the given path
+	 * @param p the path of the xml file of the AST to be generated
+	 * @return an ASTTree based on the xml in the given path
+	 * @throws IOException if the file does not exist
+	 */
 	public static ASTTree getFromPath(Path p) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(p.toAbsolutePath().toString()));
 		StringBuilder sb = new StringBuilder();
@@ -65,6 +71,11 @@ public class ASTTree {
 		return new ASTTree(sb.toString());
 	}
 
+	/**
+	 * Generates an ASTTree based on a xml String with a given parent
+	 * @param source the xml String of the Tree
+	 * @param parent the parent of the xml tree, can be null
+	 */
 	public ASTTree(String source, ASTTree parent) {
 		this.parent = null;
 		this.children = new LinkedList<ASTTree>();
@@ -126,6 +137,9 @@ public class ASTTree {
 
 	}
 
+	/**
+	 * Returns an xml representation of the ASTTree 
+	 */
 	public String toString() {
 		return toString(0);
 	}
@@ -157,6 +171,12 @@ public class ASTTree {
 		return sb.toString();
 	}
 
+	/**
+	 * Check if two strings are equal, nullsave, 
+	 * @param s1 first String to be compared
+	 * @param s2 second String to be compared
+	 * @return true if both are null or both are equals
+	 */
 	private static boolean strEqual(String s1, String s2) {
 		if (s1 != null ^ s2 != null) {
 			return false;
@@ -166,6 +186,11 @@ public class ASTTree {
 		return s1.equals(s2);
 	}
 
+	/**
+	 * Check if two ASTTrees are exactly equals
+	 * @param other the ASTTree to be compared with this
+	 * @return true if they are exactly equals
+	 */
 	public boolean equals(ASTTree other) {
 		if (strEqual(this.tag, other.tag) && strEqual(this.name, other.name) && strEqual(this.type, other.type)
 				&& this.children.size() == other.children.size()) {
@@ -186,6 +211,11 @@ public class ASTTree {
 		return false;
 	}
 
+	/**
+	 * Checks if the current tree contains a given ASTTree with the same parameters and general structure 
+	 * @param search the other ASTTree which needs to be contained in this
+	 * @return true if it is contained
+	 */
 	public boolean containsExact(ASTTree search) {
 		if (this.children.isEmpty()) {
 			if (!search.children.isEmpty()) {
@@ -215,6 +245,11 @@ public class ASTTree {
 		return false;
 	}
 
+	/**
+	 * Checks if the structure of the other is contained in this tree, only structure (xml tags) not values, types or names
+	 * @param search the tree which needs to be conatined in this
+	 * @return true if the structure is contained in this tree
+	 */
 	public boolean containsStructure(ASTTree search) {
 		if (this.children.isEmpty()) {
 			if (!search.children.isEmpty()) {
@@ -244,6 +279,11 @@ public class ASTTree {
 		return false;
 	}
 
+	/**
+	 * Returns all ASTTrees with the given tag, returns only the highest trees with the given tags
+	 * @param tag the given tag
+	 * @return A LIst of all found trees with the tag
+	 */
 	public List<ASTTree> getTreesWithTag(String tag) {
 		LinkedList<ASTTree> ll = new LinkedList<ASTTree>();
 		if (this.tag.equals(tag)) {
@@ -256,6 +296,11 @@ public class ASTTree {
 		return ll;
 	}
 
+	/**
+	 * Generalizes a given Tree based on the Generalize and Remove Rules in the class 
+	 * GENERALIZE_TO_LOOP,GENERALIZE_KEEP_NAMES, REMOVE_FROM_GENERALIZE
+	 * @return a new ASTTree which is now generalized
+	 */
 	public ASTTree generalize() {
 		String tag = this.tag;
 		String name = this.name;
@@ -277,6 +322,12 @@ public class ASTTree {
 		return astTree;
 	}
 
+	/**
+	 * Generalizes a given Tree based on the Generalize and Remove rules
+	 * @param generalize_to the generalize Rules e.g (for -> loop)
+	 * @param remove tags to remove e.g (unary)
+	 * @return A new generalized ASTTree
+	 */
 	public ASTTree generalize(Map<String, String> generalize_to, Set<String> remove) {
 		String tag = this.tag;
 		String name = this.name;
@@ -298,6 +349,11 @@ public class ASTTree {
 		return astTree;
 	}
 
+	/**
+	 * Generates an ASTTree based on a xml String with a given parent
+	 * @param source the xml String of the Tree
+	 * @return a new ASTTree based on the given xml
+	 */
 	public static ASTTree fromString(String source) {
 		return new ASTTree(source);
 	}

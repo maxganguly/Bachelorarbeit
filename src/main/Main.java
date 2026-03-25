@@ -7,7 +7,6 @@ import javax.tools.*;
 import com.sun.source.util.*;
 import main.ast.*;
 import main.dynamic.DynamicTester;
-import main.dynamic.DynamicTester.Pair;
 import main.dynamic.DynamicTester.Result;
 import main.dynamic.Executor;
 import testfiles.Test;
@@ -24,37 +23,19 @@ public class Main {
     	//*/ 
     	
     	//*
-    	System.out.println(byte[].class);
-    	System.out.println(short[].class);
-    	System.out.println(int[].class);
-    	System.out.println(long[].class);
-    	System.out.println(float[].class);
-    	System.out.println(double[].class);
-    	System.out.println(char[].class);
-    	System.out.println(boolean[].class);
-    	System.out.println(byte[][].class);
-    	System.out.println(short[][].class);
-    	System.out.println(int[][].class);
-    	System.out.println(long[][].class);
-    	System.out.println(float[][].class);
-    	System.out.println(double[][].class);
-    	System.out.println(char[][].class);
-    	System.out.println(boolean[][].class);
     	String input = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
     	String changed = "src/output/Testcases.txt";
     	String testcases = "src/testfiles/testcases.txt";
     	Executor e1 = new Executor(input, "Test");
     	Executor e2 = new Executor(input, "Test");
-    	int[][] arr = new int[][] {{1,2,3},{4,5,6}};
-    	Object ret = e1.runMethod("dimensions", (Object)arr);
-    	System.out.println(Arrays.toString((int[])ret));
+    	int[][][] arr = new int[][][] {{{1,2},{3,4}},{{5,6},{7,8}}};
     	DynamicTester dt = new DynamicTester(e1, e2, testcases);
     	List<Pair<Result, String>> results = dt.runAndAnalyzeTestcases();
-    	for(Pair<Result, String> r : results) {
-    		System.out.println(r.second);
+    	for(Pair<Result, String> result: results) {
+    		System.out.println(result.second());
     	}
-
+    	
     	/*
     	Path path = Paths.get(input);
         String result = "";
@@ -130,6 +111,14 @@ public class Main {
         //*/
         
     }
+    
+    /**
+     * Prints a given String to a given File, overwrites the current content of the file, creates a new if it does not exist
+     * Prints the stacktrace to the error if it fails
+     * @param file the Path to the file to be written to
+     * @param content the content to be written in the file
+     * @return true if the writing succeeded, false if it failed
+     */
     public static boolean printToFile(Path file, String content) {
     	try {
 			Files.write(file, content.getBytes());
@@ -140,6 +129,10 @@ public class Main {
     	return true;
     }
 
+    /**
+     * Returns the current major Java version
+     * @return the current Java version
+     */
     private static int getJavaMajorVersion() {
         return Runtime.version().feature();
     }
@@ -151,6 +144,12 @@ public class Main {
     private static final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     
+    /**
+     * Generates ASTTrees based on the java file given
+     * @param javaSrc the Path to the java file
+     * @return A List of ASTTrees of all classes contained in the java file
+     * @throws IOException
+     */
     public static List<ASTTree> generateAST(Path javaSrc) throws IOException{
         var compUnits = compiler.
                 getStandardFileManager(null, null, null).
@@ -166,7 +165,14 @@ public class Main {
 
     	return results;//sb.toString();
     }
-    
+    @Deprecated
+    /**
+     * Generates a textual AST in xml format
+     * Deprecated use generateAST toString
+     * @param javaSrc
+     * @return
+     * @throws IOException
+     */
     public static String generateASTText(Path javaSrc) throws IOException{
         var compUnits = compiler.
                 getStandardFileManager(null, null, null).
@@ -183,6 +189,13 @@ public class Main {
 
     	return sb.toString();
     }
+    
+    /**
+     * Returns all Text from the given File
+     * @param p the path to the file to be read
+     * @return All Text from the file
+     * @throws IOException it the file does not exist
+     */
     public static String getFromPath(Path p) throws IOException {
 		BufferedReader br = new BufferedReader(new FileReader(p.toAbsolutePath().toString()));
 		StringBuilder sb = new StringBuilder();
@@ -196,24 +209,13 @@ public class Main {
 		return sb.toString();
 	}
 
+    /**
+     * Returns all Text from the given File
+     * @param p String of the path to the file to be read
+     * @return All Text from the file
+     * @throws IOException it the file does not exist
+     */
     public static String getFromPath(String p) throws IOException {
-		BufferedReader br = new BufferedReader(new FileReader(Path.of(p).toAbsolutePath().toString()));
-		StringBuilder sb = new StringBuilder();
-		String line = br.readLine();
-
-		while (line != null) {
-			sb.append(line);
-			sb.append(System.lineSeparator());
-			line = br.readLine();
-		}
-		return sb.toString();
+		return getFromPath(Path.of(p));
 	}
-    
-    private void test(int[] a) {
-    	System.out.println(Arrays.toString(a));
-    }
-    
-    private void test(int[][] a) {
-    	System.out.println(Arrays.deepToString(a));
-    }
 }

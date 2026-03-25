@@ -8,6 +8,11 @@ public class JavaSourceFromString extends SimpleJavaFileObject {
 
     private String sourceCode;
 
+    /**
+     * Creates an SimpleJavaFileObject with the given name, from the given String
+     * @param name the name of the SJFO
+     * @param sourceCode the content of the SJFO
+     */
     public JavaSourceFromString(String name, String sourceCode) {
         super(URI.create("string:///" + name.replace('.', '/') + Kind.SOURCE.extension),
             Kind.SOURCE);
@@ -16,8 +21,11 @@ public class JavaSourceFromString extends SimpleJavaFileObject {
         this.sourceCode = sourceCode;
     }
 
+    /**
+     * returns the source code of the SJFO
+     */
     @Override
-    public CharSequence getCharContent(boolean ignoreEncodingErrors) {
+	public CharSequence getCharContent(boolean ignoreEncodingErrors) {
         return sourceCode;
     }
 }

@@ -6,7 +6,9 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 + [ ] Prototyp AST
   + [x] AST Generation
   + [x] AST Vergleich
+    + [ ] Generate Testcases
     + [ ] Error messages 
+    + [ ] Score tests
 + [ ] Prototyp strongest Postcondition
   + [ ] SP berechnen
     + [ ] Side effects?
@@ -16,6 +18,10 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
   + [ ] Run Testcases
     + [x] Validate (True/False)
     + [ ] Evaluate (What went wrong)
+  + [ ] Score Testcases
++ [ ] Testcases
+  + [ ] Geberalize Testcases
+  + [ ] evaluate multiple static&dynamic testcases
 
 + [ ] Document all currently available Code
 + [ ] Papers Lesen

@@ -53,6 +53,8 @@ public class Test {
 	}
 	
 	public static int calc2(int a) {
+		if(Math.random()>0.5)
+			return -1;
 		if (a > 0) {
 			return a;
 		} else {
@@ -98,5 +100,19 @@ public class Test {
 	
 	public static int[] dimensions(int[][] arr) {
 		return new int[] {arr.length, arr[0].length};
+	}
+	
+	public static int[] random() {
+		if(Math.random() > 0.5)
+			return null;
+		int[] a = new int[(int)(Math.random()*11)];
+		for(int i = 0; i < a.length;i++) {
+			a[i] = (int) (Math.random()*100);
+		}
+		return a;
+	}
+	
+	public static int sum(int[][][] s) {
+		return s.length + s[0].length + s[0][0].length;
 	}
 }

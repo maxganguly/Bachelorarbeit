@@ -16,11 +16,16 @@ public class InMemoryFileManager extends ForwardingJavaFileManager<JavaFileManag
 
     private ClassLoader loader; 
 
+    /**
+     * Generates a new InMemoryFileManager to manage the classes which will be used as files in Memory
+     * @param standardManager
+     */
     public InMemoryFileManager(StandardJavaFileManager standardManager) {
         super(standardManager);
         this.compiledClasses = new Hashtable<>();
         this.loader = new InMemoryClassLoader(this.getClass().getClassLoader(), this);
     }
+    
     
     @Override
     public JavaFileObject getJavaFileForOutput(Location location,

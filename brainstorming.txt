@@ -17,5 +17,8 @@ Changes
 Fully automatic -> Semi automatic
 	A tool for the better generation of Testcases
 
-Weakest precondition -> Strongest postcondition -> ?Symbolic Execution?
+Weakest precondition -> Strongest postcondition -> ?Symbolic Execution? -> MC/DC and Mutation testing 
 	The precondition is always given and the postcondtition needs to match
+	Maybe symbolic execution to generate edge cases
+	As we have a "ground truth" we should be able to generate edge cases by using MC/DC and Mutation Testing (Fault Injection) on it to get Testcases
+		for the fault injection, check if a injected fault results in a changed return/output if yes -> New testcase

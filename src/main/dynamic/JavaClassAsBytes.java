@@ -11,6 +11,11 @@ public class JavaClassAsBytes extends SimpleJavaFileObject {
     protected ByteArrayOutputStream bos =
         new ByteArrayOutputStream();
 
+    /**
+     * Creates a new SJFO with a ByteArrayOutputStream to save the class as Byte Array
+     * @param name the Name of the class
+     * @param kind should be Kind.CLASS
+     */
     public JavaClassAsBytes(String name, Kind kind) {
         super(URI.create("string:///" + name.replace('.', '/')
             + kind.extension), kind);

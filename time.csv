@@ -12,12 +12,15 @@ Datum;Dauer;Tätigkeit;Notizen
 06.03.2026;4.0;Prototyp bauen; AST Generalisierung
 08.03.2026;4.0;Prototyp bauen; AST Serialisierung
 09.03.2026;1.0;Besprechung; Zwischenstand
-18.03.2026;2.0;Research; Strongest Postcondition- Semantic Correctness
+18.03.2026;2.0;Research; Strongest Postcondition - Semantic Correctness
 18.03.2026;2.0;Test Generation; Grundstruktur 
 15.03.2026;3.0;Research; Executing Methods from Code
 18.03.2026;2.0;Research; Dynamic Execution
 18.03.2026;5.0;Prototyp Bauen; Dynamic Execution
 18.03.2026;2.0;Research; Symbolic Execution
 19.03.2026;7.0;Prototyp Bauen; Dynamic Execution
-19.03.2026;3.5;Prototyp Bauen; Dynamic Execution Array Handeling
+20.03.2026;3.5;Prototyp Bauen; Dynamic Execution Array Handeling
+24.03.2026;2.0;Research; Symbolic Execution
+25.03.2026;2.0;Research; Testcase generation
+25.03.2026;2.5;Prototyp Bauen; Dokumentieren
 
