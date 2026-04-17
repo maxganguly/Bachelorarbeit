@@ -103,7 +103,7 @@ public class Test {
 	}
 	
 	public static int[] random() {
-		if(Math.random() > 0.5)
+		if(Math.random() > 0.9)
 			return null;
 		int[] a = new int[(int)(Math.random()*11)];
 		for(int i = 0; i < a.length;i++) {

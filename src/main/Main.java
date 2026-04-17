@@ -30,10 +30,10 @@ public class Main {
     	Executor e1 = new Executor(input, "Test");
     	Executor e2 = new Executor(input, "Test");
     	int[][][] arr = new int[][][] {{{1,2},{3,4}},{{5,6},{7,8}}};
-    	DynamicTester dt = new DynamicTester(e1, e2, testcases);
-    	List<Pair<Result, String>> results = dt.runAndAnalyzeTestcases();
-    	for(Pair<Result, String> result: results) {
-    		System.out.println(result.second());
+    	Tester dt = new DynamicTester(e1, e2, testcases);
+    	List<Pair<String,Integer>> results = dt.runAllTestcases();
+    	for(Pair<String, Integer> result: results) {
+    		System.out.println(result);
     	}
     	
     	/*

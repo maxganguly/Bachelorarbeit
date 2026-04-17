@@ -13,19 +13,22 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
 import main.Main;
 import main.Pair;
+import main.Testcase;
 
 /**
  * 
  */
-public class DynamicTester {
+public class DynamicTester implements main.Tester{
 
 	Executor solution, test;
 	String pathToTestcases;
+	List<DynamicTestcase> testcases;
 	PrintStream ps;
 	BufferedReader br;
 	static final Map<String, Function<String, Object>> mapping = Map.of(
@@ -55,9 +58,20 @@ public class DynamicTester {
 			PipedInputStream pis = new PipedInputStream();
 			PipedOutputStream pos = new PipedOutputStream(pis);
 			ps = new PrintStream(pos);
-			br = new BufferedReader(new InputStreamReader(pis));
+			this.br = new BufferedReader(new InputStreamReader(pis));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		testcases = new LinkedList<DynamicTestcase>();
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(Path.of(pathToTestcases).toAbsolutePath().toString()));
+			while(br.ready()) {
+				String line = br.readLine();
+				testcases.add(new DynamicTestcase(line));
+			}
+			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -105,22 +119,16 @@ public class DynamicTester {
 		List<Result> results = new LinkedList<DynamicTester.Result>();
 		if(ps != null)
 		System.setOut(ps);
-		try {
-			br = new BufferedReader(new FileReader(Path.of(pathToTestcases).toAbsolutePath().toString()));
-			String line = br.readLine();
-			while (line != null) {
-				try {
-				results.add(runTestcase(line));
-				line = br.readLine();
-				} catch (MethodNotFoundException mnfe) {
-					if(!ignoreMethodNotFound)
-						throw mnfe;
-				}
+		for( DynamicTestcase dt : testcases) {
+			try {
+				results.add(runTestcase(dt));
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (MethodNotFoundException e) {
+				e.printStackTrace();
 			}
-			br.close();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+		
 		System.setOut(Main.SYSOUT);
 		return results;
 	}
@@ -140,7 +148,7 @@ public class DynamicTester {
 	 * @return A textual analysis of the result
 	 */
 	public String analyzeTestcase(Result testcase) {
-		String test = testcase.method.substring(testcase.method.indexOf(' ')+1, testcase.method.lastIndexOf(')')+1);
+		String test = testcase.testcase.testcase().first();
 		if(isEqual(testcase.expectedResult,testcase.gottenResult) && 
 				isEqual(testcase.expectedOutput, testcase.gottenOutput))
 			return "Testcase: "+ test +" successfull";
@@ -286,31 +294,25 @@ public class DynamicTester {
 	 * @throws IOException if the System read does not work (unlikely)
 	 * @throws MethodNotFoundException if the Method in the testcase does not exist in the solution
 	 */
-	public Result runTestcase(String testcase) throws IOException, MethodNotFoundException {
-		String p = testcase.substring(testcase.indexOf('(')+1, testcase.lastIndexOf(')'));
-		Object[] params;
-		if(p.isBlank()) {
-			params = null;
-		}else
-			params = Arrays.stream(p.split(", ")).map(s -> getParam(s)).toArray();
-		String name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));
-		Object returnSolution = null;;
+	public Result runTestcase(DynamicTestcase testcase) throws IOException, MethodNotFoundException {
+		
+		Object returnSolution = null;
 		String outSolution = null;
 		Object returnTest;
 		String outTest;
 		boolean ranSolution = false;
 		try {
-			returnSolution = solution.runMethod(name, params);
+			returnSolution = solution.runMethod(testcase.name, testcase.params);
 			outSolution = readall();
 			ranSolution = true;
-			returnTest = test.runMethod(name, params);
+			returnTest = test.runMethod(testcase.name, testcase.params);
 			outTest = readall();
 		} catch (MethodNotFoundException mnfe ) {
 			if(!ranSolution)
 				throw mnfe;
-			return new Result(testcase, returnSolution, null, outSolution, null);
+			return new Result(testcase, false, returnSolution, null, outSolution, null);
 		}
-		return new Result(testcase, returnSolution, returnTest, outSolution, outTest);
+		return new Result(testcase, isEqual(returnSolution, returnTest) && isEqual(outSolution, outTest), returnSolution, returnTest, outSolution, outTest);
 	}
 	
 	/**
@@ -326,211 +328,36 @@ public class DynamicTester {
 		return sb.toString();
 	}
 	
-	/**
-	 * Gets the Parameter from String
-	 * @param param the parameter as String
-	 * @return the parameter in it's correct Datatype cast to Object
-	 */
-	public static Object getParam(String param) {
-		if(param == null || param.isBlank())
-			return null;
-		String type = param.substring(0, param.indexOf(' '));
-		String value = param.substring(param.indexOf(' ')+1);
-		if(type.equals("null"))
-			return null;
-		if(mapping.containsKey(type)) {
-			return mapping.get(type).apply(value);
-		}
-		int dimensions = type.length() - type.replace("[]", "|").length();
-		type = type.replace("[]", "");
-		if(!mapping.containsKey(type)) {
-			throw new IllegalArgumentException("No valid Datatype found:" +param);
-		}
-		Object parm = getArray(value, dimensions, type);
-		return parm;
-	}
 	
-	/**
-	 * Generates an One-dimensional Array from the given String and type 
-	 * @param c the values of the array {x, y, z}
-	 * @param type the type of the array e.g int
-	 * @return an Onedimensional array cast to Object
-	 */
-	private static Object get1DArray(String c, String type) {
-		String content = c.substring(1, c.length()-1);
-			switch(type) { //Oneliners simple
-				case "int": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
-				case "long": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToLong(i -> ((Long)i).longValue()).toArray();
-				case "double": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
-				case "String": return content.split(",");
-				default: break;
-			}
-			if(type.equals("byte") || type.equals("short")) {
-				int[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
-				if (type.equals("byte")) {
-					byte[] barr = new byte[arr.length];
-					for(int i = 0; i < arr.length;i++) {
-						barr[i] = (byte) arr[i];
-					}
-					return barr;
-				} else {
-					short[] barr = new short[arr.length];
-					for(int i = 0; i < arr.length;i++) {
-						barr[i] = (short) arr[i];
-					}
-					return barr;
-				}
-			} else if(type.equals("float")) {
-				double[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
-				float[] barr = new float[arr.length];
-				for(int i = 0; i < arr.length;i++) {
-					barr[i] = (float) arr[i];
-				}
-				return barr;
-			} else if(type.equals("boolean")) {
-				Boolean[] arr = (Boolean[]) Arrays.stream(content.split(",")).map(mapping.get(type)).toArray();
-				boolean[] barr = new boolean[arr.length];
-				for(int i = 0; i < arr.length;i++) {
-					barr[i] = arr[i].booleanValue();
-				}
-				return barr;
-			} else {
-				throw new IllegalArgumentException("No valid datatype: "+ type);
-				//return null;
-			}
-	}
-	
-	/**
-	 * Generates an Multidimensional array with the given content, dimensions and type
-	 * currently only int arrays can be multidimensional
-	 * @param c the content of the array 
-	 * @param dimensions the amount dimensions of the array
-	 * @param type the type of the underlying datatype 
-	 * @return the multidimensional array cast to Object
-	 */
-	private static Object getArray(String c, int dimensions, String type) {
-		if(dimensions == 1)
-			return get1DArray(c, type);
-
-		String content = c.substring(1, c.length()-1);
-		StringBuilder temp = new StringBuilder();
-		List<String> elements = new LinkedList<String>();
-		int brackets = 0;
-		for(int i = 0; i < content.length(); i++) {
-			if(content.charAt(i) == '{') {
-				if(brackets == 0) {
-					temp = new StringBuilder();
-				}
-				brackets++;
-			}
-			if(content.charAt(i) == '}') {
-				brackets--;
-				if(brackets == 0) {
-					temp.append('}');
-					elements.add(temp.toString());
-				}
-			}
-			if(brackets < 0)
-				throw new IllegalArgumentException("Invalid Brackets at Array input: "+c);
-			temp.append(content.charAt(i));
-		}
-		Object array;
-		int[] i = {0};
-		if (type.equals("int")) {
-			if(dimensions == 2) {
-				array = new int[elements.size()][];
-				elements.stream().forEach(e -> {((int[][])array)[i[0]++] = (int[])getArray(e,dimensions-1,type);});
-			} else if(dimensions == 3) {
-				array = new int[elements.size()][][];
-				elements.stream().forEach(e -> {((int[][][])array)[i[0]++] = (int[][])getArray(e,dimensions-1,type);});
-			} else if(dimensions == 4) {
-				array = new int[elements.size()][][][];
-				elements.stream().forEach(e -> {((int[][][][])array)[i[0]++] = (int[][][])getArray(e,dimensions-1,type);});
-			}else {
-				throw new IllegalArgumentException("Arrays with more than 4 dimensions are currently not allowed, feel free to add them in the function DynamicTester.getArray");
-			}
-		}else {
-			throw new IllegalArgumentException("Type: "+type+"not currently implemented");
-		}
-		
-		return array;//elements.stream().map(s -> getArray(s, dimensions-1, type)).toArray();
-		
-	}
-	/**
-	//Does not work as it creates Wrapper[] which are unable to be casted
-	//the depth is saved at index 0 of the depth array
-	private static Object getArray(String c, int[] depth, String type) {
-		List<String> elements = new LinkedList<String>();
-		String content = c.substring(1, c.length()-1);
-		StringBuilder temp = new StringBuilder();
-		int brackets = 0;
-		for(int i = 0; i < content.length(); i++) {
-			if(content.charAt(i) == '{') {
-				if(brackets == 0) {
-					temp = new StringBuilder();
-				}
-				brackets++;
-			}
-			if(content.charAt(i) == '}') {
-				brackets--;
-				if(brackets == 0) {
-					temp.append('}');
-					elements.add(temp.toString());
-				}
-			}
-			if(brackets < 0)
-				throw new IllegalArgumentException("Invalid Brackets at Array input: "+c);
-			temp.append(content.charAt(i));
-		}
-		depth[0]++;//Increase depth
-		if(elements.size() == 0) {//Contains only "primitives"
-			switch(type) { //Oneliners simple
-				case "int": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
-				case "long": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToLong(i -> ((Long)i).longValue()).toArray();
-				case "double": return Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
-				case "String": return content.split(",");
-				default: break;
-			}
-			if(type.equals("byte") || type.equals("short")) {
-				int[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
-				if (type.equals("byte")) {
-					byte[] barr = new byte[arr.length];
-					for(int i = 0; i < arr.length;i++) {
-						barr[i] = (byte) arr[i];
-					}
-					return barr;
-				} else {
-					short[] barr = new short[arr.length];
-					for(int i = 0; i < arr.length;i++) {
-						barr[i] = (short) arr[i];
-					}
-					return barr;
-				}
-			} else if(type.equals("float")) {
-				double[] arr = Arrays.stream(content.split(",")).map(mapping.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
-				float[] barr = new float[arr.length];
-				for(int i = 0; i < arr.length;i++) {
-					barr[i] = (float) arr[i];
-				}
-				return barr;
-			} else if(type.equals("boolean")) {
-				Boolean[] arr = (Boolean[]) Arrays.stream(content.split(",")).map(mapping.get(type)).toArray();
-				boolean[] barr = new boolean[arr.length];
-				for(int i = 0; i < arr.length;i++) {
-					barr[i] = arr[i].booleanValue();
-				}
-				return barr;
-			} else {
-				throw new IllegalArgumentException("No valid datatype: "+ type);
-				//return null;
-			}
-		}
-		
-		depth[0] -= elements.size()-1;	//So that only one of the elements increases the depth
-		
-		return elements.stream().map(s -> getArray(s, depth, type)).toArray();
+	public record Result(DynamicTestcase testcase, boolean succesfull, Object expectedResult, Object gottenResult, String expectedOutput, String gottenOutput){}
+	@Override
+	public List<Testcase> getTestcases() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
-	*/
-	public record Result(String method, Object expectedResult, Object gottenResult, String expectedOutput, String gottenOutput){}
+	@Override
+	public void addTestcase(Testcase test) {
+		this.testcases.add(DynamicTestcase.toDynamicTestcase(test));
+		
+	}
+
+	@Override
+	public void addTestcases(Testcase... testcases) {
+		for(Testcase t : testcases ) {
+			addTestcase(t);
+		}
+	}
+
+	@Override
+	public List<Pair<String, Integer>> runAllTestcases() {
+		try {
+			return runAndAnalyzeTestcases().stream().map(p -> 
+			new Pair<String, Integer>(p.second(), 
+					p.first().succesfull? p.first().testcase().score : 0 )).toList();
+		} catch (MethodNotFoundException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }

@@ -5,8 +5,8 @@ package main;
  */
 public interface Testcase {
 	/**
-	 * Tests the current testcase and returns an String result and and score (Points to be awarded/removed
-	 * @return A Pair of the textual result and the corresponding score
+	 * Returns the testcase and score (Points to be awarded/removed) of the testcase
+	 * @return A Pair of the testcase and the corresponding score
 	 */
-	public Pair<String, Integer> test();
+	public Pair<String, Integer> testcase();
 }
