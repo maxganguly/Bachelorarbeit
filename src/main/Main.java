@@ -36,7 +36,7 @@ public class Main {
     		System.out.println(result);
     	}
     	
-    	/*
+    	//*
     	Path path = Paths.get(input);
         String result = "";
         ASTTree tree = null;
@@ -58,8 +58,9 @@ public class Main {
         	System.err.println("Given file <"+ input +"> does not exist");
         	return;
         }
-        ASTTree cases = ASTTree.getFromPath(Paths.get(output));
+        //ASTTree cases = ASTTree.getFromPath(Paths.get(output));
         System.out.println(printToFile(Paths.get(output), tree.toString()));
+        /*
         System.out.println(printToFile(Paths.get(output), cases.toString()));
         
         ASTTree rebuilt = new ASTTree(tree.toString());
@@ -78,6 +79,7 @@ public class Main {
         	i++;
         }
         }
+        
         
         System.out.println(meth[0].equals(meth[0]));
         System.out.println(meth[1].equals(meth[1]));

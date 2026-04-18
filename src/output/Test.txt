@@ -1,20 +1,31 @@
 <class="Test">
-
     <method="condition(boolean)">
+        <head>
+            <var="con" type="boolean">
+            </var>
+        </head>
         <block>
             <if>
+                <head>
+                    <var="con">
+                    </var>
+                </head>
+                <then>
+                    <var="con">
+                    </var>
+                </then>
                 <else>
+                    <var="con">
+                    </var>
                 </else>
             </if>
         </block>
     </method>
-    
-    <method="condition(boolean)">
-                    <var="con">
-                    </var>
-    </method>
-    
     <method="main(String[])">
+        <head>
+            <var="args" type="String[]">
+            </var>
+        </head>
         <block>
             <mc="System.out.println">
                 <lit>[[Beginning]]</lit>
@@ -157,6 +168,10 @@
         </block>
     </method>
     <method="calc1(int)">
+        <head>
+            <var="x" type="int">
+            </var>
+        </head>
         <block>
             <var="y" type="int">
                 <binary="PLUS">
@@ -198,7 +213,34 @@
         </block>
     </method>
     <method="calc2(int)">
+        <head>
+            <var="a" type="int">
+            </var>
+        </head>
         <block>
+            <if>
+                <head>
+                    <binary="GREATER_THAN">
+                        <mc="Math.random">
+                        </mc>
+                        <lit>[[0.5]]</lit>
+                    </binary>
+                </head>
+                <then>
+                    <binary="GREATER_THAN">
+                        <mc="Math.random">
+                        </mc>
+                        <lit>[[0.5]]</lit>
+                    </binary>
+                </then>
+                <else>
+                    <binary="GREATER_THAN">
+                        <mc="Math.random">
+                        </mc>
+                        <lit>[[0.5]]</lit>
+                    </binary>
+                </else>
+            </if>
             <if>
                 <head>
                     <binary="GREATER_THAN">
@@ -229,6 +271,10 @@
         </block>
     </method>
     <method="calc3(int)">
+        <head>
+            <var="a" type="int">
+            </var>
+        </head>
         <block>
             <var="sum" type="int">
                 <var="a">
@@ -295,6 +341,10 @@
         </block>
     </method>
     <method="calc4(int)">
+        <head>
+            <var="a" type="int">
+            </var>
+        </head>
         <block>
             <var="sum" type="int">
                 <var="a">
@@ -357,6 +407,178 @@
             <return>
                 <var="sum">
                 </var>
+            </return>
+        </block>
+    </method>
+    <method="calc5(int,int)">
+        <head>
+            <var="a" type="int">
+            </var>
+            <var="b" type="int">
+            </var>
+        </head>
+        <block>
+            <return>
+                <binary="DIVIDE">
+                    <binary="MULTIPLY">
+                        <var="a">
+                        </var>
+                        <var="b">
+                        </var>
+                    </binary>
+                    <binary="PLUS">
+                        <var="a">
+                        </var>
+                        <var="b">
+                        </var>
+                    </binary>
+                </binary>
+            </return>
+        </block>
+    </method>
+    <method="sum(int[])">
+        <head>
+            <var="a" type="int[]">
+            </var>
+        </head>
+        <block>
+            <return>
+                <mc="Arrays.stream(a).sum">
+                </mc>
+            </return>
+        </block>
+    </method>
+    <method="print(float)">
+        <head>
+            <var="c" type="float">
+            </var>
+        </head>
+        <block>
+            <mc="System.out.println">
+                <binary="PLUS">
+                    <lit>[[float: ]]</lit>
+                    <var="c">
+                    </var>
+                </binary>
+            </mc>
+        </block>
+    </method>
+    <method="dimensions(int[][])">
+        <head>
+            <var="arr" type="int[][]">
+            </var>
+        </head>
+        <block>
+            <return>
+                <array="int">
+                    <dimensions>
+                    </dimensions>
+                    <var="arr">
+                    </var>
+                    <lit>[[0]]</lit>
+                    <initializer>
+                    </initializer>
+                </array>
+            </return>
+        </block>
+    </method>
+    <method="random()">
+        <head>
+        </head>
+        <block>
+            <if>
+                <head>
+                    <binary="GREATER_THAN">
+                        <mc="Math.random">
+                        </mc>
+                        <lit>[[0.9]]</lit>
+                    </binary>
+                </head>
+                <then>
+                    <binary="GREATER_THAN">
+                        <mc="Math.random">
+                        </mc>
+                        <lit>[[0.9]]</lit>
+                    </binary>
+                </then>
+                <else>
+                    <binary="GREATER_THAN">
+                        <mc="Math.random">
+                        </mc>
+                        <lit>[[0.9]]</lit>
+                    </binary>
+                </else>
+            </if>
+            <var="a" type="int[]">
+                <array="int">
+                    <cast="int">
+                        <binary="MULTIPLY">
+                            <mc="Math.random">
+                            </mc>
+                            <lit>[[11]]</lit>
+                        </binary>
+                    </cast>
+                    <dimensions>
+                    </dimensions>
+                </array>
+            </var>
+            <forloop>
+                <head>
+                    <init>
+                        <var="i" type="int">
+                            <lit>[[0]]</lit>
+                        </var>
+                    </init>
+                    <condition>
+                        <binary="LESS_THAN">
+                            <var="i">
+                            </var>
+                            <var="a">
+                            </var>
+                        </binary>
+                    </condition>
+                    <update>
+                        <unary>
+                            <var="i">
+                            </var>
+                        </unary>
+                    </update>
+                </head>
+                <body>
+                    <block>
+                        <assign="a[i]">
+                            <cast="int">
+                                <binary="MULTIPLY">
+                                    <mc="Math.random">
+                                    </mc>
+                                    <lit>[[100]]</lit>
+                                </binary>
+                            </cast>
+                        </assign>
+                    </block>
+                </body>
+            </forloop>
+            <return>
+                <var="a">
+                </var>
+            </return>
+        </block>
+    </method>
+    <method="sum(int[][][])">
+        <head>
+            <var="s" type="int[][][]">
+            </var>
+        </head>
+        <block>
+            <return>
+                <binary="PLUS">
+                    <binary="PLUS">
+                        <var="s">
+                        </var>
+                        <lit>[[0]]</lit>
+                    </binary>
+                    <lit>[[0]]</lit>
+                </binary>
             </return>
         </block>
     </method>

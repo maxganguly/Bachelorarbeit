@@ -40,6 +40,11 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		ASTTree result = new ASTTree("method", node.getName().toString() +
 				node.getParameters().stream().sequential().map(t -> (t.getType().toString())).collect(Collectors.joining(",","(",")")),
 				null ,		p);
+		ASTTree head = new ASTTree("head", null, null, result);
+		result.children.add(head);
+		for (Tree t : node.getParameters()) {
+			head.children.add(t.accept(this, head));
+		}
 		result.children.add(node.getBody().accept(this, result));
 		return result;// + super.visitMethod(node, p);
 		//return super.visitMethod(node, p);
@@ -49,7 +54,8 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public ASTTree visitVariable(VariableTree node, ASTTree p) {
 		debugOutput(node);
 		ASTTree result = new ASTTree("var", node.getName(), node.getType(), p);
-		result.children.add(node.getInitializer().accept(this, result));
+		if(node.getInitializer() != null)
+			result.children.add(node.getInitializer().accept(this, result));
 		return result;
 		}
 
@@ -313,7 +319,7 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 			}
 			result.children.add(head);
 		}
-		if(node.getDimensions() != null) {
+		if(node.getDimensions() != null && node.getInitializers() != null) {
 			ASTTree head = new ASTTree("initializer", null, null, result);
 			for (Tree t : node.getInitializers()) {
 				result.children.add(t.accept(this, result));
