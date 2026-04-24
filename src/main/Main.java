@@ -24,24 +24,29 @@ public class Main {
     	
     	//*
     	String input = "src/testfiles/Test.java";
+    	String input2 = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
-    	String changed = "src/output/Testcases.txt";
+    	String output2 = "src/output/Test2.txt";
+    	String output3 = "src/output/Test3.txt";
     	String testcases = "src/testfiles/testcases.txt";
     	Executor e1 = new Executor(input, "Test");
     	Executor e2 = new Executor(input, "Test");
     	int[][][] arr = new int[][][] {{{1,2},{3,4}},{{5,6},{7,8}}};
     	Tester dt = new DynamicTester(e1, e2, testcases);
     	List<Pair<String,Integer>> results = dt.runAllTestcases();
+    	int score = 0;
     	for(Pair<String, Integer> result: results) {
-    		System.out.println(result);
+    		if(!result.first().endsWith("successfull"))
+    			System.out.println(result);
+    		score += result.second();
     	}
-    	
+    	System.out.println("Score: "+ score);
     	//*
-    	Path path = Paths.get(input);
+    	Path path = Paths.get(input2);
         String result = "";
         ASTTree tree = null;
         if (path.toFile().exists()) {
-        if (input.endsWith(".java")) {
+        if (input2.endsWith(".java")) {
             try {
                 // check for ++i and --i pattern and report
             	//result = generateASTText(path);
@@ -51,15 +56,16 @@ public class Main {
                 System.err.printf("parsing failed for %s : %s\n", path.toAbsolutePath().toString(), exc);
             }
         }else {
-        	System.err.println("Given file <"+ input +"> is not a Java file");
+        	System.err.println("Given file <"+ input2 +"> is not a Java file");
         	return;
         }
         } else {
-        	System.err.println("Given file <"+ input +"> does not exist");
+        	System.err.println("Given file <"+ input2 +"> does not exist");
         	return;
         }
         //ASTTree cases = ASTTree.getFromPath(Paths.get(output));
-        System.out.println(printToFile(Paths.get(output), tree.toString()));
+        printToFile(Paths.get(output2), tree.toString());
+        printToFile(Paths.get(output3), tree.generalize().toString());
         /*
         System.out.println(printToFile(Paths.get(output), cases.toString()));
         

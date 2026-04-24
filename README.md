@@ -6,24 +6,27 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 + [ ] Prototyp AST
   + [x] AST Generation
   + [x] AST Vergleich
+    + [ ] Add Grouping, ordering (ordered, unordered) and comparision modi (none,all,any)
     + [ ] Generate Testcases
     + [ ] Error messages 
     + [ ] Score tests
-+ [ ] Prototyp strongest Postcondition
-  + [ ] SP berechnen
-    + [ ] Side effects?
-  + [ ] Generate Testcases
++ [ ] MC/DC generate Coverage testcases
++ [ ] Mutation Testing to check coverages
 + [ ] Dynamic Execution
   + [x] Run Methods dynamically
-  + [ ] Run Testcases
+  + [x] Run Testcases
     + [x] Validate (True/False)
-    + [ ] Evaluate (What went wrong)
-  + [ ] Score Testcases
+    + [x] Evaluate (What went wrong)
+  + [x] Score Testcases
 + [ ] Testcases
-  + [ ] Geberalize Testcases
+  + [x] Generalize Testcases
   + [ ] evaluate multiple static&dynamic testcases
 
-+ [ ] Document all currently available Code
++ [x] Document all currently available Code
++ [ ] Evaluation Output
++ [ ] Simple Input
+  + [ ] Multiple Tests to read in 
+
 + [ ] Papers Lesen
 
 
@@ -45,8 +48,6 @@ Momentan können nur bis zu 4-dimensionale Arrays eingelesen und bis zu 3-dimens
 Die Generation eines AST wird durch [ASTScannerText.java](./src/main/ASTScannerText.java) und [ASTTreeScanner.java](./src/main/ASTTreeScanner.java) definiert. Einige Tags werden nicht generiert da diese für diesen Kurs und daher die Überprüfung nicht erforderlich sind.
 
 Folgende Teile werden nicht in den AST übernommen:
-
- 
 
 | Tagname                                                      | Grund des Ausschlusses                                       |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |

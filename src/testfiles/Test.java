@@ -90,10 +90,6 @@ public class Test {
 		return (a*b)/(a+b);
 	}
 	
-	public static int sum(int[] a) {
-		return Arrays.stream(a).sum();
-	}
-	
 	public static void print(float c) {
 		System.out.println("float: " + c);
 	}
@@ -114,5 +110,9 @@ public class Test {
 	
 	public static int sum(int[][][] s) {
 		return s.length + s[0].length + s[0][0].length;
+	}
+	
+	public static int sum(int[] arr) {
+		return Arrays.stream(arr).sum();
 	}
 }

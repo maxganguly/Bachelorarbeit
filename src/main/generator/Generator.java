@@ -1,5 +1,7 @@
 package main.generator;
 
+import java.util.List;
+
 public interface Generator {
-	main.Testcase[] generateTestcases();
+	List<main.Testcase> generateTestcases();
 }

@@ -14,12 +14,34 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 			return r2;
 		if(r2==null)
 			return r1;
-		return super.reduce(r1, r2);
+		ASTTree t = new ASTTree();
+		t.children.add(r1);
+		t.children.add(r2);
+		return t;
 	}
 	
 	@Override
 	public ASTTree visitCompilationUnit(CompilationUnitTree node, ASTTree p) {
-		return super.visitCompilationUnit(node, p);
+		
+		ASTTree r = new ASTTree("file", null, null, p);
+		ASTTree temp = scan(node.getImports(), r);
+		if(temp != null)
+		r.children.add(temp);
+		temp = scan(node.getTypeDecls(), r);
+		if(temp != null)
+			r.children.add(temp);
+		temp = scan(node.getModule(), r);
+		if(temp != null)
+			r.children.add(temp);
+		return r;
+	}
+
+	
+	@Override
+	public ASTTree visitImport(ImportTree node, ASTTree p) {
+		debugOutput(node);
+		ASTTree result = new ASTTree("import", node.getQualifiedIdentifier().toString(), null, p);
+		return result;
 	}
 	
 	@Override
@@ -315,15 +337,17 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		if(node.getDimensions() != null) {
 			ASTTree head = new ASTTree("dimensions", null, null, result);
 			for (Tree t : node.getDimensions()) {
-				result.children.add(t.accept(this, result));
+				head.children.add(t.accept(this, head));
 			}
+			if(head.children.size()>0)
 			result.children.add(head);
 		}
 		if(node.getDimensions() != null && node.getInitializers() != null) {
 			ASTTree head = new ASTTree("initializer", null, null, result);
 			for (Tree t : node.getInitializers()) {
-				result.children.add(t.accept(this, result));
+				head.children.add(t.accept(this, head));
 			}
+			if(head.children.size()>0)
 			result.children.add(head);
 		}
 		return result;
@@ -395,6 +419,17 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		result.children.add(node.getExpression().accept(this, result));
 		return result;
 	}
+	
+	@Override
+	public ASTTree visitArrayAccess(ArrayAccessTree node, ASTTree p) {
+		debugOutput(node);
+		
+		ASTTree result = node.getExpression().accept(this, p);//new ASTTree("arrayaccess", node.getExpression(), node.getKind(), p);
+		ASTTree index = new ASTTree("index", null, null, result);
+		result.children.add(index);
+		index.children.add(node.getIndex().accept(this, index));
+		return result;
+		}
 
 	@SuppressWarnings("unused")
 	private static void debugOutput(ASTTree output) {

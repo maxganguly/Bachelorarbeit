@@ -11,6 +11,7 @@ import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
+import main.Data;
 import main.Main;
 
 import javax.tools.JavaFileObject;
@@ -86,7 +87,7 @@ public class Executor {
 			}
 		}
 		if(os != null)
-			System.setOut(Main.SYSOUT);
+			System.setOut(Data.SYSOUT);
 		if(ran == false)
 			throw new MethodNotFoundException(methodname);
 		return ret;

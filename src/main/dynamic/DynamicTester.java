@@ -12,12 +12,9 @@ import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 
-import main.Main;
+import main.Data;
 import main.Pair;
 import main.Testcase;
 
@@ -31,16 +28,7 @@ public class DynamicTester implements main.Tester{
 	List<DynamicTestcase> testcases;
 	PrintStream ps;
 	BufferedReader br;
-	static final Map<String, Function<String, Object>> mapping = Map.of(
-			"byte", s -> Byte.valueOf(s.trim()),
-			"short", s -> Short.valueOf(s.trim()),
-			"char", s -> Character.valueOf(s.charAt(0)),
-			"int", s -> Integer.valueOf(s.trim()),
-			"float", s -> Float.valueOf(s.trim()),
-			"long", s -> Long.valueOf(s.trim()),
-			"double", s -> Double.valueOf(s.trim()),
-			"boolean", s -> Boolean.valueOf(s.trim()),
-			"String", s -> s);
+	
 	static final Set<Class<?>> primitives = Set.of(
 			byte[].class,
 			short[].class,
@@ -129,7 +117,7 @@ public class DynamicTester implements main.Tester{
 			}
 		}
 		
-		System.setOut(Main.SYSOUT);
+		System.setOut(Data.SYSOUT);
 		return results;
 	}
 	
