@@ -168,6 +168,22 @@
                         </block>
                     </finally>
                 </block>
+                <mc="calc1">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc2">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc3">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc4">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc5">
+                    <lit>[[1]]</lit>
+                    <lit>[[2]]</lit>
+                </mc>
             </block>
         </method>
         <method="calc1(int)">

@@ -1,19 +1,22 @@
 package main.generator;
 
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import jdk.jshell.spi.ExecutionControl.NotImplementedException;
 import main.Data;
 import main.Pair;
 import main.Testcase;
 import main.ast.ASTTree;
+import main.dynamic.DynamicTestcase;
 
-public class MCDCTestcaseGenerator implements Generator {
+public class MCDCTestcaseGenerator implements Generator<DynamicTestcase> {
 
 	private ASTTree tree;
-	private List<Testcase> testcases;
+	private List<DynamicTestcase> testcases;
 	private String[] methods;
 	
 	/**
@@ -39,8 +42,8 @@ public class MCDCTestcaseGenerator implements Generator {
 	 * @param methodname the name of the method for which the testcases should be generated
 	 * @return a Set of Testcases for the method
 	 */
-	public static List<Testcase> generateTestcases(ASTTree tree, String methodsignature, String preconditions) {
-		List<Testcase> cases = new LinkedList<Testcase>();
+	public static List<DynamicTestcase> generateTestcases(ASTTree tree, String methodsignature, String preconditions) {
+		List<DynamicTestcase> cases = new LinkedList<DynamicTestcase>();
 		List<Pair<String,Class>> parameters = new LinkedList<Pair<String,Class>>();
 		List<ASTTree> methods = tree.getTreesWithTag("methode").stream().filter(a -> a.name.equals(methodsignature)).collect(Collectors.toList());
 		if(methods.size() == 0) {
@@ -76,18 +79,30 @@ public class MCDCTestcaseGenerator implements Generator {
 	
 	
 	@Override
-	public List<Testcase> generateTestcases() {
+	public List<DynamicTestcase> generateTestcases() {
 		//Caching but the List is mutable
 		/*
 		if(testcases != null)
 			return testcases;
 		*/
-		this.testcases = new LinkedList<Testcase>();
+		this.testcases = new LinkedList<DynamicTestcase>();
 		List<ASTTree> methods = tree.getTreesWithTag("method");
 		for(ASTTree t : methods) {
 			testcases.addAll(generateTestcases(t,t.name, ""));
 		}
 		return this.testcases;
+	}
+
+	@Override
+	public boolean saveToDirectory(Path pathToDirectory) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public List<DynamicTestcase> loadFromDirectory(Path pathToDirectory) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

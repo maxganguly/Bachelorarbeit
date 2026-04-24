@@ -40,6 +40,11 @@ public class Test {
 		}finally {
 			System.out.println("Whack");
 		}
+		calc1(12);
+		calc2(12);
+		calc3(12);
+		calc4(12);
+		calc5(1,2);
 	}
 	
 	public static int calc1(int x) {

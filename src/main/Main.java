@@ -66,6 +66,18 @@ public class Main {
         //ASTTree cases = ASTTree.getFromPath(Paths.get(output));
         printToFile(Paths.get(output2), tree.toString());
         printToFile(Paths.get(output3), tree.generalize().toString());
+        System.out.println(tree.toString().equals(ASTTree.getFromPath(Paths.get(output2)).toString()));
+        ASTTestGenerator atg = new ASTTestGenerator(tree);
+        var astTestcases = atg.generateTestcases();
+        ASTTester at = new ASTTester(tree);
+        at.addTestcases(astTestcases);
+        results = at.runAllTestcases();
+        for(Pair<String, Integer> result1: results) {
+    		if(!result1.first().endsWith("successfull"))
+    			System.out.println(result1);
+    		score += result1.second();
+    	}
+    	System.out.println("Score: "+ score);
         /*
         System.out.println(printToFile(Paths.get(output), cases.toString()));
         

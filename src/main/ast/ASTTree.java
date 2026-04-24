@@ -46,7 +46,13 @@ public class ASTTree {
 	public final String tag;
 	public final String name;
 	public final String type;
+	/**
+	 * default UNORDERED
+	 */
 	public ORDER order;
+	/**
+	 * default ALL
+	 */
 	public EVALUATION_MODE eval_mode;
 	public final ASTTree parent;
 	public final List<ASTTree> children;
@@ -54,7 +60,9 @@ public class ASTTree {
 	public final static Set<String> GENERALIZE_TO_LOOP = Set.of(new String[] { "forloop", "loop", "while", "dowhile" });
 	public final static Set<String> GENERALIZE_KEEP_NAMES = Set.of(new String[] { "lit", "mc", "import", "method" });
 	public final static Set<String> REMOVE_FROM_GENERALIZE = Set
-			.of(new String[] { "unary", "var", "assign", "binary", });
+			.of(new String[] { "unary", "var", "assign", "binary", "init", "update"});
+	public final static Set<String> PURE_STRUCTURE = Set.of(
+			"method","forloop","loop","while","dowhile","if");
 	
 
 	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children) {
@@ -65,6 +73,14 @@ public class ASTTree {
 		this.children = children;
 	}
 
+	public ASTTree(String tag, String name, String type) {
+		this.tag = tag;
+		this.name = name;
+		this.type = type;
+		this.parent = null;
+		this.children = new LinkedList<ASTTree>();
+	}
+	
 	public ASTTree(String tag, String name, String type, ASTTree parent) {
 		this.tag = tag;
 		this.name = name;
@@ -170,19 +186,19 @@ public class ASTTree {
 		String temp;
 		int j;
 		if (params.contains("type")) {
-			j = params.indexOf("type");
+			j = params.indexOf("type")+6;
 			temp = params.substring(j);
-			type = params.substring(6, params.indexOf('\"'));
+			type = params.substring(j, j+temp.indexOf('\"'));
 		}
 		if (params.contains("mode")) {
-			j = params.indexOf("mode");
+			j = params.indexOf("mode")+6;
 			temp = params.substring(j);
-			this.eval_mode = EVALUATION_MODE.fromString(params.substring(6, params.indexOf('\"')));
+			this.eval_mode = EVALUATION_MODE.fromString(params.substring(j, j+temp.indexOf('\"')));
 		}
 		if (params.contains("order")) {
-			j = params.indexOf("order");
+			j = params.indexOf("order")+7;
 			temp = params.substring(j);
-			this.order = ORDER.fromString(params.substring(7, params.indexOf('\"')));
+			this.order = ORDER.fromString(params.substring(j, j+temp.indexOf('\"')));
 		}
 		this.name = name;
 		this.type = type;
@@ -411,6 +427,8 @@ public class ASTTree {
 	}
 
 	public boolean evaluate(ASTTree evaluation) {
+		if(evaluation.tag == null || evaluation.tag.isBlank())
+			return true;
 		if (this.children.isEmpty()) {
 			if (!evaluation.children.isEmpty()) {
 				return false;
@@ -418,9 +436,10 @@ public class ASTTree {
 			return this.isAtleastAsSpecific(evaluation);
 		}
 
-		if (this.isAtleastAsSpecific(evaluation)) {
+		//if this is a filler or is at least as specific as the searched element
+		if (this.tag.equals("") || this.isAtleastAsSpecific(evaluation)) {
 			// if root type is accepted check if any child has all children of the searched
-			if (evaluation.order == null || evaluation.order == ORDER.UNORDERED) {
+			//if (evaluation.order == null || evaluation.order == ORDER.UNORDERED) {
 				
 				boolean needsOrder = (evaluation.order == ORDER.ORDERED);
 					
@@ -454,7 +473,7 @@ public class ASTTree {
 				}
 				//If all children of the evaluation node have been found return true
 				return (count_found == evaluation.children.size());
-			}
+			//}
 		} else {
 			boolean matched = true;
 			for (ASTTree a1 : this.children) {
@@ -546,6 +565,47 @@ public class ASTTree {
 		}
 		return astTree;
 	}
+	
+	public ASTTree keepOnlyStructure() {
+		return keepOnly(PURE_STRUCTURE);
+	}
+	
+	public ASTTree keepOnly(String... s) {
+		return keepOnly(Set.of(s));
+	}
+	
+	public ASTTree keepOnly(Set<String> tagsToKeep) {
+		ASTTree astTree;
+		if(tagsToKeep.contains(tag)) {
+			astTree = new ASTTree(tag, name, null, parent);
+		}else {
+			astTree = new ASTTree();
+			if(parent == null)
+				astTree = new ASTTree();
+		}
+		ASTTree temp;
+		for (ASTTree child : children) {
+			temp = child.keepOnly(tagsToKeep);
+			if (temp != null) {
+				//if this is an empty tag
+				if(temp.tag == null || temp.tag.isBlank())
+					astTree.children.addAll(temp.children);
+				else
+					astTree.children.add(temp);
+			}
+		}
+		return astTree;
+	}
+	public int depth() {
+		int d = this.tag != null?1:0;
+		if(this.children.size() == 0)
+			return d;
+		int maxd = -1;
+		for (var t : children) {
+			maxd = Math.max(maxd, t.depth());
+		}
+		return d;
+	}
 
 	/**
 	 * Generates an ASTTree based on a xml String with a given parent
@@ -555,5 +615,13 @@ public class ASTTree {
 	 */
 	public static ASTTree fromString(String source) {
 		return new ASTTree(source);
+	}
+	
+	/**
+	 * Returns an equivalent node but without the children or parents
+	 * @return
+	 */
+	public ASTTree copyNode() {
+		return new ASTTree(tag,name,type);
 	}
 }

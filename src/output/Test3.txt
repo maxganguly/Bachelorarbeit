@@ -68,15 +68,8 @@
                 </loop>
                 <loop>
                     <head>
-                        <init>
-                        </init>
                         <condition>
                         </condition>
-                        <update>
-                            <assigncomp>
-                                <lit>[[2]]</lit>
-                            </assigncomp>
-                        </update>
                     </head>
                     <body>
                         <block>
@@ -104,6 +97,22 @@
                         </block>
                     </finally>
                 </block>
+                <mc="calc1">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc2">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc3">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc4">
+                    <lit>[[12]]</lit>
+                </mc>
+                <mc="calc5">
+                    <lit>[[1]]</lit>
+                    <lit>[[2]]</lit>
+                </mc>
             </block>
         </method>
         <method="calc1(int)">
@@ -152,12 +161,8 @@
             <block>
                 <loop>
                     <head>
-                        <init>
-                        </init>
                         <condition>
                         </condition>
-                        <update>
-                        </update>
                     </head>
                     <body>
                         <block>
@@ -182,12 +187,8 @@
             <block>
                 <loop>
                     <head>
-                        <init>
-                        </init>
                         <condition>
                         </condition>
-                        <update>
-                        </update>
                     </head>
                     <body>
                         <block>
@@ -248,12 +249,8 @@
                 </if>
                 <loop>
                     <head>
-                        <init>
-                        </init>
                         <condition>
                         </condition>
-                        <update>
-                        </update>
                     </head>
                     <body>
                         <block>

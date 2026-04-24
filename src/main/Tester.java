@@ -1,5 +1,6 @@
 package main;
 
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -34,6 +35,14 @@ public abstract class Tester<E extends main.Testcase> {
 			addTestcase(t);
 		}
 	}
+
+	/**
+	 * Adds multiple Testcases to the Tester, ignores duplicates
+	 * @param testcases the testcases to be added
+	 */
+	public void addTestcases(List<E> testcases) {
+		this.testcases.addAll(testcases);
+	}
 	/**
 	 * Runs all Testcases and returns the Result as defined in the Testcase interface
 	 * @return a List of the results of all Testcases
@@ -54,7 +63,7 @@ public abstract class Tester<E extends main.Testcase> {
 	 */
 	public abstract Pair<String, Integer> test(E testcase);
 
-	
+
 
 	
 }

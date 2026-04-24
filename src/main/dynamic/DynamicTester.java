@@ -142,6 +142,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			return "Testcase: "+ test +" successfull";
 		StringBuilder sb = new StringBuilder("Testcase: ");
 		sb.append(test);
+		sb.append(" failed");
 		if(!isEqual(testcase.expectedResult,testcase.gottenResult)) {
 			sb.append(" expected: \"");
 			sb.append(toString(testcase.expectedResult));
