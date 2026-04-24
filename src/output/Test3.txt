@@ -1,8 +1,8 @@
 <file>
-    <import>
+    <import="java.util.Arrays">
     </import>
     <class>
-        <method>
+        <method="condition(boolean)">
             <head>
             </head>
             <block>
@@ -16,7 +16,7 @@
                 </if>
             </block>
         </method>
-        <method>
+        <method="main(String[])">
             <head>
             </head>
             <block>
@@ -106,7 +106,7 @@
                 </block>
             </block>
         </method>
-        <method>
+        <method="calc1(int)">
             <head>
             </head>
             <block>
@@ -122,7 +122,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="calc2(int)">
             <head>
             </head>
             <block>
@@ -146,7 +146,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="calc3(int)">
             <head>
             </head>
             <block>
@@ -176,7 +176,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="calc4(int)">
             <head>
             </head>
             <block>
@@ -206,7 +206,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="calc5(int,int)">
             <head>
             </head>
             <block>
@@ -214,7 +214,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="print(float)">
             <head>
             </head>
             <block>
@@ -222,7 +222,7 @@
                 </mc>
             </block>
         </method>
-        <method>
+        <method="dimensions(int[][])">
             <head>
             </head>
             <block>
@@ -234,7 +234,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="random()">
             <head>
             </head>
             <block>
@@ -264,7 +264,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="sum(int[][][])">
             <head>
             </head>
             <block>
@@ -272,7 +272,7 @@
                 </return>
             </block>
         </method>
-        <method>
+        <method="sum(int[])">
             <head>
             </head>
             <block>

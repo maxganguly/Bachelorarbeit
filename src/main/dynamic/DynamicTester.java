@@ -21,7 +21,7 @@ import main.Testcase;
 /**
  * 
  */
-public class DynamicTester implements main.Tester{
+public class DynamicTester extends main.Tester<DynamicTestcase>{
 
 	Executor solution, test;
 	String pathToTestcases;
@@ -316,36 +316,23 @@ public class DynamicTester implements main.Tester{
 		return sb.toString();
 	}
 	
-	
 	public record Result(DynamicTestcase testcase, boolean succesfull, Object expectedResult, Object gottenResult, String expectedOutput, String gottenOutput){}
+
 	@Override
-	public List<Testcase> getTestcases() {
+	public Pair<String, Integer> test(DynamicTestcase testcase) {
 		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void addTestcase(Testcase test) {
-		this.testcases.add(DynamicTestcase.toDynamicTestcase(test));
-		
-	}
-
-	@Override
-	public void addTestcases(Testcase... testcases) {
-		for(Testcase t : testcases ) {
-			addTestcase(t);
-		}
-	}
-
-	@Override
-	public List<Pair<String, Integer>> runAllTestcases() {
+		Result r;
 		try {
-			return runAndAnalyzeTestcases().stream().map(p -> 
-			new Pair<String, Integer>(p.second(), 
-					p.first().succesfull? p.first().testcase().score : 0 )).toList();
+			r = runTestcase(testcase);
+		} catch (IOException e) {
+			e.printStackTrace();
+			return new Pair<String,Integer>(e.toString(), -1);
 		} catch (MethodNotFoundException e) {
 			e.printStackTrace();
-			return null;
+			return new Pair<String,Integer>(e.toString(), -1);
 		}
+		String a = analyzeTestcase(r);
+		return new Pair<String, Integer>(a, 
+				r.succesfull? r.testcase().score : 0 );
 	}
 }

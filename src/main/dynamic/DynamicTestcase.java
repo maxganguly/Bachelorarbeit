@@ -9,19 +9,15 @@ import main.Data;
 import main.Pair;
 import main.Testcase;
 
-public class DynamicTestcase implements Testcase {
+public class DynamicTestcase extends Testcase {
 
-	String testcase;
 	String name;
-	int score;
 	Object returntype;
 	Object[] params;
 	
 	
 	public DynamicTestcase(String testcase) {
-		int temp = testcase.lastIndexOf(' ');
-		this.testcase = testcase.substring(0, temp);
-		this.score = Integer.parseInt(testcase.substring(temp+1));
+		super(testcase.substring(0, testcase.lastIndexOf(' ')),Integer.parseInt(testcase.substring(testcase.lastIndexOf(' ')+1)));
 		this.name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));
 		String p = testcase.substring(testcase.indexOf('(')+1, testcase.lastIndexOf(')'));
 		if(p.isBlank()) {
@@ -30,6 +26,7 @@ public class DynamicTestcase implements Testcase {
 			params = Arrays.stream(p.split(", ")).map(s -> getParam(s)).toArray();
 		String name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));
 	}
+	
 	public static DynamicTestcase toDynamicTestcase(Testcase t) {
 		if(t instanceof DynamicTestcase)
 			return (DynamicTestcase)t;
@@ -38,7 +35,7 @@ public class DynamicTestcase implements Testcase {
 	
 	@Override
 	public Pair<String, Integer> testcase() {
-		return new Pair<String, Integer>(this.testcase, this.score);
+		return new Pair<String, Integer>(super.testcase, super.score);
 	}
 	
 	

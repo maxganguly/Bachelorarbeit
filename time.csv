@@ -26,4 +26,5 @@ Datum;Dauer;Tätigkeit;Notizen
 17.04.2026;3.5;Prototyp Bauen; Interfaces für Testcases/Tester implementieren
 18.04.2026;2.0;Prototyp Bauen; MCDC umsetzung beginnen
 23.04.2026;4.0;Prototyp Bauen; AST Evaluation modi implementieren
+24.04.2026;5.0;Prototyp Bauen; AST Evaluation & Testsystem rework
 

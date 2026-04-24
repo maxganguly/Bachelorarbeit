@@ -15,47 +15,47 @@ import main.dynamic.JavaSourceFromString;
 public class ASTTree {
 	public static final String OFFSET = "    ";
 
-	public enum ORDER{
-		ORDERED,
-		UNORDERED;
-		
+	public enum ORDER {
+		ORDERED, UNORDERED;
+
 		public static ORDER fromString(String s) {
-			if(s.trim().equalsIgnoreCase("ORDERED"))
+			if (s.trim().equalsIgnoreCase("ORDERED"))
 				return ORDER.ORDERED;
-			if(s.trim().equalsIgnoreCase("UNORDERED"))
+			if (s.trim().equalsIgnoreCase("UNORDERED"))
 				return ORDER.UNORDERED;
 			return null;
 		}
 	};
-	public enum EVALUATION_MODE{
-		ALL,
-		ANY,
-		NONE,
-		OPTIONAL;//Currently optional will be ignored as it will always return true
+
+	public enum EVALUATION_MODE {
+		ALL, ANY, NONE, OPTIONAL;// Currently optional will be ignored as it will always return true
+
 		public static EVALUATION_MODE fromString(String s) {
-			if(s.trim().equalsIgnoreCase("ALL"))
+			if (s.trim().equalsIgnoreCase("ALL"))
 				return EVALUATION_MODE.ALL;
-			if(s.trim().equalsIgnoreCase("ANY"))
+			if (s.trim().equalsIgnoreCase("ANY"))
 				return EVALUATION_MODE.ANY;
-			if(s.trim().equalsIgnoreCase("NONE"))
+			if (s.trim().equalsIgnoreCase("NONE"))
 				return EVALUATION_MODE.NONE;
-			if(s.trim().equalsIgnoreCase("OPTIONAL"))
+			if (s.trim().equalsIgnoreCase("OPTIONAL"))
 				return EVALUATION_MODE.OPTIONAL;
 			return null;
 		}
 	};
+
 	public final String tag;
 	public final String name;
 	public final String type;
 	public ORDER order;
-	public EVALUATION_MODE eval_mode; 
+	public EVALUATION_MODE eval_mode;
 	public final ASTTree parent;
 	public final List<ASTTree> children;
 
 	public final static Set<String> GENERALIZE_TO_LOOP = Set.of(new String[] { "forloop", "loop", "while", "dowhile" });
 	public final static Set<String> GENERALIZE_KEEP_NAMES = Set.of(new String[] { "lit", "mc", "import", "method" });
 	public final static Set<String> REMOVE_FROM_GENERALIZE = Set
-			.of(new String[] { "unary", "var", "assign", "binary" });
+			.of(new String[] { "unary", "var", "assign", "binary", });
+	
 
 	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children) {
 		this.tag = tag;
@@ -72,6 +72,7 @@ public class ASTTree {
 		this.parent = parent;
 		this.children = new LinkedList<ASTTree>();
 	}
+
 	public ASTTree() {
 		this.tag = "";
 		this.name = "";
@@ -94,6 +95,7 @@ public class ASTTree {
 
 	/**
 	 * Generates an ASTTree from the xml in the given path
+	 * 
 	 * @param p the path of the xml file of the AST to be generated
 	 * @return an ASTTree based on the xml in the given path
 	 * @throws IOException if the file does not exist
@@ -112,22 +114,29 @@ public class ASTTree {
 	}
 
 	/**
-	 * Is the current Tree at least as specific as the given on this Node, 
-	 * Does <b>NOT</b> check the parents, children or evaluation modi  
+	 * Is the current Tree at least as specific as the given on this Node, Does
+	 * <b>NOT</b> check the parents, children or evaluation modi
+	 * 
 	 * @param tree the AST to compare to
-	 * @return true all if values written in the given tree are also in the current tree
+	 * @return true all if values written in the given tree are also in the current
+	 *         tree
 	 */
 	public boolean isAtleastAsSpecific(ASTTree tree) {
-		if(tree.tag != this.tag)
+		if (tree.tag != this.tag) {
+			if (this.GENERALIZE_TO_LOOP.contains(tree.tag) && this.tag.equalsIgnoreCase("loop")) // check if tree has been generalized																// and this has not
+				return true;
 			return false;
-		if(tree.name != null && !strEqual(tree.name, this.name)) //if not null and not the same -> false
+		}
+		if (tree.name != null && !strEqual(tree.name, this.name)) // if not null and not the same -> false
 			return false;
-		if(tree.type != null && !strEqual(tree.type, this.type)) //if not null and not the same -> false
+		if (tree.type != null && !strEqual(tree.type, this.type)) // if not null and not the same -> false
 			return false;
 		return true;
 	}
+
 	/**
 	 * Generates an ASTTree based on a xml String with a given parent
+	 * 
 	 * @param source the xml String of the Tree
 	 * @param parent the parent of the xml tree, can be null
 	 */
@@ -138,7 +147,8 @@ public class ASTTree {
 		int tagstart = source.indexOf('<');
 		int offset = tagstart / OFFSET.length();
 		int i = 0;
-		for (i = tagstart + 1; Character.isAlphabetic(source.charAt(i)); i++);
+		for (i = tagstart + 1; Character.isAlphabetic(source.charAt(i)); i++)
+			;
 		this.tag = source.substring(tagstart + 1, i);
 		if (tag.equals("lit")) {
 			name = source.substring(source.indexOf("[[") + 2, source.indexOf("]]"));
@@ -147,94 +157,94 @@ public class ASTTree {
 		}
 		String name = null;
 		String type = null;
-		
+
 		if (source.charAt(i) == '=') {
 			i += 2; // Move to the first character of the name
 			int j = i;
-			for (; source.charAt(i) != '\"'; i++);
+			for (; source.charAt(i) != '\"'; i++)
+				;
 			name = source.substring(j, i);
 			i++; // move to the whitespace after the "
 		}
 		String params = source.substring(source.indexOf('<'), source.indexOf('>'));
 		String temp;
 		int j;
-		if(params.contains("type")) {
+		if (params.contains("type")) {
 			j = params.indexOf("type");
 			temp = params.substring(j);
-			type = params.substring(6,params.indexOf('\"'));
+			type = params.substring(6, params.indexOf('\"'));
 		}
-		if(params.contains("mode")) {
+		if (params.contains("mode")) {
 			j = params.indexOf("mode");
 			temp = params.substring(j);
-			this.eval_mode = EVALUATION_MODE.fromString(params.substring(6,params.indexOf('\"')));
+			this.eval_mode = EVALUATION_MODE.fromString(params.substring(6, params.indexOf('\"')));
 		}
-		if(params.contains("order")) {
+		if (params.contains("order")) {
 			j = params.indexOf("order");
 			temp = params.substring(j);
-			this.order = ORDER.fromString(params.substring(7,params.indexOf('\"')));
+			this.order = ORDER.fromString(params.substring(7, params.indexOf('\"')));
 		}
 		this.name = name;
 		this.type = type;
 		if (source.indexOf("</" + tag + ">") == -1)
 			System.out.println("suboptimal");
-		String block = source.substring(source.indexOf("\n") + 1, findcutoff(source,tag));
+		String block = source.substring(source.indexOf("\n") + 1, findcutoff(source, tag));
 		if (block.lastIndexOf("\n") != -1) {
 			int cutoff = 0;
 			while (!block.isBlank()) {
-				//if (block.startsWith(OFFSET.repeat(offset + 1))) {
+				// if (block.startsWith(OFFSET.repeat(offset + 1))) {
 				block = block.trim();
-					ASTTree tree = new ASTTree(block, this);
-					this.children.add(tree);
-					if (tree.tag.equals("lit")) {
-						cutoff = block.indexOf("</lit>") + 7;
-					} else {
-						cutoff = findcutoff(block, tree.tag);
-					}
-					if (cutoff >= block.length())
-						return;
-					if(cutoff == -1)
-						System.out.println("Ungut");
-					block = block.substring(cutoff+3+tree.tag.length(), block.length());
-				//}
+				ASTTree tree = new ASTTree(block, this);
+				this.children.add(tree);
+				if (tree.tag.equals("lit")) {
+					cutoff = block.indexOf("</lit>") + 7;
+				} else {
+					cutoff = findcutoff(block, tree.tag);
+				}
+				if (cutoff >= block.length())
+					return;
+				if (cutoff == -1)
+					System.out.println("Ungut");
+				block = block.substring(cutoff + 3 + tree.tag.length(), block.length());
+				// }
 			}
 		}
 
 	}
-	
+
 	private int findcutoff(String block, String tag) {
 
-		int flagcounter = 0; //as is should start with none as the startflag is in the block
+		int flagcounter = 0; // as is should start with none as the startflag is in the block
 		int i = 0;
-		String startflag = "<"+tag;
-		String endflag = "</"+tag+">";
+		String startflag = "<" + tag;
+		String endflag = "</" + tag + ">";
 		int startflaglength = startflag.length();
 		int endflaglength = endflag.length();
 		String temp;
-		for(; i < block.length();i++) {
-			temp = block.substring(i,i+startflaglength);
-			if(temp.equals(startflag)) {
+		for (; i < block.length(); i++) {
+			temp = block.substring(i, i + startflaglength);
+			if (temp.equals(startflag)) {
 				flagcounter++;
 			}
-			temp = block.substring(i,i+endflaglength);
-			if(temp.equals(endflag)) {
+			temp = block.substring(i, i + endflaglength);
+			if (temp.equals(endflag)) {
 				flagcounter--;
-				if(flagcounter == 0)
+				if (flagcounter == 0)
 					return i;
 			}
 		}
-		if(i != block.length())
+		if (i != block.length())
 			return i;
 		return -1;
 		/*
-		
-		return block.indexOf("</" + tag + ">")
-				+ (OFFSET.length() * (offset + 1) + 1) // add offset length
-				+ (4 + tag.length()); // add </tag> length;
-				*/
+		 * 
+		 * return block.indexOf("</" + tag + ">") + (OFFSET.length() * (offset + 1) + 1)
+		 * // add offset length + (4 + tag.length()); // add </tag> length;
+		 */
 	}
 
 	/**
-	 * Returns an xml representation of the ASTTree 
+	 * Returns an xml representation of the ASTTree
 	 */
 	public String toString() {
 		return toString(0);
@@ -245,15 +255,14 @@ public class ASTTree {
 			return OFFSET.repeat(offset) + "<lit>[[" + name + "]]</lit>\n";
 		}
 		StringBuilder sb = new StringBuilder();
-		
-		if(tag.isEmpty()) {
+
+		if (tag.isEmpty()) {
 			for (ASTTree t : children) {
 				sb.append(t.toString(offset));
 			}
 			return sb.toString();
 		}
-		
-		
+
 		sb.append(OFFSET.repeat(offset));
 		sb.append('<' + tag);
 		if (name != null) {
@@ -277,7 +286,7 @@ public class ASTTree {
 			sb.append("\"");
 		}
 		sb.append(">\n");
-		
+
 		if (children != null && children.size() != 0)
 			for (ASTTree t : children) {
 				sb.append(t.toString(offset + 1));
@@ -288,7 +297,8 @@ public class ASTTree {
 	}
 
 	/**
-	 * Check if two strings are equal, nullsave, 
+	 * Check if two strings are equal, nullsave,
+	 * 
 	 * @param s1 first String to be compared
 	 * @param s2 second String to be compared
 	 * @return true if both are null or both are equals
@@ -304,6 +314,7 @@ public class ASTTree {
 
 	/**
 	 * Check if two ASTTrees are exactly equals
+	 * 
 	 * @param other the ASTTree to be compared with this
 	 * @return true if they are exactly equals
 	 */
@@ -328,7 +339,9 @@ public class ASTTree {
 	}
 
 	/**
-	 * Checks if the current tree contains a given ASTTree with the same parameters and general structure 
+	 * Checks if the current tree contains a given ASTTree with the same parameters
+	 * and general structure
+	 * 
 	 * @param search the other ASTTree which needs to be contained in this
 	 * @return true if it is contained
 	 */
@@ -362,7 +375,9 @@ public class ASTTree {
 	}
 
 	/**
-	 * Checks if the structure of the other is contained in this tree, only structure (xml tags) not values, types or names
+	 * Checks if the structure of the other is contained in this tree, only
+	 * structure (xml tags) not values, types or names
+	 * 
 	 * @param search the tree which needs to be conatined in this
 	 * @return true if the structure is contained in this tree
 	 */
@@ -394,38 +409,68 @@ public class ASTTree {
 		}
 		return false;
 	}
-	
+
 	public boolean evaluate(ASTTree evaluation) {
 		if (this.children.isEmpty()) {
 			if (!evaluation.children.isEmpty()) {
 				return false;
 			}
-			return strEqual(this.tag, evaluation.tag) && strEqual(this.type, evaluation.type) && strEqual(this.name, evaluation.name);
+			return this.isAtleastAsSpecific(evaluation);
 		}
-		//Evaluate all unordered
-		if (strEqual(this.tag, evaluation.tag)) {
+
+		if (this.isAtleastAsSpecific(evaluation)) {
 			// if root type is accepted check if any child has all children of the searched
-			// tree
-			for (ASTTree a1 : this.children) {
-				boolean matched = true;
-				for (ASTTree a2 : evaluation.children) {
-					if (!a1.containsStructure(a2)) {
-						matched = false;
-						break;
+			if (evaluation.order == null || evaluation.order == ORDER.UNORDERED) {
+				
+				boolean needsOrder = (evaluation.order == ORDER.ORDERED);
+					
+				// True if needs to be found else otherwise to allow simpler switching
+				int count_found = 0;
+				int last_found = -1;
+				
+				for (ASTTree a1 : evaluation.children) {
+					boolean matched = true;
+					int index = 0;
+					for (ASTTree a2 : this.children) {
+						//check if the ordering is correct in the children
+						if(needsOrder && index > last_found)
+							break;
+						// if child of searched node has been found in child of current node
+						if (a2.evaluate(a1)) {
+							matched = true;
+							last_found = index;
+							// has already matched
+							break;
+						}
+						index++;
+					}
+					if (matched) {
+						if(evaluation.eval_mode == EVALUATION_MODE.ANY)
+							return true;
+						if(evaluation.eval_mode == EVALUATION_MODE.NONE)
+							return false;
+						count_found++;
 					}
 				}
+				//If all children of the evaluation node have been found return true
+				return (count_found == evaluation.children.size());
+			}
+		} else {
+			boolean matched = true;
+			for (ASTTree a1 : this.children) {
+				matched = a1.evaluate(evaluation);
 				if (matched == true) {
 					return true;
 				}
 			}
-			return true;
-
 		}
 		return false;
 	}
 
 	/**
-	 * Returns all ASTTrees with the given tag, returns only the highest trees with the given tags
+	 * Returns all ASTTrees with the given tag, returns only the highest trees with
+	 * the given tags
+	 * 
 	 * @param tag the given tag
 	 * @return A LIst of all found trees with the tag
 	 */
@@ -440,16 +485,17 @@ public class ASTTree {
 		}
 		return ll;
 	}
-	
+
 	public String getCode() {
 		StringBuilder sb = new StringBuilder();
-		
+
 		return sb.toString();
 	}
 
 	/**
-	 * Generalizes a given Tree based on the Generalize and Remove Rules in the class 
-	 * GENERALIZE_TO_LOOP,GENERALIZE_KEEP_NAMES, REMOVE_FROM_GENERALIZE
+	 * Generalizes a given Tree based on the Generalize and Remove Rules in the
+	 * class GENERALIZE_TO_LOOP,GENERALIZE_KEEP_NAMES, REMOVE_FROM_GENERALIZE
+	 * 
 	 * @return a new ASTTree which is now generalized
 	 */
 	public ASTTree generalize() {
@@ -475,8 +521,9 @@ public class ASTTree {
 
 	/**
 	 * Generalizes a given Tree based on the Generalize and Remove rules
+	 * 
 	 * @param generalize_to the generalize Rules e.g (for -> loop)
-	 * @param remove tags to remove e.g (unary)
+	 * @param remove        tags to remove e.g (unary)
 	 * @return A new generalized ASTTree
 	 */
 	public ASTTree generalize(Map<String, String> generalize_to, Set<String> remove) {
@@ -502,6 +549,7 @@ public class ASTTree {
 
 	/**
 	 * Generates an ASTTree based on a xml String with a given parent
+	 * 
 	 * @param source the xml String of the Tree
 	 * @return a new ASTTree based on the given xml
 	 */
