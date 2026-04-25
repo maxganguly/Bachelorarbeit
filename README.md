@@ -6,17 +6,21 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 + [ ] Prototyp AST
   + [x] AST Generation
   + [x] AST Vergleich
-    + [ ] Add Grouping, ordering (ordered, unordered) and comparision modi (none,all,any)
-    + [ ] Generate Testcases
-    + [ ] Error messages 
-    + [ ] Score tests
+    + [x] Add Grouping, ordering (ordered, unordered) and comparision modi (none,all,any)
+    + [x] Generate Testcases
+      + [x] Crude
+      + [ ] Improve
+    + [x] Error messages 
+      + [ ] ?Improve
+    + [x] Score tests
 + [ ] MC/DC generate Coverage testcases
 + [ ] Mutation Testing to check coverages
-+ [ ] Dynamic Execution
++ [x] Dynamic Execution
   + [x] Run Methods dynamically
   + [x] Run Testcases
     + [x] Validate (True/False)
     + [x] Evaluate (What went wrong)
+      + [ ] ?Improve
   + [x] Score Testcases
 + [ ] Testcases
   + [x] Generalize Testcases
@@ -25,7 +29,7 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 + [x] Document all currently available Code
 + [ ] Evaluation Output
 + [ ] Simple Input
-  + [ ] Multiple Tests to read in 
+  + [x] Multiple Tests to read in 
 
 + [ ] Papers Lesen
 
@@ -57,8 +61,7 @@ Folgende Teile werden nicht in den AST übernommen:
 | visitAnyPattern, <br />visitStringTemplate                   | Preview nicht entschieden, vielleicht benötigt               |
 | visitDefaultCaseLabel, <br />visitConstantCaseLabel          | Label in diesem Ausmaß nicht erforderlich                    |
 | visitDeconstructionPattern                                   | Sollte nicht verwendet werden können da die erlaubten Klassen beschränkt sind |
-| visitArrayAccess                                             | Möglicherweise notwendig, sehr spezifisch (zu genau)         |
-| visitMemberSelect,<br />visitMemberReference                 | Nicht notwendig da kein OOP                                  |
+| visitMemberReference                                         | Nicht notwendig da kein OOP                                  |
 | visitPrimitiveType, <br />visitArrayType                     | Sollte bereits in Variable definiert sein                    |
 | visitParameterizedType,<br />visitUnionType<br />,visitIntersectionType<br />visitTypeParameter, <br />visitWildcard | Es werden keine Generischen Klassen angelegt werden müssen   |
 | visitModifiers                                               | Es werden keine neuen Klassen angelegt werden sollen         |

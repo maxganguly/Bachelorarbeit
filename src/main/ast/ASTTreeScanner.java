@@ -3,6 +3,7 @@ package main.ast;
 import java.util.stream.Collectors;
 
 import com.sun.source.tree.*;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreeScanner;
 
 public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
@@ -268,10 +269,10 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		head.children.add(node.getCondition().accept(this, head));
 		result.children.add(head);
 		ASTTree then = new ASTTree("then", null, null, result);
-		then.children.add(node.getCondition().accept(this, then));
+		then.children.add(node.getThenStatement().accept(this, then));
 		result.children.add(then);
 		ASTTree otherwise = new ASTTree("else", null, null, result);
-		otherwise.children.add(node.getCondition().accept(this, otherwise));
+		otherwise.children.add(node.getThenStatement().accept(this, otherwise));
 		result.children.add(otherwise);
 		return result;
 	}
@@ -323,6 +324,10 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public ASTTree visitMethodInvocation(MethodInvocationTree node, ASTTree p) {
 		debugOutput(node);
 		//TODO: fix the parameter display
+		ExpressionTree et = node.getMethodSelect();
+		if(et.getKind() == Kind.MEMBER_SELECT)
+			return visitMemberSelect((MemberSelectTree) et, p);
+		String name = node.getMethodSelect().toString();
 		ASTTree result = new ASTTree("mc", node.getMethodSelect(), null, p);
 		for (Tree t : node.getArguments()) {
 			result.children.add(t.accept(this, result));
@@ -430,6 +435,15 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		index.children.add(node.getIndex().accept(this, index));
 		return result;
 		}
+	
+	@Override
+	public ASTTree visitMemberSelect(MemberSelectTree node, ASTTree p) {
+		debugOutput(node);
+		ASTTree result = new ASTTree("mc",node.getIdentifier().toString(),null);
+		result.children.add(node.getExpression().accept(this, result));
+		return result;
+		//return super.visitMemberSelect(node, p);
+	}
 
 	@SuppressWarnings("unused")
 	private static void debugOutput(ASTTree output) {

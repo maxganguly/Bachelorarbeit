@@ -21,8 +21,15 @@ public class Main {
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
     	//*/ 
-    	
-    	//*
+    	Path input = Path.of("src/testfiles/Test2.java");
+    	Path outputTestcases = Path.of("src/testcases");
+    	ASTTree tree = loadFromPath(input);
+    	if(tree == null)
+    		return;
+    	ASTTestGenerator atg = new ASTTestGenerator(tree);
+    	atg.generateTestcases();
+    	atg.saveToDirectory(outputTestcases);
+    	/*
     	String input = "src/testfiles/Test.java";
     	String input2 = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
@@ -45,24 +52,7 @@ public class Main {
     	Path path = Paths.get(input2);
         String result = "";
         ASTTree tree = null;
-        if (path.toFile().exists()) {
-        if (input2.endsWith(".java")) {
-            try {
-                // check for ++i and --i pattern and report
-            	//result = generateASTText(path);
-                tree = generateAST(path).getFirst();
-            } catch (IOException exc) {
-                // report parse failures and continue scanning other files
-                System.err.printf("parsing failed for %s : %s\n", path.toAbsolutePath().toString(), exc);
-            }
-        }else {
-        	System.err.println("Given file <"+ input2 +"> is not a Java file");
-        	return;
-        }
-        } else {
-        	System.err.println("Given file <"+ input2 +"> does not exist");
-        	return;
-        }
+       
         //ASTTree cases = ASTTree.getFromPath(Paths.get(output));
         printToFile(Paths.get(output2), tree.toString());
         printToFile(Paths.get(output3), tree.generalize().toString());
@@ -141,7 +131,8 @@ public class Main {
      */
     public static boolean printToFile(Path file, String content) {
     	try {
-			Files.write(file, content.getBytes());
+    		Files.createDirectories(file.getParent());
+			Files.write(file, content.getBytes(), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING);
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -238,4 +229,24 @@ public class Main {
     public static String getFromPath(String p) throws IOException {
 		return getFromPath(Path.of(p));
 	}
+    
+    public static ASTTree loadFromPath(Path p) {
+        if (p.toFile().exists()) {
+    	 if (p.getFileName().toString().endsWith(".java")) {
+             try {
+                 // check for ++i and --i pattern and report
+             	//result = generateASTText(path);
+                 return generateAST(p).getFirst();
+             } catch (IOException exc) {
+                 // report parse failures and continue scanning other files
+                 System.err.printf("parsing failed for %s : %s\n", p.toAbsolutePath().toString(), exc);
+             }
+         }else {
+         	System.err.println("Given file <"+ p +"> is not a Java file");
+         }
+         } else {
+         	System.err.println("Given file <"+ p +"> does not exist");
+         }
+		return null;
+    }
 }

@@ -9,12 +9,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import main.dynamic.JavaSourceFromString;
 
 public class ASTTree {
 	public static final String OFFSET = "    ";
 
+	public static final ASTTree LOOP = new ASTTree("<loop></loop>");
+	
 	public enum ORDER {
 		ORDERED, UNORDERED;
 
@@ -64,39 +67,69 @@ public class ASTTree {
 	public final static Set<String> PURE_STRUCTURE = Set.of(
 			"method","forloop","loop","while","dowhile","if");
 	
-
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 * @param parent
+	 * @param children
+	 */
 	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children) {
+		this(tag,name,type,parent,children,null,null);
+	}
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 * @param parent
+	 * @param children
+	 * @param order
+	 * @param eval_mode
+	 */
+	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children, ORDER order, EVALUATION_MODE eval_mode) {
 		this.tag = tag;
 		this.name = name;
 		this.type = type;
 		this.parent = parent;
 		this.children = children;
+		this.order = order;
+		this.eval_mode = eval_mode;
 	}
 
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 */
 	public ASTTree(String tag, String name, String type) {
-		this.tag = tag;
-		this.name = name;
-		this.type = type;
-		this.parent = null;
-		this.children = new LinkedList<ASTTree>();
+		this(tag, name, type, null, new LinkedList<ASTTree>());
 	}
-	
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 * @param parent
+	 */
 	public ASTTree(String tag, String name, String type, ASTTree parent) {
-		this.tag = tag;
-		this.name = name;
-		this.type = type;
-		this.parent = parent;
-		this.children = new LinkedList<ASTTree>();
+		this(tag, name, type, parent, new LinkedList<ASTTree>());
 	}
-
+	/**
+	 * 
+	 */
 	public ASTTree() {
-		this.tag = "";
-		this.name = "";
-		this.type = "";
-		this.parent = null;
-		this.children = new LinkedList<ASTTree>();
+		this("","","");
 	}
-
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 * @param parent
+	 */
 	public ASTTree(Object tag, Object name, Object type, ASTTree parent) {
 		this.tag = tag != null ? tag.toString() : null;
 		this.name = name != null ? name.toString() : null;
@@ -104,7 +137,10 @@ public class ASTTree {
 		this.parent = parent;
 		this.children = new LinkedList<ASTTree>();
 	}
-
+	/**
+	 * 
+	 * @param source
+	 */
 	public ASTTree(String source) {
 		this(source, null);
 	}
@@ -272,7 +308,7 @@ public class ASTTree {
 		}
 		StringBuilder sb = new StringBuilder();
 
-		if (tag.isEmpty()) {
+		if (tag == null || tag.isEmpty()) {
 			for (ASTTree t : children) {
 				sb.append(t.toString(offset));
 			}
@@ -281,12 +317,12 @@ public class ASTTree {
 
 		sb.append(OFFSET.repeat(offset));
 		sb.append('<' + tag);
-		if (name != null) {
+		if (name != null && !name.isBlank()) {
 			sb.append("=\"");
 			sb.append(name);
 			sb.append("\"");
 		}
-		if (type != null) {
+		if (type != null && !type.isBlank()) {
 			sb.append(" type=\"");
 			sb.append(type);
 			sb.append("\"");
@@ -575,8 +611,12 @@ public class ASTTree {
 	}
 	
 	public ASTTree keepOnly(Set<String> tagsToKeep) {
+		return keepOnly(s -> tagsToKeep.contains(s.tag));
+	}
+	
+	public ASTTree keepOnly(Predicate<ASTTree> toKeep) {
 		ASTTree astTree;
-		if(tagsToKeep.contains(tag)) {
+		if(toKeep.test(this)) {
 			astTree = new ASTTree(tag, name, null, parent);
 		}else {
 			astTree = new ASTTree();
@@ -585,7 +625,7 @@ public class ASTTree {
 		}
 		ASTTree temp;
 		for (ASTTree child : children) {
-			temp = child.keepOnly(tagsToKeep);
+			temp = child.keepOnly(toKeep);
 			if (temp != null) {
 				//if this is an empty tag
 				if(temp.tag == null || temp.tag.isBlank())
@@ -597,14 +637,14 @@ public class ASTTree {
 		return astTree;
 	}
 	public int depth() {
-		int d = this.tag != null?1:0;
+		int d = (this.tag != null && !this.tag.isBlank())?1:0;
 		if(this.children.size() == 0)
 			return d;
-		int maxd = -1;
+		int maxd = 0;
 		for (var t : children) {
 			maxd = Math.max(maxd, t.depth());
 		}
-		return d;
+		return d+maxd;
 	}
 
 	/**

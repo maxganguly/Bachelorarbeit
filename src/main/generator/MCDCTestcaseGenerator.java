@@ -13,7 +13,7 @@ import main.Testcase;
 import main.ast.ASTTree;
 import main.dynamic.DynamicTestcase;
 
-public class MCDCTestcaseGenerator implements Generator<DynamicTestcase> {
+public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 
 	private ASTTree tree;
 	private List<DynamicTestcase> testcases;

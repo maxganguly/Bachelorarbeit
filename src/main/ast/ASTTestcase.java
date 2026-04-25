@@ -1,5 +1,8 @@
 package main.ast;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import main.Testcase;
 
 public class ASTTestcase extends Testcase {
