@@ -3,16 +3,17 @@ package main;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
+
 import javax.tools.*;
 import com.sun.source.util.*;
 import main.ast.*;
-import main.dynamic.DynamicTester;
-import main.dynamic.DynamicTester.Result;
 import main.dynamic.Executor;
-import testfiles.Test;
 
 public class Main {
 	public static final PrintStream SYSOUT = System.out;
+	public static final boolean DEBUG = false;
+	public static final String PROPERTIESPATH = "./autograder.properties";
+	public static final Properties p = loadProperties();
 	
     public static void main(String[] args) throws Exception {
         // a single argument that is directory from which .java sources are scanned.
@@ -21,15 +22,33 @@ public class Main {
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
     	//*/ 
-    	Path input = Path.of("src/testfiles/Test2.java");
+    	/*
+    	Path input = Path.of("src/testfiles/Test.java");
     	Path outputTestcases = Path.of("src/testcases");
     	ASTTree tree = loadFromPath(input);
     	if(tree == null)
     		return;
+    	
     	ASTTestGenerator atg = new ASTTestGenerator(tree);
     	atg.generateTestcases();
     	atg.saveToDirectory(outputTestcases);
+    	
+    	*/
+    	
+    	long startTime = System.currentTimeMillis();
+    	long endTime = System.currentTimeMillis();        
+        System.out.println("executed in " + (endTime - startTime) + "ms");
+    	System.out.println(getUsedMem());
+    	startTime = System.currentTimeMillis();
+    	Test t = new Test();
+    	t.writeToResults();
+    	endTime = System.currentTimeMillis();
+        System.out.println("executed in " + (endTime - startTime) + "ms");
+    	System.out.println(getUsedMem());
     	/*
+    	MCDCTestcaseGenerator mtg = new MCDCTestcaseGenerator(tree);
+    	mtg.generateTestcases();
+    	
     	String input = "src/testfiles/Test.java";
     	String input2 = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
@@ -48,76 +67,7 @@ public class Main {
     		score += result.second();
     	}
     	System.out.println("Score: "+ score);
-    	//*
-    	Path path = Paths.get(input2);
-        String result = "";
-        ASTTree tree = null;
-       
-        //ASTTree cases = ASTTree.getFromPath(Paths.get(output));
-        printToFile(Paths.get(output2), tree.toString());
-        printToFile(Paths.get(output3), tree.generalize().toString());
-        System.out.println(tree.toString().equals(ASTTree.getFromPath(Paths.get(output2)).toString()));
-        ASTTestGenerator atg = new ASTTestGenerator(tree);
-        var astTestcases = atg.generateTestcases();
-        ASTTester at = new ASTTester(tree);
-        at.addTestcases(astTestcases);
-        results = at.runAllTestcases();
-        for(Pair<String, Integer> result1: results) {
-    		if(!result1.first().endsWith("successfull"))
-    			System.out.println(result1);
-    		score += result1.second();
-    	}
-    	System.out.println("Score: "+ score);
-        /*
-        System.out.println(printToFile(Paths.get(output), cases.toString()));
-        
-        ASTTree rebuilt = new ASTTree(tree.toString());
-        System.out.println(tree.equals(tree));
-        System.out.println(rebuilt.equals(tree));
-        System.out.println(tree.equals(rebuilt));
-        List<ASTTree> methods = tree.getTreesWithTag("method");
-        ASTTree[] meth = new ASTTree[methods.size()];
-        methods.toArray(meth);
-        ASTTree[] general = new ASTTree[methods.size()];
-        {
-        int i = 0;
-        for(ASTTree t : meth) {
-        	System.out.println(meth[i].name);
-        	general[i] = meth[i].generalize();
-        	i++;
-        }
-        }
-        
-        
-        System.out.println(meth[0].equals(meth[0]));
-        System.out.println(meth[1].equals(meth[1]));
-        System.out.println(meth[2].equals(meth[2]));
-        System.out.println("Contains exact");
-        System.out.println(meth[1].containsExact(meth[1]));
-        System.out.println(meth[2].containsExact(meth[2]));
-        System.out.println(meth[2].containsExact(meth[1]));
-        System.out.println(meth[1].containsExact(meth[2]));
-        System.out.println("Contains structure");
-        System.out.println(meth[1].containsStructure(meth[1]));
-        System.out.println(meth[2].containsStructure(meth[2]));
-        System.out.println(meth[2].containsStructure(meth[1]));
-        System.out.println(meth[1].containsStructure(meth[2]));
-        System.out.println("Generalized contains structure");
-        System.out.println(meth[1].containsStructure(general[1]));
-        System.out.println(meth[2].containsStructure(general[2]));
-        System.out.println(meth[3].containsStructure(general[3]));
-        System.out.println(meth[4].containsStructure(general[4]));
-        System.out.println(general[1].containsStructure(meth[1]));
-        System.out.println(general[2].containsStructure(meth[2]));
-        System.out.println(general[3].containsStructure(meth[3]));
-        System.out.println(general[4].containsStructure(meth[4]));
-        System.out.println("Contains exact");
-        System.out.println(general[1].containsExact(meth[1]));
-        System.out.println(general[2].containsExact(meth[2]));
-        System.out.println(general[2].containsExact(meth[1]));
-        System.out.println(general[1].containsExact(meth[2]));
-        System.out.println(meth[2].containsExact(general[1]));
-        System.out.println(meth[1].containsExact(general[2]));
+    	
         //*/
         
     }
@@ -127,9 +77,12 @@ public class Main {
      * Prints the stacktrace to the error if it fails
      * @param file the Path to the file to be written to
      * @param content the content to be written in the file
+     * @param should the file be overwritten if it already exists
      * @return true if the writing succeeded, false if it failed
      */
-    public static boolean printToFile(Path file, String content) {
+    public static boolean printToFile(Path file, String content, boolean overwriteIfExists) {
+    	if(Files.exists(file)&&!overwriteIfExists)
+    		return true;
     	try {
     		Files.createDirectories(file.getParent());
 			Files.write(file, content.getBytes(), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING);
@@ -147,11 +100,8 @@ public class Main {
     private static int getJavaMajorVersion() {
         return Runtime.version().feature();
     }
-
     private static final List<String> OPTIONS = 
         List.of("--enable-preview", "--release=" + getJavaMajorVersion());
-
-    // get the system java compiler instance
     private static final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
     
@@ -217,6 +167,7 @@ public class Main {
 			sb.append(System.lineSeparator());
 			line = br.readLine();
 		}
+		br.close();
 		return sb.toString();
 	}
 
@@ -249,4 +200,42 @@ public class Main {
          }
 		return null;
     }
+    
+    public static void debug(String msg) {
+    	if(DEBUG)
+    		System.err.println(msg);
+    }
+    
+    
+    
+    public static Properties loadProperties() {
+		Properties p = new Properties();
+    	if(Files.exists(Path.of(PROPERTIESPATH))) {
+        	try {
+				p.load(new FileReader(PROPERTIESPATH));
+	        	return p;
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
+    	p.setProperty("Testcases", "./testcases");
+    	p.setProperty("SolutionInputDir", "./solution");
+    	p.setProperty("ToTestInputDirs", "./test");
+    	p.setProperty("ResultOutputDir", "./results/");
+    	p.setProperty("PrintAllTests", "True");
+    	p.setProperty("SaveTestcases", "True");
+    	try {
+			p.store(new FileWriter(PROPERTIESPATH), "Properties for the Autograder");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	return p;
+    }
+    
+    private static String getUsedMem() {
+        final long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        long m = (mem/1024)%1024;
+        return (m/1024)+"MB " + (m) + "KB";
+    }
+    
 }

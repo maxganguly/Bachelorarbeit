@@ -24,7 +24,6 @@ public class DynamicTestcase extends Testcase {
 			params = null;
 		}else
 			params = Arrays.stream(p.split(", ")).map(s -> getParam(s)).toArray();
-		String name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));
 	}
 	
 	public static DynamicTestcase toDynamicTestcase(Testcase t) {
@@ -38,6 +37,9 @@ public class DynamicTestcase extends Testcase {
 		return new Pair<String, Integer>(super.testcase, super.score);
 	}
 	
+	public String toString() {
+		return super.testcase + " " + super.score;
+	}
 	
 	/**
 	 * Gets the Parameter from String
@@ -168,6 +170,10 @@ public class DynamicTestcase extends Testcase {
 		
 		return array;//elements.stream().map(s -> getArray(s, dimensions-1, type)).toArray();
 		
+	}
+	
+	public String getMethodName() {
+		return this.name;
 	}
 
 }

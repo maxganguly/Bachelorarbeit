@@ -35,6 +35,7 @@ public abstract class Tester<E extends main.Testcase> {
 			addTestcase(t);
 		}
 	}
+	
 
 	/**
 	 * Adds multiple Testcases to the Tester, ignores duplicates
@@ -63,7 +64,19 @@ public abstract class Tester<E extends main.Testcase> {
 	 */
 	public abstract Pair<String, Integer> test(E testcase);
 
-
+	/**
+	 * Runs a all given testcase on the given File
+	 * @param p the path to the file to be tested
+	 * @return The Results  (Message, Evaluated_Score)
+	 */
+	public abstract List<Pair<String, Integer>> runAllTestcases(Path p);
+	/**
+	 * Runs a single given testcase on the given File
+	 * @param p the path to the file to be tested
+	 * @param testcase the testcase to test
+	 * @return The Results  (Message, Evaluated_Score)
+	 */
+	public abstract Pair<String, Integer> test(Path p, E testcase);
 
 	
 }

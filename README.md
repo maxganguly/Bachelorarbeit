@@ -1,5 +1,5 @@
 # Bachelorarbeit
-Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentieren
+Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentieren.
 
 ### TODO
 
@@ -22,18 +22,44 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
     + [x] Evaluate (What went wrong)
       + [ ] ?Improve
   + [x] Score Testcases
-+ [ ] Testcases
++ [x] Testcases
   + [x] Generalize Testcases
-  + [ ] evaluate multiple static&dynamic testcases
-
+  + [x] evaluate multiple static&dynamic testcases
 + [x] Document all currently available Code
 + [ ] Evaluation Output
-+ [ ] Simple Input
-  + [x] Multiple Tests to read in 
-
++ [x] Simple Input
++ [x] Multiple Tests to read in 
 + [ ] Papers Lesen
 
+## Struktur
 
+In dem File autograder.properties 
+
+### Autograder.properties
+
++ PrintAllTests=True
+
+  Sollen die Resultate aller Tests (successfull|failed) ausgegeben werden oder nur die fehlgeschlagenen
+
++ ResultOutputDir=./results/
+
+  Ordner in welchem die Resultate der Tests geschrieben werden
+
++ SaveTestcases=True
+
+  Sollen die generierten Testcases persistent gespeichert werden.
+
++ SolutionInputDir=./solution
+
+  src Verzeichnis der Musterlösung
+
++ Testcases=./testcases
+
+  Verzeichnis in welchen die Testfälle abgespeichert werden
+
++ ToTestInputDirs=./test
+
+  Verzeichnis aller zu überprüfenden Abgaben. Erwartet den Namen `Matrikelnummer_<Name unterteilt mit _ >` oder `Matrikelnummer_<Name unterteilt mit _ >`
 
 ### Overleaf
 

@@ -5,7 +5,9 @@ import java.util.stream.Collectors;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 
+@Deprecated
 public class ASTScannerText extends TreeScanner<String, Integer> {
+	/*
 	public static final String OFFSET = "    ";
 	public static final boolean DEBUG = false;
 	public static final boolean ALWAYSDISPLAYVARIABLES = true;
@@ -663,5 +665,5 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 		if(DEBUG)
 			System.out.println(output.getKind().toString());
 	}
-
+	*/
 }

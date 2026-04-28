@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import main.dynamic.JavaSourceFromString;
@@ -174,14 +175,15 @@ public class ASTTree {
 	 *         tree
 	 */
 	public boolean isAtleastAsSpecific(ASTTree tree) {
-		if (tree.tag != this.tag) {
-			if (this.GENERALIZE_TO_LOOP.contains(tree.tag) && this.tag.equalsIgnoreCase("loop")) // check if tree has been generalized																// and this has not
+		if (!strEqual(tree.tag,this.tag)) {
+			if (//GENERALIZE_TO_LOOP.contains(tree.tag) && this.tag.equalsIgnoreCase("loop") ||
+					GENERALIZE_TO_LOOP.contains(this.tag) && tree.tag.equalsIgnoreCase("loop")) // check if tree has been generalized																// and this has not
 				return true;
 			return false;
 		}
-		if (tree.name != null && !strEqual(tree.name, this.name)) // if not null and not the same -> false
+		if (this.type !=null && !strEqual(tree.type, this.type)) // if not null and not the same -> false
 			return false;
-		if (tree.type != null && !strEqual(tree.type, this.type)) // if not null and not the same -> false
+		if (this.name !=null && !strEqual(tree.name, this.name)) // if not null and not the same -> false
 			return false;
 		return true;
 	}
@@ -197,10 +199,8 @@ public class ASTTree {
 		this.parent = null;
 		this.children = new LinkedList<ASTTree>();
 		int tagstart = source.indexOf('<');
-		int offset = tagstart / OFFSET.length();
 		int i = 0;
-		for (i = tagstart + 1; Character.isAlphabetic(source.charAt(i)); i++)
-			;
+		for (i = tagstart + 1; Character.isAlphabetic(source.charAt(i)); i++);
 		this.tag = source.substring(tagstart + 1, i);
 		if (tag.equals("lit")) {
 			name = source.substring(source.indexOf("[[") + 2, source.indexOf("]]"));
@@ -473,7 +473,7 @@ public class ASTTree {
 		}
 
 		//if this is a filler or is at least as specific as the searched element
-		if (this.tag.equals("") || this.isAtleastAsSpecific(evaluation)) {
+		if (evaluation.tag == null || evaluation.tag.equals("") || this.isAtleastAsSpecific(evaluation)) {
 			// if root type is accepted check if any child has all children of the searched
 			//if (evaluation.order == null || evaluation.order == ORDER.UNORDERED) {
 				
@@ -484,8 +484,9 @@ public class ASTTree {
 				int last_found = -1;
 				
 				for (ASTTree a1 : evaluation.children) {
-					boolean matched = true;
+					boolean matched = false;
 					int index = 0;
+					this.children.remove(null);
 					for (ASTTree a2 : this.children) {
 						//check if the ordering is correct in the children
 						if(needsOrder && index > last_found)
@@ -511,10 +512,16 @@ public class ASTTree {
 				return (count_found == evaluation.children.size());
 			//}
 		} else {
-			boolean matched = true;
+			boolean matched = false;
+			this.children.remove(null);//Somewhere null is added to the children
 			for (ASTTree a1 : this.children) {
+				if(a1 == null) {
+					continue;
+				}
 				matched = a1.evaluate(evaluation);
 				if (matched == true) {
+					if(evaluation.eval_mode == EVALUATION_MODE.NONE)
+						return false;
 					return true;
 				}
 			}
@@ -541,9 +548,21 @@ public class ASTTree {
 		return ll;
 	}
 
+	/**
+	 * Returns an equivalent code 
+	 * @return
+	 */
 	public String getCode() {
+		if(this.tag == null || this.tag.isBlank())
+			return "";
+		if(this.tag.equals("lit"))
+			return name;
 		StringBuilder sb = new StringBuilder();
-
+		if(this.tag.equals("var")) {
+			if(this.children.isEmpty())
+				return ((this.type != null)?type + " ":"")+ this.name;
+			sb.append(this.type + " " + this.name);
+		}
 		return sb.toString();
 	}
 
@@ -663,5 +682,19 @@ public class ASTTree {
 	 */
 	public ASTTree copyNode() {
 		return new ASTTree(tag,name,type);
+	}
+	
+	public void walk(Consumer<ASTTree> consumer) {
+		consumer.accept(this);
+		for(ASTTree child : this.children) {
+			child.walk(consumer);
+		}
+	}
+	public void walkBack(Consumer<ASTTree> consumer) {
+		for(ASTTree child : this.children) {
+			child.walk(consumer);
+		}
+		consumer.accept(this);
+
 	}
 }

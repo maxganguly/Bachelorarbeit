@@ -10,21 +10,23 @@ import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import main.Data;
 import main.Pair;
-import main.Testcase;
 
 /**
  * 
  */
 public class DynamicTester extends main.Tester<DynamicTestcase>{
 
+	boolean cacheTestcases;
+	Map<DynamicTestcase,Pair<Object,String>> cache;
 	Executor solution, test;
-	String pathToTestcases;
 	List<DynamicTestcase> testcases;
 	PrintStream ps;
 	BufferedReader br;
@@ -38,10 +40,12 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			double[].class,
 			char[].class,
 			boolean[].class);
-	public DynamicTester(Executor solution, Executor test, String path) {
-		this.pathToTestcases = path;
+	
+	public DynamicTester(Executor solution, Executor test) {
 		this.solution = solution;
 		this.test = test;
+		this.cacheTestcases = true;
+		this.cache = new HashMap<DynamicTestcase,Pair<Object,String>>();
 		try {
 			PipedInputStream pis = new PipedInputStream();
 			PipedOutputStream pos = new PipedOutputStream(pis);
@@ -53,8 +57,13 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			e.printStackTrace();
 		}
 		testcases = new LinkedList<DynamicTestcase>();
+	}
+	public DynamicTester(Executor solution, Executor test, String path) {
+		this(solution, test);
+		if( path == null || path.isBlank())
+			return;
 		try {
-			BufferedReader br = new BufferedReader(new FileReader(Path.of(pathToTestcases).toAbsolutePath().toString()));
+			BufferedReader br = new BufferedReader(new FileReader(Path.of(path).toAbsolutePath().toString()));
 			while(br.ready()) {
 				String line = br.readLine();
 				testcases.add(new DynamicTestcase(line));
@@ -66,11 +75,12 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	}
 	
 	public DynamicTester(Executor solution, Executor test, String path, PrintStream ps, BufferedReader br) {
-		this.pathToTestcases = path;
+		this.cacheTestcases = true;
 		this.solution = solution;
 		this.test = test;
 		this.ps = ps;
 		this.br = br;
+		this.cache = new HashMap<DynamicTestcase,Pair<Object,String>>();
 	}
 	
 	/**
@@ -103,7 +113,6 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	 */
 	@SuppressWarnings("resource")
 	public List<Result> runTestcases(boolean ignoreMethodNotFound) throws MethodNotFoundException {
-		BufferedReader br;
 		List<Result> results = new LinkedList<DynamicTester.Result>();
 		if(ps != null)
 		System.setOut(ps);
@@ -291,9 +300,19 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		String outTest;
 		boolean ranSolution = false;
 		try {
-			returnSolution = solution.runMethod(testcase.name, testcase.params);
-			outSolution = readall();
-			ranSolution = true;
+			if(this.cacheTestcases) {
+				if(this.cache.keySet().contains(testcase)) {
+					var p = this.cache.get(testcase);
+					returnSolution = p.first();
+					outSolution = p.second();
+					ranSolution = true;
+				}else {
+					returnSolution = solution.runMethod(testcase.name, testcase.params);
+					outSolution = readall();
+					ranSolution = true;
+					this.cache.put(testcase, new Pair<Object,String>(returnSolution,outSolution));	
+				}
+			}
 			returnTest = test.runMethod(testcase.name, testcase.params);
 			outTest = readall();
 		} catch (MethodNotFoundException mnfe ) {
@@ -336,4 +355,41 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		return new Pair<String, Integer>(a, 
 				r.succesfull? r.testcase().score : 0 );
 	}
+	public boolean isCacheTestcases() {
+		return cacheTestcases;
+	}
+	public void setCacheTestcases(boolean cacheTestcases) {
+		this.cacheTestcases = cacheTestcases;
+	}
+	public Executor getSolution() {
+		return solution;
+	}
+	public void setSolution(Executor solution) {
+		this.solution = solution;
+		this.cache = new HashMap<DynamicTestcase,Pair<Object,String>>();
+	}
+	public Executor getTest() {
+		return test;
+	}
+	public void setTest(Executor test) {
+		this.test = test;
+	}
+	@Override
+	public List<Pair<String, Integer>> runAllTestcases(Path p) {
+		Executor temp = this.test;
+		this.test = new Executor(p);
+		var result = runAllTestcases();
+		this.test = temp;
+		return result;
+	}
+	@Override
+	public Pair<String, Integer> test(Path p, DynamicTestcase testcase) {
+		Executor temp = this.test;
+		this.test = new Executor(p);
+		var result = test(testcase);
+		this.test = temp;
+		return result;
+	}
+	
+	
 }

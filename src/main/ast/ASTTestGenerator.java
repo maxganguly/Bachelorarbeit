@@ -17,11 +17,10 @@ import main.generator.Generator;
 public class ASTTestGenerator extends Generator<ASTTestcase>{
 
 	ASTTree code;
-	List<ASTTestcase> testcases;
 	
 	public ASTTestGenerator(ASTTree code) {
+		super();
 		this.code = code;
-		this.testcases = new LinkedList<ASTTestcase>();
 	}
 	
 	@Override
@@ -46,6 +45,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 		if(methodCalls != null && methodCalls.depth() > 0) {
 			temp1 = method.copyNode();
 			temp1.children.add(methodCalls);
+			temp1.order = ASTTree.ORDER.UNORDERED;
 			list.add(new ASTTestcase(method.name+".MethodCalls", temp1, 1));
 		}
 		temp = getHighestNestedLoop(general);
@@ -96,10 +96,10 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 			String[] split = t.name.split("\\.");
 			split[split.length-1] += ":"+t.score+".ast";
 			Path p = Path.of(path, split);
-			if(!Main.printToFile(p, t.tree.toString())) {
+			if(!Main.printToFile(p, t.tree.toString(),false)) {
 				return false;
 			}
-			System.out.println("Wrote: "+t.name+" to disk");
+			Main.debug("Wrote: "+p.toString()+" to disk");
 		}
 		return true;
 	}
@@ -110,11 +110,12 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 	 */
 	public List<ASTTestcase> loadFromDirectory(Path pathToDirectory) {
 
+		String root = pathToDirectory.getFileName().toString();
 		FileVisitor<Path> files = new FileVisitor<Path>() {
 			
 			@Override
 			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-				exc.printStackTrace();
+				//exc.printStackTrace();
 				return FileVisitResult.TERMINATE;
 			}
 			
@@ -125,22 +126,24 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 					name = name.substring(0,name.lastIndexOf("."));
 					String[] elements = name.split(":");
 					if(elements.length != 2) {
-						System.err.println("The file: \""+file.getFileName().toString()+"\" does not fit the given structure of <Name>:<Score>.ast");
-						return FileVisitResult.TERMINATE;
+						main.Main.debug("The file: \""+file.getFileName().toString()+"\" does not fit the given structure of <Name>:<Score>.ast and has been skipped");
+						return FileVisitResult.CONTINUE;
 					}
-					testcases.add(new ASTTestcase(elements[0], new ASTTree(Main.getFromPath(file)), Integer.parseInt(elements[1])));
+					testcases.add(new ASTTestcase(prefix+elements[0], new ASTTree(Main.getFromPath(file)), Integer.parseInt(elements[1])));
 				}
 				return FileVisitResult.CONTINUE;
 			}
 			
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				if(!dir.equals(pathToDirectory))
 				prefix += dir.getFileName().toString()+".";
 				return FileVisitResult.CONTINUE;
 			}
 			
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				if(!dir.equals(pathToDirectory))
 				prefix = prefix.substring(0,prefix.lastIndexOf(dir.getFileName().toString()));
 				return FileVisitResult.CONTINUE;
 			}
@@ -148,7 +151,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 		try {
 			Files.walkFileTree(pathToDirectory, files);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug("File unable to be loaded");
 		}
 		return testcases;
 	}

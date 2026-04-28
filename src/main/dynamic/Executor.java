@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,15 +18,31 @@ import main.Main;
 import javax.tools.JavaFileObject;
 public class Executor {
 
-	private String pathToFile;
-	private String name;
+
 	private Class<?> clazz;
 	
 	private PrintStream os;
 	
-	public Executor(String path, String name) {
-		this.pathToFile = path;
-		this.name = name;
+	public Executor(String path) {
+		this(Path.of(path));
+	}
+	
+	public Executor(Path path) {
+		try {
+			this.clazz = getClass(Main.getFromPath(path));
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InstantiationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public Executor(Path path, String name) {
 		try {
 			this.clazz = getClass(name, Main.getFromPath(path));
 		} catch (ClassNotFoundException e) {
@@ -38,6 +55,10 @@ public class Executor {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	public Executor(String path, String name) {
+		this(Path.of(path),name);
 	}
 	
 	/**
@@ -119,6 +140,37 @@ public class Executor {
 	 */
 	public static Class<?> getClass(String name, String code) throws ClassNotFoundException, InstantiationException {
 	    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+	    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+	    InMemoryFileManager manager = new InMemoryFileManager(compiler.getStandardFileManager(null, null, null));
+
+	    List<JavaFileObject> sourceFiles = new LinkedList<JavaFileObject>();
+	    		sourceFiles.add(new JavaSourceFromString(name, code));
+
+	    JavaCompiler.CompilationTask task = compiler.getTask(null, manager, diagnostics, null, null, sourceFiles);
+
+	    boolean result = task.call();
+
+	    if (!result) {
+	        diagnostics.getDiagnostics()
+	          .forEach(d -> System.out.println(String.valueOf(d)));
+	    } 
+	        ClassLoader classLoader = manager.getClassLoader(null);
+	        Class<?> clazz = classLoader.loadClass(name);
+	        return clazz;
+	}
+	
+	/**
+	 * Generates a Class with the given NAme from the given java Code
+	 * @param name the name of the class
+	 * @param code the source code of the class
+	 * @return an inmemory compiled class
+	 * @throws ClassNotFoundException if there is no viable class in the java File
+	 * @throws InstantiationException if the class can't be instantiated/Compiler errors
+	 */
+	public static Class<?> getClass(String code) throws ClassNotFoundException, InstantiationException {
+	    String name = code.substring(code.indexOf("class")+6);
+	    name = name.substring(0,Math.min(name.indexOf(' '),name.indexOf('{')));
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 	    InMemoryFileManager manager = new InMemoryFileManager(compiler.getStandardFileManager(null, null, null));
 

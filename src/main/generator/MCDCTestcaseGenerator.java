@@ -1,15 +1,24 @@
 package main.generator;
 
+import java.io.IOException;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import jdk.jshell.spi.ExecutionControl.NotImplementedException;
 import main.Data;
+import main.Main;
 import main.Pair;
 import main.Testcase;
+import main.ast.ASTTestcase;
 import main.ast.ASTTree;
 import main.dynamic.DynamicTestcase;
 
@@ -21,7 +30,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	
 	/**
 	 * Takes the ASTTree of a class and generates MCDC Testcases for it
-	 * @param tree the Tree of the class
+	 * @param tree the ASTTree of the class
 	 */
 	public MCDCTestcaseGenerator(ASTTree tree) {
 		this.tree = tree;
@@ -29,7 +38,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	
 	/**
 	 * Takes the ASTTree of a class and generates MCDC Testcases for the methods with the given methodsignatures
-	 * @param tree the Tree of the class
+	 * @param tree the ASTTree of the class
 	 * @param strings the names of the methods mc/dc testcases should be generated
 	 */
 	public MCDCTestcaseGenerator(ASTTree tree, String... strings ) {
@@ -45,7 +54,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	public static List<DynamicTestcase> generateTestcases(ASTTree tree, String methodsignature, String preconditions) {
 		List<DynamicTestcase> cases = new LinkedList<DynamicTestcase>();
 		List<Pair<String,Class>> parameters = new LinkedList<Pair<String,Class>>();
-		List<ASTTree> methods = tree.getTreesWithTag("methode").stream().filter(a -> a.name.equals(methodsignature)).collect(Collectors.toList());
+		List<ASTTree> methods = tree.getTreesWithTag("method").stream().filter(a -> a.name.equals(methodsignature)).collect(Collectors.toList());
 		if(methods.size() == 0) {
 			System.err.println("No method found for signature: "+methodsignature);
 			return cases;
@@ -54,12 +63,10 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 				System.err.println("Multiple methods found for signature: "+methodsignature+"\n generating testcases for the first one found");
 		}
 		ASTTree method = methods.getFirst();
-		for(ASTTree child: method.children) {
-			if(child.name.equals("head")) {
-				parameters = child.children.stream().map(c -> new Pair<String,Class>(c.name, Data.STRING_TO_CLASS.get(c.type))).toList();
-				break;
-			}
-		}
+		//The parameters must be the first part of the method
+		
+		parameters = method.children.get(0).children.stream().map(c -> new Pair<String,Class>(c.name, Data.STRING_TO_CLASS.get(c.type))).toList();
+		
 		
 		return cases;
 	}
@@ -73,18 +80,16 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	 */
 	private static List<String> getConditions(ASTTree tree, Map<String,String> variables){
 		List<String> conditions = new LinkedList<String>();
-		
+		if(tree.tag.equals("assign")) {
+			StringBuilder sb = new StringBuilder();
+			
+		}
 		return conditions;
 	}
 	
 	
 	@Override
 	public List<DynamicTestcase> generateTestcases() {
-		//Caching but the List is mutable
-		/*
-		if(testcases != null)
-			return testcases;
-		*/
 		this.testcases = new LinkedList<DynamicTestcase>();
 		List<ASTTree> methods = tree.getTreesWithTag("method");
 		for(ASTTree t : methods) {
@@ -93,16 +98,66 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		return this.testcases;
 	}
 
+	
+	/**
+	 * Saves the currently generated ASTTestcases to the directory
+	 * Syntax of the saved file MCDCTestcases.dt
+	 */
 	@Override
 	public boolean saveToDirectory(Path pathToDirectory) {
-		// TODO Auto-generated method stub
-		return false;
+		Path p = Path.of(pathToDirectory.toString(), "MCDCTestcases.dt");
+		return Main.printToFile(p, 
+				String.join("\n", this.testcases.stream().map(dt -> dt.toString()).toList()),false);
 	}
-
-	@Override
+	private String prefix = "";
+	/**
+	 * Loads ASTTestcases from the directory
+	 * Syntax of the saved files *.dt
+	 */
 	public List<DynamicTestcase> loadFromDirectory(Path pathToDirectory) {
-		// TODO Auto-generated method stub
-		return null;
+
+		FileVisitor<Path> files = new FileVisitor<Path>() {
+			
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				exc.printStackTrace();
+				return FileVisitResult.TERMINATE;
+			}
+			
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				if(!attrs.isDirectory()) {
+					String name = file.getFileName().toString();
+					if(!name.endsWith(".dt")) {
+						main.Main.debug("The file: \""+file.getFileName().toString()+"\" does not fit the given structure of *.dt and has been skipped");
+						return FileVisitResult.TERMINATE;
+					}
+					String[] split = Main.getFromPath(file).split("\n");
+					for(String s:split) {
+						testcases.add(new DynamicTestcase(s));
+					}
+				}
+				return FileVisitResult.CONTINUE;
+			}
+			
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				prefix += dir.getFileName().toString()+".";
+				return FileVisitResult.CONTINUE;
+			}
+			
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				prefix = prefix.substring(0,prefix.lastIndexOf(dir.getFileName().toString()));
+				return FileVisitResult.CONTINUE;
+			}
+		};
+		try {
+			Files.walkFileTree(pathToDirectory, files);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return testcases;
 	}
 	
 	

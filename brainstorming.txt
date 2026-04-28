@@ -22,3 +22,22 @@ Weakest precondition -> Strongest postcondition -> ?Symbolic Execution? -> MC/DC
 	Maybe symbolic execution to generate edge cases
 	As we have a "ground truth" we should be able to generate edge cases by using MC/DC and Mutation Testing (Fault Injection) on it to get Testcases
 		for the fault injection, check if a injected fault results in a changed return/output if yes -> New testcase
+		
+Pseudosymbolic execution to get the MC/DC Testcases
+	run through the Program each step and keep all variables in a map
+		if a variable is given a new value inject the value into the variable
+			func(int a)
+			{a: a}
+			int x = 12;
+			{a: a,x: 12}
+			int y = 3*a;
+			{a: a,x: 12,y= 3*a}
+			x += y;
+			{a: a,x: 12+(3*a),y= 3*a}
+			y -= x;
+			{a: a,x: (12)+(3*a),y= (3*a)-(3*a)}
+				Possible optimization
+		on every condition save the condition and the negation with the current variables and branch to the next "line of code"
+			
+			
+			
