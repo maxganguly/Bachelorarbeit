@@ -61,7 +61,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 			list.add(new ASTTestcase(method.name+".Recursion", temp1, 1));
 			temp1 = method.copyNode();
 			temp1.eval_mode = ASTTree.EVALUATION_MODE.NONE;
-			temp1.children.add(ASTTree.LOOP);
+			temp1.children.add(new ASTTree("<loop></loop>"));
 			list.add(new ASTTestcase(method.name+".NoLoops", temp1, 1));
 			
 		}

@@ -16,8 +16,6 @@ import main.dynamic.JavaSourceFromString;
 
 public class ASTTree {
 	public static final String OFFSET = "    ";
-
-	public static final ASTTree LOOP = new ASTTree("<loop></loop>");
 	
 	public enum ORDER {
 		ORDERED, UNORDERED;
@@ -61,13 +59,17 @@ public class ASTTree {
 	public final ASTTree parent;
 	public final List<ASTTree> children;
 
-	public final static Set<String> GENERALIZE_TO_LOOP = Set.of(new String[] { "forloop", "loop", "while", "dowhile" });
+	public final static Set<String> GENERALIZE_TO_LOOP = Set.of(new String[] { "for", "foreach", "while", "dowhile" });
 	public final static Set<String> GENERALIZE_KEEP_NAMES = Set.of(new String[] { "lit", "mc", "import", "method" });
 	public final static Set<String> REMOVE_FROM_GENERALIZE = Set
 			.of(new String[] { "unary", "var", "assign", "binary", "init", "update"});
 	public final static Set<String> PURE_STRUCTURE = Set.of(
 			"method","forloop","loop","while","dowhile","if");
-	
+	/**
+	 * Exists only to return the original code corresponding to the ASTTree, does not exist of it has been read from xml
+	 * Maybe getCode might generate it dynamically sometime...
+	 */
+	public final String code;
 	/**
 	 * 
 	 * @param tag
@@ -77,7 +79,19 @@ public class ASTTree {
 	 * @param children
 	 */
 	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children) {
-		this(tag,name,type,parent,children,null,null);
+		this(tag,name,type,parent,children,null,null,null);
+	}
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 * @param parent
+	 * @param children
+	 * @param code
+	 */
+	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children,String code) {
+		this(tag,name,type,parent,children,null,null,code);
 	}
 	/**
 	 * 
@@ -88,8 +102,9 @@ public class ASTTree {
 	 * @param children
 	 * @param order
 	 * @param eval_mode
+	 * @param code
 	 */
-	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children, ORDER order, EVALUATION_MODE eval_mode) {
+	public ASTTree(String tag, String name, String type, ASTTree parent, List<ASTTree> children, ORDER order, EVALUATION_MODE eval_mode, String code) {
 		this.tag = tag;
 		this.name = name;
 		this.type = type;
@@ -97,6 +112,7 @@ public class ASTTree {
 		this.children = children;
 		this.order = order;
 		this.eval_mode = eval_mode;
+		this.code = code;
 	}
 
 	/**
@@ -118,6 +134,18 @@ public class ASTTree {
 	public ASTTree(String tag, String name, String type, ASTTree parent) {
 		this(tag, name, type, parent, new LinkedList<ASTTree>());
 	}
+	
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 * @param parent
+	 * @param code
+	 */
+	public ASTTree(String tag, String name, String type, ASTTree parent, String code) {
+		this(tag, name, type, parent, new LinkedList<ASTTree>(), code);
+	}
 	/**
 	 * 
 	 */
@@ -137,6 +165,23 @@ public class ASTTree {
 		this.type = type != null ? type.toString() : null;
 		this.parent = parent;
 		this.children = new LinkedList<ASTTree>();
+		this.code = null;
+	}
+	/**
+	 * 
+	 * @param tag
+	 * @param name
+	 * @param type
+	 * @param parent
+	 * @param code
+	 */
+	public ASTTree(Object tag, Object name, Object type, ASTTree parent,String code) {
+		this.tag = tag != null ? tag.toString() : null;
+		this.name = name != null ? name.toString() : null;
+		this.type = type != null ? type.toString() : null;
+		this.parent = parent;
+		this.children = new LinkedList<ASTTree>();
+		this.code = code;
 	}
 	/**
 	 * 
@@ -198,6 +243,7 @@ public class ASTTree {
 		source = source.trim();
 		this.parent = null;
 		this.children = new LinkedList<ASTTree>();
+		this.code = null;
 		int tagstart = source.indexOf('<');
 		int i = 0;
 		for (i = tagstart + 1; Character.isAlphabetic(source.charAt(i)); i++);
@@ -550,9 +596,12 @@ public class ASTTree {
 
 	/**
 	 * Returns an equivalent code 
+	 * Works only if the AST has been generated not if it has been read from xml
 	 * @return
 	 */
 	public String getCode() {
+		return this.code;
+		/*
 		if(this.tag == null || this.tag.isBlank())
 			return "";
 		if(this.tag.equals("lit"))
@@ -564,6 +613,7 @@ public class ASTTree {
 			sb.append(this.type + " " + this.name);
 		}
 		return sb.toString();
+		*/
 	}
 
 	/**

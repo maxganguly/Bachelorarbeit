@@ -14,6 +14,9 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
       + [ ] ?Improve
     + [x] Score tests
 + [ ] MC/DC generate Coverage testcases
+  + [ ] Get all Conditions
+  + [ ] Generate Testcases based on conditions
+
 + [ ] Mutation Testing to check coverages
 + [x] Dynamic Execution
   + [x] Run Methods dynamically
@@ -30,6 +33,7 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 + [x] Simple Input
 + [x] Multiple Tests to read in 
 + [ ] Papers Lesen
++ [ ] Cleanup Code
 
 ## Struktur
 

@@ -111,7 +111,6 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	 * @return A List of all Results of all Testcases
 	 * @throws MethodNotFoundException if ignoreMethodNotFound is false and the Methode of a given Testcase does not exist in the solution
 	 */
-	@SuppressWarnings("resource")
 	public List<Result> runTestcases(boolean ignoreMethodNotFound) throws MethodNotFoundException {
 		List<Result> results = new LinkedList<DynamicTester.Result>();
 		if(ps != null)

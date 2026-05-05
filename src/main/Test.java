@@ -13,15 +13,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import main.ast.ASTTestGenerator;
+import main.ast.ASTTestWrapper;
 import main.ast.ASTTester;
 
 public class Test {
 
-	private Map<String,List<? extends Tester<?>>> testers;
+	private Map<String,List<? extends AbstractTestWrapper>> testers;
 	
 	    
 	public Test() throws IOException {
-		this.testers = new HashMap<String,List<? extends Tester<?>>>();
+		this.testers = new HashMap<String,List<? extends AbstractTestWrapper>>();
 		//Get the Solution files to generate the Testcase
 		FileVisitor<Path> files = new FileVisitor<Path>() {
 
@@ -34,17 +35,9 @@ public class Test {
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				String filename = file.getFileName().toString();
 				if(filename.endsWith(".java")) {
-					var testerlist = new LinkedList<Tester<?>>();
-					var atg = new ASTTestGenerator(Main.generateAST(file).getFirst());
 					String pureName = filename.substring(0, filename.lastIndexOf('.'));
-					atg.loadFromDirectory(Path.of(Main.p.getProperty("Testcases")+"/"+pureName));
-					ASTTester t = new ASTTester();
-					t.addTestcases(atg.getTestcases());
-					testerlist.add(t);
-					if(Main.p.getProperty("SaveTestcases").equalsIgnoreCase("true")){
-						Main.debug("Saving: "+pureName);
-						atg.saveToDirectory(Path.of(Main.p.getProperty("Testcases")+"/"+pureName));
-					}
+					var testerlist = new LinkedList<AbstractTestWrapper>();
+					testerlist.add(new ASTTestWrapper(file));
 					//TODO: Add Dynamic after implementing DynamicTestcases
 					
 					testers.put(pureName, testerlist);
@@ -89,8 +82,8 @@ public class Test {
 					String pureName = filename.substring(0, filename.lastIndexOf('.'));
 					var li = this.testers.get(pureName);
 					if(li != null)	//If no tester exists for a file (Should normally not happen
-					for(Tester<?> testers: li) {
-						resultsfile.addAll(testers.runAllTestcases(p));
+					for(AbstractTestWrapper testers: li) {
+						resultsfile.addAll(testers.test(p));
 					}
 					resultsstudent.add(new Pair<String,List<Pair<String,Integer>>>(pureName,resultsfile));
 				}

@@ -22,8 +22,8 @@ public class Main {
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
     	//*/ 
-    	/*
-    	Path input = Path.of("src/testfiles/Test.java");
+    	
+    	Path input = Path.of("src/testfiles/Test2.java");
     	Path outputTestcases = Path.of("src/testcases");
     	ASTTree tree = loadFromPath(input);
     	if(tree == null)
@@ -33,7 +33,7 @@ public class Main {
     	atg.generateTestcases();
     	atg.saveToDirectory(outputTestcases);
     	
-    	*/
+    	/*
     	
     	long startTime = System.currentTimeMillis();
     	long endTime = System.currentTimeMillis();        

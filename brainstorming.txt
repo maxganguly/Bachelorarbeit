@@ -38,6 +38,16 @@ Pseudosymbolic execution to get the MC/DC Testcases
 			{a: a,x: (12)+(3*a),y= (3*a)-(3*a)}
 				Possible optimization
 		on every condition save the condition and the negation with the current variables and branch to the next "line of code"
-			
+		maybe code unroll and saved in list
+		branches müssen in die höhere Rekursionsebenen "zurückgegeben" werden
+		List<String> params(AST, vars, branches(als List for pseudoreturn) List<Map_of_vars> als parameter (Branches)
+		for(Branch b : Branches)
+			für alle statements:
+				rekursion mit branch und 
+				
+		Branches need to be saved or executed 
+		
+		Iterieren des AST iterativ oder rekursiv?
+		
 			
 			
