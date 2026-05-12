@@ -20,7 +20,7 @@ import main.Data;
 import main.Pair;
 
 /**
- * 
+ *
  */
 public class DynamicTester extends main.Tester<DynamicTestcase>{
 
@@ -30,7 +30,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	List<DynamicTestcase> testcases;
 	PrintStream ps;
 	BufferedReader br;
-	
+
 	static final Set<Class<?>> primitives = Set.of(
 			byte[].class,
 			short[].class,
@@ -40,7 +40,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			double[].class,
 			char[].class,
 			boolean[].class);
-	
+
 	public DynamicTester(Executor solution, Executor test) {
 		this.solution = solution;
 		this.test = test;
@@ -56,12 +56,13 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		testcases = new LinkedList<DynamicTestcase>();
+		testcases = new LinkedList<>();
 	}
 	public DynamicTester(Executor solution, Executor test, String path) {
 		this(solution, test);
-		if( path == null || path.isBlank())
+		if( path == null || path.isBlank()) {
 			return;
+		}
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(Path.of(path).toAbsolutePath().toString()));
 			while(br.ready()) {
@@ -73,7 +74,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			e.printStackTrace();
 		}
 	}
-	
+
 	public DynamicTester(Executor solution, Executor test, String path, PrintStream ps, BufferedReader br) {
 		this.cacheTestcases = true;
 		this.solution = solution;
@@ -82,7 +83,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		this.br = br;
 		this.cache = new HashMap<DynamicTestcase,Pair<Object,String>>();
 	}
-	
+
 	/**
 	 * Runs and Analyzes all Testcases given in the Constructor
 	 * @return A List of all Analyzed Testcases
@@ -91,7 +92,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	public List<Pair<Result,String>> runAndAnalyzeTestcases() throws MethodNotFoundException{
 		return analyzeTestcases(runTestcases(false));
 	}
-	
+
 	/**
 	 * Runs and Analyzes all Testcases given in the Constructor
 	 * @return A List of all Analyzed Testcases
@@ -104,7 +105,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			return null;
 		}
 	}
-	
+
 	/**
 	 * Runs all Testcases found in the file given in the constructor
 	 * @param ignoreMethodNotFound if the MethodNotFoundException should fail quietly
@@ -112,9 +113,10 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	 * @throws MethodNotFoundException if ignoreMethodNotFound is false and the Methode of a given Testcase does not exist in the solution
 	 */
 	public List<Result> runTestcases(boolean ignoreMethodNotFound) throws MethodNotFoundException {
-		List<Result> results = new LinkedList<DynamicTester.Result>();
-		if(ps != null)
-		System.setOut(ps);
+		List<Result> results = new LinkedList<>();
+		if(ps != null) {
+			System.setOut(ps);
+		}
 		for( DynamicTestcase dt : testcases) {
 			try {
 				results.add(runTestcase(dt));
@@ -124,11 +126,11 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 				e.printStackTrace();
 			}
 		}
-		
+
 		System.setOut(Data.SYSOUT);
 		return results;
 	}
-	
+
 	/**
 	 * Analyzes all given Results with the analyzeTestcase methode
 	 * @param testcases a List of all Results
@@ -137,17 +139,18 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	public List<Pair<Result,String>> analyzeTestcases(List<Result> testcases){
 		return testcases.stream().map(r -> new Pair<Result,String>(r,analyzeTestcase(r))).toList();
 	}
-	
+
 	/**
-	 * Retunrs a textual analyse of the given result, comparing the return value and the output 
+	 * Retunrs a textual analyse of the given result, comparing the return value and the output
 	 * @param testcase the Result of the Testcase
 	 * @return A textual analysis of the result
 	 */
 	public String analyzeTestcase(Result testcase) {
 		String test = testcase.testcase.testcase().first();
-		if(isEqual(testcase.expectedResult,testcase.gottenResult) && 
-				isEqual(testcase.expectedOutput, testcase.gottenOutput))
+		if(isEqual(testcase.expectedResult,testcase.gottenResult) &&
+				isEqual(testcase.expectedOutput, testcase.gottenOutput)) {
 			return "Testcase: "+ test +" successfull";
+		}
 		StringBuilder sb = new StringBuilder("Testcase: ");
 		sb.append(test);
 		sb.append(" failed");
@@ -166,17 +169,19 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		}
 		return sb.toString();
 	}
-	
+
 	/**
 	 * Formats a given primitive or primitive Array to String, works only up to 3 Dimensions
 	 * @param o the Object to be mate to String
 	 * @return a String representation of the given Object
 	 */
 	public String toString(Object o) {
-		if(o == null)
+		if(o == null) {
 			return "null";
-		if(o.getClass().isPrimitive())
+		}
+		if(o.getClass().isPrimitive()) {
 			return ""+o;
+		}
 		if (o.getClass().isArray()) {
 			if(isPrimitiveArray(o)) {
 				//char type = o1.getClass().getName().charAt(o1.getClass().getName().length()-1);
@@ -216,7 +221,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 				throw new IllegalArgumentException("Unexpected value: " + o.getClass().getName());
 			}
 		}
-		return o.toString(); 		
+		return o.toString();
 	}
 	/**
 	 * Checks if two objects are equals
@@ -226,12 +231,15 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	 * @return true if the Objects are equals or both are null
 	 */
 	public static boolean isEqual(Object o1, Object o2) {
-		if(o1 == null ^ o2 == null)
+		if(o1 == null ^ o2 == null) {
 			return false;
-		if(o1 == null && o2 == null)
+		}
+		if(o1 == null && o2 == null) {
 			return true;
-		if(o1.getClass() != o2.getClass())
+		}
+		if(o1.getClass() != o2.getClass()) {
 			return false;
+		}
 		if (o1.getClass().isArray()) {
 			if(isPrimitiveArray(o1)) {
 				//char type = o1.getClass().getName().charAt(o1.getClass().getName().length()-1);
@@ -274,7 +282,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		}
 		return o1.equals(o2);
 	}
-	
+
 	/**
 	 * Checks if the given Object is an Onedimensional primitive Array
 	 * @param o
@@ -283,7 +291,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	public static boolean isPrimitiveArray(Object o) {
 		return primitives.contains(o.getClass());
 	}
-	
+
 	/**
 	 * Runs a singe Testcase given as String and returns the Result
 	 * @param testcase the testcase to be run
@@ -292,7 +300,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	 * @throws MethodNotFoundException if the Method in the testcase does not exist in the solution
 	 */
 	public Result runTestcase(DynamicTestcase testcase) throws IOException, MethodNotFoundException {
-		
+
 		Object returnSolution = null;
 		String outSolution = null;
 		Object returnTest;
@@ -309,32 +317,33 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 					returnSolution = solution.runMethod(testcase.name, testcase.params);
 					outSolution = readall();
 					ranSolution = true;
-					this.cache.put(testcase, new Pair<Object,String>(returnSolution,outSolution));	
+					this.cache.put(testcase, new Pair<Object,String>(returnSolution,outSolution));
 				}
 			}
 			returnTest = test.runMethod(testcase.name, testcase.params);
 			outTest = readall();
 		} catch (MethodNotFoundException mnfe ) {
-			if(!ranSolution)
+			if(!ranSolution) {
 				throw mnfe;
+			}
 			return new Result(testcase, false, returnSolution, null, outSolution, null);
 		}
 		return new Result(testcase, isEqual(returnSolution, returnTest) && isEqual(outSolution, outTest), returnSolution, returnTest, outSolution, outTest);
 	}
-	
+
 	/**
 	 * Read all from the Buffered Reader
 	 * @return All the String currently in the BufferedReader
 	 * @throws IOException if the BufferedReader is closed or has other problems
 	 */
 	private String readall() throws IOException {
-		StringBuilder sb = new StringBuilder(); 
+		StringBuilder sb = new StringBuilder();
 		while(br.ready()) {
 			sb.append(br.readLine());
 		}
 		return sb.toString();
 	}
-	
+
 	public record Result(DynamicTestcase testcase, boolean succesfull, Object expectedResult, Object gottenResult, String expectedOutput, String gottenOutput){}
 
 	@Override
@@ -351,7 +360,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			return new Pair<String,Integer>(e.toString(), -1);
 		}
 		String a = analyzeTestcase(r);
-		return new Pair<String, Integer>(a, 
+		return new Pair<String, Integer>(a,
 				r.succesfull? r.testcase().score : 0 );
 	}
 	public boolean isCacheTestcases() {
@@ -389,6 +398,6 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		this.test = temp;
 		return result;
 	}
-	
-	
+
+
 }

@@ -14,7 +14,7 @@ public class InMemoryFileManager extends ForwardingJavaFileManager<JavaFileManag
 
     private Map<String, JavaClassAsBytes> compiledClasses;
 
-    private ClassLoader loader; 
+    private ClassLoader loader;
 
     /**
      * Generates a new InMemoryFileManager to manage the classes which will be used as files in Memory
@@ -25,8 +25,8 @@ public class InMemoryFileManager extends ForwardingJavaFileManager<JavaFileManag
         this.compiledClasses = new Hashtable<>();
         this.loader = new InMemoryClassLoader(this.getClass().getClassLoader(), this);
     }
-    
-    
+
+
     @Override
     public JavaFileObject getJavaFileForOutput(Location location,
         String className, Kind kind, FileObject sibling) {
@@ -40,10 +40,10 @@ public class InMemoryFileManager extends ForwardingJavaFileManager<JavaFileManag
     public Map<String, JavaClassAsBytes> getBytesMap() {
         return compiledClasses;
     }
-    
+
     @Override
     public ClassLoader getClassLoader(Location location) {
         return loader;
     }
-    
+
 }

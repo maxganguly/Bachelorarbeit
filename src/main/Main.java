@@ -1,42 +1,89 @@
 package main;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
-import javax.tools.*;
-import com.sun.source.util.*;
-import main.ast.*;
-import main.dynamic.Executor;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+import javax.tools.JavaCompiler;
+import javax.tools.ToolProvider;
+
+import com.sun.source.util.JavacTask;
+
+import main.ast.ASTScannerText;
+import main.ast.ASTTree;
+import main.ast.ASTTreeScanner;
+import main.generator.MCDCTestcaseGenerator;
 
 public class Main {
 	public static final PrintStream SYSOUT = System.out;
 	public static final boolean DEBUG = false;
 	public static final String PROPERTIESPATH = "./autograder.properties";
 	public static final Properties p = loadProperties();
-	
-    public static void main(String[] args) throws Exception {
+
+    public static void main(String[] args) {
         // a single argument that is directory from which .java sources are scanned.
         // If no argument supplied, use the current directory
     	/*f
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
-    	//*/ 
-    	
-    	Path input = Path.of("src/testfiles/Test2.java");
-    	Path outputTestcases = Path.of("src/testcases");
+    	//*/
+    	try {
+			printScriptEndineData();
+		} catch (ScriptException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	Path input = Path.of("testfiles/Test.java");
+    	Path outputTestcases = Path.of("testfiles/Test_conditions.txt");
     	ASTTree tree = loadFromPath(input);
-    	if(tree == null)
-    		return;
     	
+    	if(tree == null) {
+			return;
+		}
+    	printToFile(Path.of("testfiles/Test2.ast"), tree.toString(), true);
+    	/*
     	ASTTestGenerator atg = new ASTTestGenerator(tree);
     	atg.generateTestcases();
     	atg.saveToDirectory(outputTestcases);
+    	*/
     	
-    	/*
+    	MCDCTestcaseGenerator mcdc = new MCDCTestcaseGenerator(tree);
+    	List<String> methods = tree.getTreesWithTag("method").stream().map(t -> t.name).toList();
+    	StringBuilder sb = new StringBuilder();
+    	for(String method: methods) {
+    		sb.append(method);
+    		System.out.println(method);
+        	sb.append('\n');
+        	var conditions = MCDCTestcaseGenerator.generateConditions(tree, method, "", true);
+        	for(var condition: conditions) {
+        		System.out.println(condition);
+        		sb.append(condition);
+        		sb.append('\n');
+        		String test = MCDCTestcaseGenerator.evaluate(condition);
+        		System.out.println(test);
+        		sb.append(test);
+        		sb.append('\n');
+        	}
+    	}
+    		printToFile(outputTestcases, sb.toString(), true);
     	
+    	
+    /*
+
     	long startTime = System.currentTimeMillis();
-    	long endTime = System.currentTimeMillis();        
+    	long endTime = System.currentTimeMillis();
         System.out.println("executed in " + (endTime - startTime) + "ms");
     	System.out.println(getUsedMem());
     	startTime = System.currentTimeMillis();
@@ -48,7 +95,7 @@ public class Main {
     	/*
     	MCDCTestcaseGenerator mtg = new MCDCTestcaseGenerator(tree);
     	mtg.generateTestcases();
-    	
+
     	String input = "src/testfiles/Test.java";
     	String input2 = "src/testfiles/Test.java";
     	String output = "src/output/Test.txt";
@@ -67,11 +114,11 @@ public class Main {
     		score += result.second();
     	}
     	System.out.println("Score: "+ score);
-    	
+
         //*/
-        
+
     }
-    
+
     /**
      * Prints a given String to a given File, overwrites the current content of the file, creates a new if it does not exist
      * Prints the stacktrace to the error if it fails
@@ -81,8 +128,9 @@ public class Main {
      * @return true if the writing succeeded, false if it failed
      */
     public static boolean printToFile(Path file, String content, boolean overwriteIfExists) {
-    	if(Files.exists(file)&&!overwriteIfExists)
-    		return true;
+    	if(Files.exists(file)&&!overwriteIfExists) {
+			return true;
+		}
     	try {
     		Files.createDirectories(file.getParent());
 			Files.write(file, content.getBytes(), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING);
@@ -100,11 +148,11 @@ public class Main {
     private static int getJavaMajorVersion() {
         return Runtime.version().feature();
     }
-    private static final List<String> OPTIONS = 
+    private static final List<String> OPTIONS =
         List.of("--enable-preview", "--release=" + getJavaMajorVersion());
     private static final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
-    
+
     /**
      * Generates ASTTrees based on the java file given
      * @param javaSrc the Path to the java file
@@ -118,7 +166,6 @@ public class Main {
         var task = (JavacTask) compiler.getTask(null, null, null,
             OPTIONS, null, compUnits);
         var scanner = new ASTTreeScanner();
-        StringBuilder sb = new StringBuilder();
         LinkedList<ASTTree> results = new LinkedList<ASTTree>();
         for (var compUnitTree : task.parse()) {
         	results.add(compUnitTree.accept(scanner, null));
@@ -150,7 +197,7 @@ public class Main {
 
     	return sb.toString();
     }
-    
+
     /**
      * Returns all Text from the given File
      * @param p the path to the file to be read
@@ -180,7 +227,7 @@ public class Main {
     public static String getFromPath(String p) throws IOException {
 		return getFromPath(Path.of(p));
 	}
-    
+
     public static ASTTree loadFromPath(Path p) {
         if (p.toFile().exists()) {
     	 if (p.getFileName().toString().endsWith(".java")) {
@@ -200,14 +247,15 @@ public class Main {
          }
 		return null;
     }
-    
+
     public static void debug(String msg) {
-    	if(DEBUG)
-    		System.err.println(msg);
+    	if(DEBUG) {
+			System.err.println(msg);
+		}
     }
-    
-    
-    
+
+
+
     public static Properties loadProperties() {
 		Properties p = new Properties();
     	if(Files.exists(Path.of(PROPERTIESPATH))) {
@@ -231,11 +279,21 @@ public class Main {
 		}
     	return p;
     }
-    
+
     private static String getUsedMem() {
         final long mem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
         long m = (mem/1024)%1024;
         return (m/1024)+"MB " + (m) + "KB";
     }
     
+    public static void printScriptEndineData() throws ScriptException {
+        for (ScriptEngineFactory se : new ScriptEngineManager(null).getEngineFactories()) {
+            System.out.println("se = " + se.getEngineName());
+            System.out.println("se = " + se.getEngineVersion());
+            System.out.println("se = " + se.getLanguageName());
+            System.out.println("se = " + se.getLanguageVersion());
+            System.out.println("se = " + se.getNames());
+        }
+    }
+
 }

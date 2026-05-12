@@ -48,6 +48,11 @@ Pseudosymbolic execution to get the MC/DC Testcases
 		Branches need to be saved or executed 
 		
 		Iterieren des AST iterativ oder rekursiv?
-		
+			rekursiv über den baum, return Branches, parameter List<String> for getting the conditions
 			
+			für jeden Branch in der Liste der Branches
+				evaluate current statement and get newBranches
+				recursion with newBranches
+				Add new
+				
 			

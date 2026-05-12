@@ -7,18 +7,20 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import jdk.jshell.spi.ExecutionControl.NotImplementedException;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
+
 import main.Data;
 import main.Main;
 import main.Pair;
-import main.Testcase;
-import main.ast.ASTTestcase;
 import main.ast.ASTTree;
 import main.dynamic.DynamicTestcase;
 
@@ -28,14 +30,13 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	private List<DynamicTestcase> testcases;
 	private String[] methods;
 	/**
-	 * Maximum amount a loop is being recalculated to generate Testcases
-	 * minimum 1
+	 * Maximum amount a loop is being recalculated to generate Testcases minimum 1
 	 */
 	public static int loopDepth = 3;
 
 	/**
 	 * Takes the ASTTree of a class and generates MCDC Testcases for it
-	 * 
+	 *
 	 * @param tree the ASTTree of the class
 	 */
 	public MCDCTestcaseGenerator(ASTTree tree) {
@@ -45,7 +46,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	/**
 	 * Takes the ASTTree of a class and generates MCDC Testcases for the methods
 	 * with the given methodsignatures
-	 * 
+	 *
 	 * @param tree    the ASTTree of the class
 	 * @param strings the names of the methods mc/dc testcases should be generated
 	 */
@@ -55,13 +56,13 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	}
 
 	/**
-	 * Generates MC/DC Testcases for the method with the given methodsignature
-	 * 
+	 * Generates all conditions for all branches for the given methode
+	 *
 	 * @param methodname the name of the method for which the testcases should be
 	 *                   generated
-	 * @return a Set of Testcases for the method
+	 * @return a List of conditions for all branches of the methode
 	 */
-	public static List<DynamicTestcase> generateTestcases(ASTTree tree, String methodsignature, String preconditions) {
+	public static List<DynamicTestcase> generateTestcases(ASTTree tree, String methodsignature, String preconditions, boolean clean) {
 		List<Pair<String, Class<?>>> parameters = new LinkedList<Pair<String, Class<?>>>();
 		List<ASTTree> methods = tree.getTreesWithTag("method").stream().filter(a -> a.name.equals(methodsignature))
 				.collect(Collectors.toList());
@@ -76,76 +77,271 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		ASTTree method = methods.getFirst();
 		// The parameters must be the first part of the method
 
-		parameters = method.children.get(0).children.stream()
-				.map(c -> new Pair<String, Class<?>>(c.name, Data.STRING_TO_CLASS.get(c.type))).toList();
-		var variables = new HashMap<String, String>();
+		parameters = getParameters(method);
+				var variables = new HashMap<String, String>();
 		// Put all parameters in the var Map to "fix" their value to themselves
 		for (var p : parameters) {
 			variables.put(p.first(), p.first());
 		}
-		var conditions = getConditions(tree, variables, null);
-		var testcases = conditionsToTestcases(conditions);
-		return testcases;
-	}
-
-	/**
-	 * Calculates the specifics for all conditions of the given part of the program
-	 * Might not work very well with loops
-	 * 
-	 * @param tree      an ASTTree of the current program
-	 * @param variables all variables currently found in the program, parameters
-	 *                  given as names otherwise relative or absolute value
-	 * @param branches  an List to get all generated branches from the function, serves as a pseudo return value
-	 * @return
-	 */
-	private static List<String> getConditions(ASTTree tree, Map<String, String> variables, List<Map<String,String>> branches) {
 		List<String> conditions = new LinkedList<String>();
-		//List<Map<String, String>> branches = new LinkedList<Map<String,String>>();
-		//conditions while, dowhile, for foreach
-		switch(tree.tag) {
-		case "for" -> {
-			var head = tree.children.getFirst();
-			for(var t: head.children) {
-				if(t.tag.equals("init"))
-					for(var init:t.children)
-						toCode(init, variables);
-			}
-			ASTTree condition = null, update = null;
-			for(var t: head.children) {
-				if(t.tag.equals("init"))
-					for(var init:t.children)
-						toCode(init, variables);
-				if(t.tag.equals("condition"));
-					condition = t;
-				if(t.tag.equals("condition"));
-					update = t;
-				
-			}
-			var body = tree.children.get(1);
-			var m = variables;
-			var notm = m;
-			/*
-			 * Evaluate the expression and split to do the rest and do the loop
-			 * ?Copy? the vars and apply the condition walk through the body of the loop and split
-			 * 1. evaluate the rest with the current variables
-			 * 2. redo it loopDepth times
-			 */
-			for(int i = 0; i < loopDepth;i++) {
-				String expression = toCode(condition, m);
-				
-				conditions.add(expression);
-				for(var statement : body.children) {
-					conditions.addAll(getConditions(statement, variables, branches));
-				}
-			}
+		getConditions(method.children.get(1), variables, conditions);
+		if(clean) {
+			conditions = removeConstantAndDuplicateConditions(conditions);
 		}
+		System.out.println("Generated: "+conditions.size()+" conditions");
+		
+		return conditionsToTestcases(Pair.toMap(parameters), conditions, methodsignature);
+	}
+	/**
+	 * Generates all conditions for all branches for the given methode
+	 *
+	 * @param methodname the name of the method for which the testcases should be
+	 *                   generated
+	 * @return a List of conditions for all branches of the methode
+	 */
+	public static List<String> generateConditions(ASTTree tree, String methodsignature, String preconditions, boolean clean) {
+		List<Pair<String, Class<?>>> parameters = new LinkedList<Pair<String, Class<?>>>();
+		List<ASTTree> methods = tree.getTreesWithTag("method").stream().filter(a -> a.name.equals(methodsignature))
+				.collect(Collectors.toList());
+		if (methods.size() == 0) {
+			System.err.println("No method found for signature: " + methodsignature);
+			return new LinkedList<String>();
 		}
+		if (methods.size() > 1) {
+			System.err.println("Multiple methods found for signature: " + methodsignature
+					+ "\n generating testcases for the first one found");
+		}
+		ASTTree method = methods.getFirst();
+		// The parameters must be the first part of the method
+
+		parameters = getParameters(method);
+				var variables = new HashMap<String, String>();
+		// Put all parameters in the var Map to "fix" their value to themselves
+		for (var p : parameters) {
+			variables.put(p.first(), p.first());
+		}
+		List<String> conditions = new LinkedList<String>();
+		getConditions(method.children.get(1), variables, conditions);
+		if(clean) {
+			conditions = removeConstantAndDuplicateConditions(conditions);
+		}
+		System.out.println("Generated: "+conditions.size()+" conditions");
+		
 		return conditions;
 	}
+
+	public static List<Pair<String,Class<?>>> getParameters(ASTTree method){
+		return method.children.get(0).children.stream()
+				.map(c -> new Pair<String, Class<?>>(c.name, Data.STRING_TO_CLASS.get(c.type))).toList();
+		
+	}
+	/**
+	 * Calculates the specifics for all conditions of the given part of the program
+	 * Might not work very well with loops, maybe set would be more useful Does not
+	 * work with foreach, solution code should be done without foreach
+	 * 
+	 * @param tree       (your snippet of code, recursive) an ASTTree of the current
+	 *                   program
+	 * @param variables  (your branch) all variables currently found in the program,
+	 *                   parameters given as names otherwise relative or absolute
+	 *                   value
+	 * @param conditions (Pseudoreturn) a List to save all conditions found in the
+	 *                   method
+	 * @return (all newly generated branches (should contain your changed
+	 *         branch))branches an List to get all generated branches from the
+	 *         function, serves as a pseudo return value
+	 */
+	private static Set<Map<String, String>> getConditions(ASTTree tree, Map<String, String> variables,
+			List<String> conditions) {
+
+		// List<Map<String, String>> branches = new LinkedList<Map<String,String>>();
+		// conditions while, dowhile, for foreach
+		Set<Map<String, String>> branches = new HashSet<>();
+		variables = cloneMap(variables);
+		branches.add(variables);
+		switch (tree.tag) {
+		case "for" -> {
+			var head = tree.children.getFirst();
+			for (var t : head.children) {
+				if (t.tag.equals("init")) {
+					for (var init : t.children) {
+						toCode(init, variables);
+					}
+				}
+			}
+			ASTTree condition = null, update = null;
+			ASTTree init = null;
+			for (var t : head.children) {
+				if (t.tag.equals("init")) {
+					init = t;
+				}
+				if (t.tag.equals("condition")) {
+					condition = t;
+				}
+				if (t.tag.equals("update")) {
+					update = t;
+				}
+
+			}
+			var body = tree.children.get(1);
+			Set<Map<String, String>> nbranches = new HashSet<>();
+			nbranches.add(variables);
+			Set<Map<String, String>> temp = new HashSet<>(nbranches);
+			if (init != null) {
+				for (var in : init.children) {
+					toCode(in, variables);
+				}
+			}
+			for (int i = 0; i < loopDepth; i++) {
+				//Save new branches to nbranches, move nbranches to temp to work only with the newest branches
+				for(var branch : temp) {
+					String expression = toCode(condition.children.getFirst(), branch);
+					if(expression.contains(".length().length()"))
+						System.out.println("whut");
+					branches.add(branch);
+					conditions.add(expression);
+					conditions.add(negate(expression));
+					// add branches for all new conditions after the body has been executed
+					var nbr= getConditions(body, branch, conditions);
+					if (update != null) {
+						for (var u : update.children) {
+							for(var b: nbr)
+							toCode(u, b);
+						}
+					}
+					nbranches.addAll(nbr);
+				}
+				temp = new HashSet<>(nbranches);
+				branches.addAll(nbranches);
+				nbranches = new HashSet<>();
+			}
+			// finished evaluating the loop end recursion to let the higher order continue
+			// the program
+			return branches;
+			/*
+			// the first part after the head must be the body
+			var body = tree.children.get(1);
+			var m = variables;
+			for (int i = 0; i < loopDepth; i++) {
+				if (init != null) {
+					for (var in : init.children) {
+						toCode(in, m);
+					}
+				}
+				String expression = toCode(condition, m);
+				branches.add(m);
+				conditions.add(expression);
+				conditions.add(negate(expression));
+				// add branches for all new conditions after the body has been executed
+				branches.addAll(getConditions(body, m, conditions));
+				if (update != null) {
+					for (var u : update.children) {
+						toCode(u, m);
+					}
+				}
+			}
+			// finished evaluating the loop end recursion to let the higher order continue
+			// the program
+			return branches;
+			*/
+		}
+		case "while" -> {
+			var head = tree.children.getFirst();
+			ASTTree condition = null;
+			for (var t : head.children) {
+
+				if (t.tag.equals("condition")) {
+					condition = t;
+				}
+			}
+			// the first part after the head must be the body
+			var body = tree.children.get(1);
+			Set<Map<String, String>> nbranches = new HashSet<>();
+			nbranches.add(variables);
+			Set<Map<String, String>> temp = new HashSet<>(nbranches);
+			for (int i = 0; i < loopDepth; i++) {
+				//Save new branches to nbranches, move nbranches to temp to work only with the newest branches
+				
+				for(var branch : temp) {
+					String expression = toCode(condition.children.getFirst(), branch);
+					branches.add(branch);
+					conditions.add(expression);
+					conditions.add(negate(expression));
+					// add branches for all new conditions after the body has been executed
+					nbranches.addAll(getConditions(body, branch, conditions));
+				}
+				temp = new HashSet<>(nbranches);
+				branches.addAll(nbranches);
+				nbranches = new HashSet<>();
+			}
+			// finished evaluating the loop end recursion to let the higher order continue
+			// the program
+			return branches;
+		}
+		case "if" -> {
+			var head = tree.children.getFirst();
+			ASTTree condition = head.children.getFirst();
+			// the first part after the head must be the body
+			var then = tree.children.get(1);
+			var m = variables;
+			String expression = toCode(condition, m);
+			branches.add(variables);
+			conditions.add(expression);
+			conditions.add(negate(expression));
+			var el = cloneMap(m);
+			// add branches for all new conditions after the body has been executed
+			branches.addAll(getConditions(then, m, conditions));
+			// check if it has an else
+			if (tree.children.size() == 3) {
+				branches.addAll(getConditions(tree.children.get(2), el, conditions));
+			}
+			return branches;
+		}
+		case "switch" -> {
+			String expression = toCode(tree.children.getFirst().children.getFirst(), variables);
+			// for every case
+			var m = variables;
+			for (var c : tree.children.get(1).children) {
+				m = cloneMap(m);
+				String caseExpression = "(" + expression + " == " + toCode(c.children.getFirst().children.getFirst(), m)+")";				
+				conditions.add(caseExpression);
+				branches.addAll(getConditions(c.children.get(1), m, conditions));
+			}
+			return branches;
+		}
+
+		}
+		if (TOCODE_EVALUATEABLE.contains(tree.tag)) {
+			// evaluate, no need to delve deeper
+			toCode(tree, variables);
+			return branches;
+		}
+		for (var child : tree.children) {
+			// shallow copy is fine
+			var currentbranches = new HashSet<>(branches);
+			for (var branch : currentbranches) {
+				//remove previous branch as it might be changed but will be readded
+				branches.remove(branch);
+				// change the shallow to deepcopy
+				var nbranch = cloneMap(branch);
+				var nbranches = getConditions(child, nbranch, conditions);
+				branches.addAll(nbranches);
+			}
+		}
+		return branches;
+	}
 	
-	private static <X,Y> Map<X,Y> cloneMap(Map<X,Y> origin){
-		var map = new HashMap<X,Y>(origin.size());
-		for(var key: origin.keySet()) {
+	//currently does not remove 
+	public static List<String> removeConstantAndDuplicateConditions(List<String> conditions){
+		return conditions.stream().filter(
+				s -> !s.matches("([\\^|\\(| ][a-zA-Z_]+[$| |\\)|])|^[a-zA-Z_]+")
+		).distinct().toList();
+	}
+	
+
+	public static <X, Y> Map<X, Y> cloneMap(Map<X, Y> origin) {
+		var map = new HashMap<X, Y>(origin.size());
+		for (var key : origin.keySet()) {
 			map.put(key, origin.get(key));
 		}
 		return map;
@@ -153,156 +349,256 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 
 	/**
 	 * Negates a condition by checking the outermost boolean evaluation
-	 * @param condition a well formed condition in which every part is checked with parentheses
+	 *
+	 * @param condition a well formed condition in which every part is checked with
+	 *                  parentheses
 	 * @return a negation of the given condition
 	 */
-	private static String negate(String condition) {
-		if(condition.charAt(0) == '!') {
+	public static String negate(String condition) {
+		if (condition.charAt(0) == '!') {
 			return condition.substring(1);
 		}
-		String outermost= "";
+		String outermost = "";
 		int temp = 0;
 		String operator = "";
 		String left = "", right = "";
 		boolean first = true;
-		int start = 0,end =0;
+		int start = 0, end = 0;
 		int parts = 0;
-		for(int i = 0; i < condition.length();i++) {
-			if(condition.charAt(i) == '(') {
+		for (int i = 0; i < condition.length(); i++) {
+			if (condition.charAt(i) == '(') {
 				temp++;
-				if(temp == 1) {
+				if (temp == 1) {
 					end = i;
-					if(start != 0) {
-						operator = condition.substring(start,end).trim();
+					if (start != 0) {
+						operator = condition.substring(start, end).trim();
 					}
 				}
 			}
-			if(condition.charAt(i) == ')') {
+			if (condition.charAt(i) == ')') {
 				temp--;
-				if(temp == 0) {
-					start = i+1;
+				if (temp == 0) {
+					start = i + 1;
 					parts++;
-					if(first) {
+					if (first) {
 						left = condition.substring(0, start);
-					}else {
-						right =condition.substring(end, condition.length());
+					} else {
+						right = condition.substring(end, condition.length());
 					}
 				}
 			}
 		}
-		if(parts < 2)
-			return "!("+condition+")";
-		switch(operator) {
+		if (parts == 1) {
+			if (condition.charAt(0) == '(' && condition.charAt(condition.length()-1) == ')') {
+				int opind = condition.indexOf('=');
+				if(opind == -1)
+					opind = condition.indexOf('<');
+				if(opind == -1)
+					opind = condition.indexOf('>');
+				left = condition.substring(0, opind-1);
+				operator = condition.substring(opind-1, opind+2);
+				right = condition.substring(opind+2);
+			}
+		}
+		right = right.trim();
+		operator = operator.trim();
+		left = left.trim();
+		switch (operator) {
 		case "==" -> operator = "!=";
 		case "!=" -> operator = "==";
 		case "<=" -> operator = ">";
 		case ">=" -> operator = "<";
 		case "<" -> operator = ">=";
 		case ">" -> operator = "<=";
+		default -> {return "!(" + condition + ")";}
 		}
-		return left+operator+right;
-		
+		return left + ' ' + operator + ' ' + right;
+
 	}
+	
+	//private static ScriptEngine scriptEngine = new ScriptEngineManager().getEngineByName("nashorn");
+	
+	
+	
+	public static String evaluate(String expression) {
+		 StringBuilder sb = new StringBuilder();
+			String[] parts = expression.split(" ");
+			
+		 return sb.toString();
+	}
+
+	private static final Set<String> TOCODE_EVALUATEABLE = Set.of(
+			"lit", "var", "unary", "binary", "mc", "ternary", "cast", "index", "assign");
+
 	/**
-	 * Only intende to be used within a methode
-	 * only data flow not control flow <b>NO if, or loops</b>
-	 * @param tree
-	 * @param replace
-	 * @return
+	 * Only intende to be used within a methode only data flow not control flow
+	 * works with:lit, var, unary, binary, mc, ternary, cast, index, assign and block recursive
+	 * 
+	 * @param tree    the code to be truned to string
+	 * @param replace variables to be replaced
+	 * @return a String representation of the given code with the variables being
+	 *         replaced by the Map
 	 */
 	private static String toCode(ASTTree tree, Map<String, String> replace) {
 		// If nothing return empty
-		if (tree.tag == null || tree.tag.isBlank())
+		if (tree.tag == null || tree.tag.isBlank()) {
 			return "";
+		}
 		// if literal return the literal
 		if (tree.tag.equals("lit")) {
-			if (tree.tag.matches(".*[a-zA-z].*"))// It#s a string
+			if (tree.name.matches("[a-zA-z]+")) { // It#s a string
 				return '\"' + tree.name + '\"';
+			}
 			return tree.name;
 		}
-		//get type of current tree type 
-		switch(tree.tag) {
-		case "var"-> {
+		// get type of current tree type
+		switch (tree.tag) {
+		case "var" -> {
 			// Is it already known?
-			if (!replace.containsKey(tree.name))
+			if (!replace.containsKey(tree.name)) {
 				replace.put(tree.name, "");
+			}
 			// is an assignment?
 			if (!tree.children.isEmpty()) {
 				// A value is assigned
 				replace.put(tree.name, toCode(tree.children.getFirst(), replace));// is only allowed to have one child
 			}
-			if (tree.children.size() > 1)// Sanitycheck
-				System.err.println("Variable assignment has more than 1 child [" + tree.children.size() + "], tree: "
-						+ tree.toString());
-			return replace.get(tree.name);
-		}case "unary"-> {
-			if(tree.type.contains("COMPLEMENT")) {
-				replace.put(tree.children.getFirst().name, main.Data.KIND_TO_OPERATOR.get(tree.type)+'('+(toCode(tree.children.getFirst(),replace))+')');
+			StringBuilder sb = new StringBuilder();
+			if (tree.children.size() > 1) { // Sanitycheck
+				for(var child : tree.children) {
+					sb.append(toCode(child, replace));
+				}
+			}
+			
+			return replace.get(tree.name)+sb.toString();
+		}
+		case "unary" -> {
+			if (tree.name.contains("COMPLEMENT")) {
+				replace.put(tree.children.getFirst().name, main.Data.KIND_TO_OPERATOR.get(tree.name) + '('
+						+ (toCode(tree.children.getFirst(), replace)) + ')');
 				return replace.get(tree.children.getFirst().name);
 			}
 			String change = "";
-			if(tree.type.contains("DECREMENT")) {
-				change = "+1";
-			}else {
+			if (tree.name.contains("DECREMENT")) {
 				change = "-1";
+			} else {
+				change = "+1";
 			}
-			if(tree.type.startsWith("PRE")) {
-				replace.put(tree.children.getFirst().name, '('+(toCode(tree.children.getFirst(),replace))+')'+change);
+			if (tree.name.startsWith("PRE")) {
+				replace.put(tree.children.getFirst().name,
+						'(' + (toCode(tree.children.getFirst(), replace)) + change + ')');
 				return replace.get(tree.children.getFirst().name);
-			}else {
+			} else {
 				String temp = replace.get(tree.children.getFirst().name);
-				replace.put(tree.children.getFirst().name, '('+(toCode(tree.children.getFirst(),replace))+')'+change);
+				replace.put(tree.children.getFirst().name,
+						'(' + (toCode(tree.children.getFirst(), replace)) + change + ')');
 				return temp;
 			}
-		}case "binary"-> {
-			String op = main.Data.KIND_TO_OPERATOR.get(tree.type);
-			return '('+toCode(tree.children.getFirst(),replace)+' '+op+' '+toCode(tree.children.getLast(),replace)+')';
-		}case "block"-> {
+		}
+		case "binary" -> {
+			String op = main.Data.KIND_TO_OPERATOR.get(tree.name.replace("_ASSIGNMENT", ""));
+			return '(' + toCode(tree.children.getFirst(), replace) + ' ' + op + ' '
+					+ toCode(tree.children.getLast(), replace) + ')';
+		}
+		case "block" -> {
 			StringBuilder sb = new StringBuilder("{+\n");
-			for(ASTTree t: tree.children) {
+			for (ASTTree t : tree.children) {
 				sb.append(toCode(t, replace));
 				sb.append('\n');
 			}
 			return sb.toString();
-		}case "mc"-> {
+		}
+		case "mc" -> {
 			StringBuilder sb = new StringBuilder();
-			if(tree.type!= null) { //reference call
-				if(replace.containsKey(tree.type)) {
-					sb.append('('+replace.get(tree.type)+").");
-				}else {
-					sb.append(tree.type+".");
+			if (tree.type != null) { // reference call
+				if (replace.containsKey(tree.type)) {
+					sb.append('(' + replace.get(tree.type) + ").");
+				} else {
+					sb.append(tree.type + ".");
 				}
 			}
-			sb.append(tree.name+"(");
-			for(ASTTree t: tree.children) {
+			sb.append(tree.name + "(");
+			for (ASTTree t : tree.children) {
+				if(t.tag.equals("target")) {
+					sb.insert(0, toCode(t, replace)+'.');
+					continue;
+				}
 				sb.append(toCode(t, replace));
 				sb.append(',');
 			}
-			if(sb.charAt(sb.length()-1) == ',')
-				sb.deleteCharAt(sb.length()-1);
+			if (sb.charAt(sb.length() - 1) == ',') {
+				sb.deleteCharAt(sb.length() - 1);
+			}
 			sb.append(")");
 			return sb.toString();
-		}case "ternary"->{
+		}
+		case "ternary" -> {
 			StringBuilder sb = new StringBuilder();
-			sb.append('(');
+			sb.append("((");
 			sb.append(toCode(tree.children.getFirst(), replace));
 			sb.append(")?");
 			sb.append(toCode(tree.children.get(1), replace));
 			sb.append(":");
 			sb.append(toCode(tree.children.get(2), replace));
+			sb.append(')');
 			return sb.toString();
-		}default-> {}
-		
 		}
-		
-		
-		return "nuthing"+tree.toString();
+		case "cast" ->{
+			StringBuilder sb = new StringBuilder();
+			sb.append("((");
+			sb.append(tree.name);
+			sb.append(") ");
+			sb.append(toCode(tree.children.getFirst(), replace));
+			sb.append(") ");
+			return sb.toString();
+		}
+		case "index" ->{
+			StringBuilder sb = new StringBuilder();
+			sb.append("[");
+			sb.append(toCode(tree.children.getFirst(), replace));
+			sb.append("]");
+			return sb.toString();
+		}
+		case "assign" ->{
+			StringBuilder sb = new StringBuilder();
+			sb.append(tree.name);
+			sb.append(" = ");
+			String result = toCode(tree.children.getFirst(), replace);
+			replace.put(tree.name, result);
+			sb.append(result);
+			return sb.toString();
+		}
+		case "target"->{
+			if(replace.containsKey(tree.name))
+				return replace.get(tree.name);
+			return tree.name;
+		}
+		case "dimensions" ->{
+			StringBuilder sb = new StringBuilder();
+			sb.append("[");
+			sb.append(toCode(tree.children.getFirst(), replace));
+			sb.append("]");
+			return sb.toString();
+		}
+		default -> {
+		}
+
+		}
+		if(!tree.children.isEmpty())
+			return toCode(tree.children.getFirst(), replace);
+		return "nuthing" + tree.toString();
 	}
 
-	private static List<DynamicTestcase> conditionsToTestcases(List<String> conditions) {
+	
+	private static List<DynamicTestcase> conditionsToTestcases(Map<String,Class<?>> parameters, Iterable<String> conditions, String methode) {
 		List<DynamicTestcase> cases = new LinkedList<DynamicTestcase>();
-
+		for(String condition : conditions) {
+			cases.add(conditionToTestcases(parameters, condition, methode));
+		}
 		return cases;
+	}
+	private static DynamicTestcase conditionToTestcases(Map<String,Class<?>> parameters, String condition, String methode) {
+		return new DynamicTestcase(methode + generateParameters(condition, parameters)+")");
 	}
 
 	@Override
@@ -310,9 +606,15 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		this.testcases = new LinkedList<DynamicTestcase>();
 		List<ASTTree> methods = tree.getTreesWithTag("method");
 		for (ASTTree t : methods) {
-			testcases.addAll(generateTestcases(t, t.name, ""));
+			testcases.addAll(generateTestcases( t, t.name, "", true));
 		}
 		return this.testcases;
+	}
+	
+	public static String generateParameters(String condition, Map<String,Class<?>> parameters) {
+		StringBuilder sb = new StringBuilder();
+		
+		return sb.toString();
 	}
 
 	/**
@@ -330,9 +632,10 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	/**
 	 * Loads ASTTestcases from the directory Syntax of the saved files *.dt
 	 */
+	@Override
 	public List<DynamicTestcase> loadFromDirectory(Path pathToDirectory) {
 
-		FileVisitor<Path> files = new FileVisitor<Path>() {
+		FileVisitor<Path> files = new FileVisitor<>() {
 
 			@Override
 			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
@@ -342,7 +645,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
- 				if (!attrs.isDirectory()) {
+				if (!attrs.isDirectory()) {
 					String name = file.getFileName().toString();
 					if (!name.endsWith(".dt")) {
 						main.Main.debug("The file: \"" + file.getFileName().toString()

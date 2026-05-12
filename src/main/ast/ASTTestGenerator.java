@@ -17,12 +17,12 @@ import main.generator.Generator;
 public class ASTTestGenerator extends Generator<ASTTestcase>{
 
 	ASTTree code;
-	
+
 	public ASTTestGenerator(ASTTree code) {
 		super();
 		this.code = code;
 	}
-	
+
 	@Override
 	public List<ASTTestcase> generateTestcases() {
 		for(ASTTree method: code.getTreesWithTag("method")) {
@@ -30,11 +30,11 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 		}
 		return testcases;
 	}
-	
+
 	public List<ASTTestcase> generateTestcases(ASTTree method) {
 		var list = new LinkedList<ASTTestcase>();
-		
-		list.add(new ASTTestcase(method.name+".Exact", method, 10));	
+
+		list.add(new ASTTestcase(method.name+".Exact", method, 10));
 		ASTTree general = method.generalize();
 		list.add(new ASTTestcase(method.name+".General", general, 5));
 		ASTTree struct = general.keepOnlyStructure();
@@ -63,13 +63,13 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 			temp1.eval_mode = ASTTree.EVALUATION_MODE.NONE;
 			temp1.children.add(new ASTTree("<loop></loop>"));
 			list.add(new ASTTestcase(method.name+".NoLoops", temp1, 1));
-			
+
 		}
 		return list;
 	}
-	
+
 	private ASTTree getAllMethodCalls(ASTTree tree) {
-		Set<String> existingmethods = new HashSet<String>();
+		Set<String> existingmethods = new HashSet<>();
 		var mc = tree.getTreesWithTag("mc").stream().map(t -> t.keepOnly(
 				te -> (te.tag.equals("mc") && existingmethods.add(te.name)))).toList();
 		ASTTree t = new ASTTree();
@@ -79,13 +79,13 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 	private ASTTree getHighestNestedLoop(ASTTree tree) {
 		return tree.keepOnly("loop");
 	}
-	
+
 	private ASTTree getRecursion(ASTTree tree) {
-		return tree.keepOnly(s -> 
-		s.tag.equals("mc") && 
+		return tree.keepOnly(s ->
+		s.tag.equals("mc") &&
 		s.name.equals(tree.name.substring(0, tree.name.indexOf("("))));
 	}
-	
+
 	/**
 	 * Saves the currently generated ASTTestcases to the directory
 	 * Syntax of the saved files Name:score.ast
@@ -111,14 +111,14 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 	public List<ASTTestcase> loadFromDirectory(Path pathToDirectory) {
 
 		String root = pathToDirectory.getFileName().toString();
-		FileVisitor<Path> files = new FileVisitor<Path>() {
-			
+		FileVisitor<Path> files = new FileVisitor<>() {
+
 			@Override
 			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
 				//exc.printStackTrace();
 				return FileVisitResult.TERMINATE;
 			}
-			
+
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				if(!attrs.isDirectory()) {
@@ -133,18 +133,20 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 				}
 				return FileVisitResult.CONTINUE;
 			}
-			
+
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-				if(!dir.equals(pathToDirectory))
-				prefix += dir.getFileName().toString()+".";
+				if(!dir.equals(pathToDirectory)) {
+					prefix += dir.getFileName().toString()+".";
+				}
 				return FileVisitResult.CONTINUE;
 			}
-			
+
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				if(!dir.equals(pathToDirectory))
-				prefix = prefix.substring(0,prefix.lastIndexOf(dir.getFileName().toString()));
+				if(!dir.equals(pathToDirectory)) {
+					prefix = prefix.substring(0,prefix.lastIndexOf(dir.getFileName().toString()));
+				}
 				return FileVisitResult.CONTINUE;
 			}
 		};

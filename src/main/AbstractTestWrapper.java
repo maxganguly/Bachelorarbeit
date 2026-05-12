@@ -10,7 +10,7 @@ public abstract class AbstractTestWrapper {
 	public AbstractTestWrapper(Path solution) throws IOException{
 		this.solution = solution;
 	}
-	
+
 	public abstract List<Pair<String,Integer>> test(Path submission);
-	
+
 }

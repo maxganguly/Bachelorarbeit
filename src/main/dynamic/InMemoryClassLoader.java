@@ -13,13 +13,14 @@ public class InMemoryClassLoader extends ClassLoader{
 	 */
     public InMemoryClassLoader(ClassLoader parent, InMemoryFileManager manager) {
         super(parent);
-        if(manager == null)
-        	throw new IllegalArgumentException("Manager must not be null");
+        if(manager == null) {
+			throw new IllegalArgumentException("Manager must not be null");
+		}
         this.manager = manager;
     }
-    
+
     /**
-     * Finds a class containing the name in the available classes 
+     * Finds a class containing the name in the available classes
      */
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
@@ -31,7 +32,7 @@ public class InMemoryClassLoader extends ClassLoader{
         		break;
         	}
         }
-        
+
         if (compiledClasses.containsKey(name)) {
             byte[] bytes = compiledClasses.get(name).getBytes();
             return defineClass(name, bytes, 0, bytes.length);

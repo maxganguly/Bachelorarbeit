@@ -5,9 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.sun.source.tree.BinaryTree;
-import com.sun.source.tree.UnaryTree;
-
 public class Data {
 	public static final PrintStream SYSOUT = System.out;
 
@@ -22,7 +19,7 @@ public class Data {
 			boolean.class, "String", String.class);
 	public static final Map<String, String> KIND_TO_OPERATOR;
 	static {
-		KIND_TO_OPERATOR = new HashMap<String, String>();
+		KIND_TO_OPERATOR = new HashMap<>();
 		KIND_TO_OPERATOR.put("POSTFIX_INCREMENT", "++");
 		KIND_TO_OPERATOR.put("POSTFIX_DECREMENT", "--");
 		KIND_TO_OPERATOR.put("PREFIX_INCREMENT", "++");

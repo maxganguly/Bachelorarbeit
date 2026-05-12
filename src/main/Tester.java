@@ -5,9 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 public abstract class Tester<E extends main.Testcase> {
-	
+
 	List<E> testcases;
-	
+
 	public Tester() {
 		testcases = new LinkedList<E>();
 	}
@@ -24,7 +24,7 @@ public abstract class Tester<E extends main.Testcase> {
 	 */
 	public void addTestcase(E test) {
 		this.testcases.add(test);
-		
+
 	}
 	/**
 	 * Adds multiple Testcases to the Tester, ignores duplicates
@@ -35,7 +35,7 @@ public abstract class Tester<E extends main.Testcase> {
 			addTestcase(t);
 		}
 	}
-	
+
 
 	/**
 	 * Adds multiple Testcases to the Tester, ignores duplicates
@@ -55,8 +55,8 @@ public abstract class Tester<E extends main.Testcase> {
 		}
 		return results;
 	}
-	
-	
+
+
 	/**
 	 * Runs a single given testcase
 	 * @param testcase the testcase to test
@@ -78,5 +78,5 @@ public abstract class Tester<E extends main.Testcase> {
 	 */
 	public abstract Pair<String, Integer> test(Path p, E testcase);
 
-	
+
 }

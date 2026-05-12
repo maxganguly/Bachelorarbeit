@@ -22,8 +22,9 @@ public abstract class Generator<E extends main.Testcase> {
 	 * @return A List of all Testcases
 	 */
 	public List<E> getTestcases(){
-		if(testcases.isEmpty())
+		if(testcases.isEmpty()) {
 			this.testcases = generateTestcases();
+		}
 		return this.testcases;
 	}
 	/**

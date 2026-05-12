@@ -5,22 +5,22 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
+import main.Main;
 import main.Pair;
 import main.Tester;
-import main.Main;
 
 public class ASTTester extends Tester<ASTTestcase> {
 
 	ASTTree code;
-	
+
 	public ASTTester() {
 		this.code = null;
 	}
-	
+
 	public ASTTester(ASTTree tree) {
 		this.code = tree;
 	}
-	
+
 	@Override
 	public Pair<String, Integer> test(ASTTestcase testcase) {
 		if(code.evaluate(testcase.tree)) {
@@ -56,7 +56,7 @@ public class ASTTester extends Tester<ASTTestcase> {
 			return new Pair<String,Integer>(e.getMessage(),-100);
 		}
 	}
-	
-	
+
+
 
 }

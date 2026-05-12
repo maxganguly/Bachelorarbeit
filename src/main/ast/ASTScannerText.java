@@ -1,8 +1,5 @@
 package main.ast;
 
-import java.util.stream.Collectors;
-
-import com.sun.source.tree.*;
 import com.sun.source.util.TreeScanner;
 
 @Deprecated
@@ -73,8 +70,8 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 		debugOutput(node);
 		if (ALWAYSDISPLAYVARIABLES) {
 			boolean init = node.getInitializer() != null;
-			return OFFSET.repeat(p)+ "<var=\""+ node.getName() +"\" type=\""+node.getType()+"\">\n"+ 
-			node.getInitializer().accept(this, p+1) +		
+			return OFFSET.repeat(p)+ "<var=\""+ node.getName() +"\" type=\""+node.getType()+"\">\n"+
+			node.getInitializer().accept(this, p+1) +
 			"\n"+OFFSET.repeat(p)+"</var>";// + super.visitVariable(node, p);
 		}
 		return super.visitVariable(node, p);
@@ -97,7 +94,7 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 		result += OFFSET.repeat(p)+"</block>";
 		return result;//super.visitBlock(node, p);
 	}
-	
+
 	@Override
 	public String visitDoWhileLoop(DoWhileLoopTree node, Integer p) {
 		debugOutput(node);
@@ -282,7 +279,7 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 	public String visitExpressionStatement(ExpressionStatementTree node, Integer p) {
 		//TODO: reworking maybe needed
 		debugOutput(node);
-		//return OFFSET.repeat(p)+"exp:"+ node.getExpression().toString() + 
+		//return OFFSET.repeat(p)+"exp:"+ node.getExpression().toString() +
 		return super.visitExpressionStatement(node, p);
 	}
 
@@ -394,7 +391,7 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 	@Override
 	public String visitAssignment(AssignmentTree node, Integer p) {
 		debugOutput(node);
-		return OFFSET.repeat(p)+"<assign=\""+ node.getVariable().toString() +"\">\n"+ 
+		return OFFSET.repeat(p)+"<assign=\""+ node.getVariable().toString() +"\">\n"+
 				node.getExpression().accept(this, p+1) +"\n" +
 				OFFSET.repeat(p) +"</assign>";//super.visitAssignment(node, p);
 	}
@@ -428,7 +425,7 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 		debugOutput(node);
 		//Probably not needed
 		return OFFSET.repeat(p)+"<cast to=\""+node.getType().toString()+"\">\n"+
-		node.getExpression().accept(this, p+1)+"\n"+ 
+		node.getExpression().accept(this, p+1)+"\n"+
 		OFFSET.repeat(p) +"</cast>";//super.visitTypeCast(node, p);
 	}
 
@@ -654,13 +651,13 @@ public class ASTScannerText extends TreeScanner<String, Integer> {
 		//Probably not needed see visitParameterizedType
 		return super.visitYield(node, p);
 	}
-	
+
 	@SuppressWarnings("unused")
 	private static void debugOutput(String output) {
 		if(DEBUG)
 			System.out.println(output);
 	}
-	
+
 	private static void debugOutput(Tree output) {
 		if(DEBUG)
 			System.out.println(output.getKind().toString());

@@ -10,21 +10,18 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
-import main.ast.ASTTestGenerator;
 import main.ast.ASTTestWrapper;
-import main.ast.ASTTester;
 
 public class Test {
 
 	private Map<String,List<? extends AbstractTestWrapper>> testers;
-	
-	    
+
+
 	public Test() throws IOException {
-		this.testers = new HashMap<String,List<? extends AbstractTestWrapper>>();
+		this.testers = new HashMap<>();
 		//Get the Solution files to generate the Testcase
-		FileVisitor<Path> files = new FileVisitor<Path>() {
+		FileVisitor<Path> files = new FileVisitor<>() {
 
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
@@ -39,9 +36,9 @@ public class Test {
 					var testerlist = new LinkedList<AbstractTestWrapper>();
 					testerlist.add(new ASTTestWrapper(file));
 					//TODO: Add Dynamic after implementing DynamicTestcases
-					
+
 					testers.put(pureName, testerlist);
-					
+
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -56,11 +53,11 @@ public class Test {
 			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
 				return FileVisitResult.CONTINUE;
 			}
-			
+
 		};
 		Files.walkFileTree(Path.of(Main.p.getProperty("SolutionInputDir")), files);
 	}
-	
+
 	/**
 	 * Evaluates all testcases for all students and all files
 	 * Maybe there exists a better way the store the data than in this godless Thing
@@ -70,34 +67,36 @@ public class Test {
 		var results = new LinkedList<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> ();
 		List<Tripel<String,Integer,Path>> srcDirs = getAllSrcDirectories();
 		for(var src: srcDirs) {
-			var student = new Pair<String,Integer>(src.first(),src.second());
+			var student = new Pair<>(src.first(),src.second());
 			var resultsstudent = new LinkedList<Pair<String,List<Pair<String,Integer>>>>();
 			try {
 				List<Path> children = Files.list(src.third()).toList();
 				for(Path p: children) {
 					String filename = p.getFileName().toString();
-					if(filename.startsWith(".") || !filename.endsWith(".java"))
+					if(filename.startsWith(".") || !filename.endsWith(".java")) {
 						continue;
+					}
 					var resultsfile = new LinkedList<Pair<String,Integer>>();
 					String pureName = filename.substring(0, filename.lastIndexOf('.'));
 					var li = this.testers.get(pureName);
-					if(li != null)	//If no tester exists for a file (Should normally not happen
-					for(AbstractTestWrapper testers: li) {
+					if(li != null) { //If no tester exists for a file (Should normally not happen
+						for(AbstractTestWrapper testers: li) {
 						resultsfile.addAll(testers.test(p));
+						}
 					}
-					resultsstudent.add(new Pair<String,List<Pair<String,Integer>>>(pureName,resultsfile));
+					resultsstudent.add(new Pair<>(pureName,resultsfile));
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			results.add(
-					new Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>
+					new Pair<>
 				(student,resultsstudent));
-			
+
 		}
 		return results;
 	}
-	
+
 	/**
 	 * Executes the test function and writes the results to the in the Property ToTestInputDirs
 	 * defined directory
@@ -111,23 +110,24 @@ public class Test {
 			for(var file: students.second()) {
 				StringBuilder sb = new StringBuilder("Score: "+ file.second().stream().mapToInt(p -> p.second()).sum()+"\n");
 				for(var f : file.second()) {
-					if(f.second().intValue() != 0 || saveEverything)
+					if(f.second().intValue() != 0 || saveEverything) {
 						sb.append(f.first()+" score: "+f.second()+"\n");
-					else
+					} else {
 						sb.append(f.first()+" fucked up: "+f.second()+"\n");
-						
+					}
+
 				}
-				
+
 				/*text += file.second().stream()
 						//.filter(p -> (p.second().intValue() != 0 || saveEverything))
 						.map(p -> p.first()+" score: "+p.second()) .collect(Collectors.joining("\n"));
 						*/
-				Main.printToFile(Path.of(rootPath,studentPath,file.first()), sb.toString(), true);	
+				Main.printToFile(Path.of(rootPath,studentPath,file.first()), sb.toString(), true);
 			}
-			
+
 		}
 	}
-	
+
 	/**
 	 * Lists all src directories of the Student solutions
 	 * @return A list of tripel ofvName,Matriculations-number,Path_to_src
@@ -141,7 +141,7 @@ public class Test {
 		}
 		return list;
 	}
-	
+
 	private static Path descendSingleChildren(Path path) {
         Path childDir;
         while ((childDir = getSingleChildDir(path)) != null) {
@@ -158,7 +158,7 @@ public class Test {
             return null;
         }
     }
-    
+
     private static Tripel<String,Integer,Path> getSrcDirectory(Path path){
     	String[] names = path.getFileName().toString().split("_");
     	if(names.length < 2) {
@@ -188,6 +188,6 @@ public class Test {
 			e.printStackTrace();
 			return null;
 		}
-		 return new Tripel<String,Integer,Path>(name,matrnr,src);
+		 return new Tripel<>(name,matrnr,src);
     }
 }

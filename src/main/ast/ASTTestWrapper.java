@@ -11,7 +11,7 @@ import main.Pair;
 public class ASTTestWrapper extends AbstractTestWrapper {
 
 	ASTTester tester;
-	
+
 	public ASTTestWrapper(Path solution) throws IOException{
 		super(solution);
 		String filename = solution.getFileName().toString();

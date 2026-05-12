@@ -10,23 +10,22 @@ import java.util.List;
 
 import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
 import main.Data;
 import main.Main;
-
-import javax.tools.JavaFileObject;
 public class Executor {
 
 
 	private Class<?> clazz;
-	
+
 	private PrintStream os;
-	
+
 	public Executor(String path) {
 		this(Path.of(path));
 	}
-	
+
 	public Executor(Path path) {
 		try {
 			this.clazz = getClass(Main.getFromPath(path));
@@ -41,7 +40,7 @@ public class Executor {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Executor(Path path, String name) {
 		try {
 			this.clazz = getClass(name, Main.getFromPath(path));
@@ -56,11 +55,11 @@ public class Executor {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public Executor(String path, String name) {
 		this(Path.of(path),name);
 	}
-	
+
 	/**
 	 * Sets the Printstream which should be used for the Testcases
 	 * @param os the Printstream is to be used for the Testcases
@@ -68,7 +67,7 @@ public class Executor {
 	public void setOutput(PrintStream os) {
 		this.os = os;
 	}
-	
+
 	/**
 	 * Runs the Main method of the given class
 	 * @throws MethodNotFoundException if there is no main Method in the class
@@ -76,7 +75,7 @@ public class Executor {
 	public void runMain() throws MethodNotFoundException {
 		runMethod("main", (Object) (new String[] {}));
 	}
-	
+
 	/**
 	 * Runs a method with the given name and the given parameters
 	 * @param methodname the name of the method to be invoked
@@ -86,8 +85,9 @@ public class Executor {
 	 */
 	public Object runMethod(String methodname, Object... params) throws MethodNotFoundException {
 		Method[] meth = clazz.getDeclaredMethods();
-		if(os != null)
+		if(os != null) {
 			System.setOut(os);
+		}
 		Object ret = null;
 		boolean ran = false;
 		for(Method m : meth) {
@@ -107,29 +107,32 @@ public class Executor {
 				}
 			}
 		}
-		if(os != null)
+		if(os != null) {
 			System.setOut(Data.SYSOUT);
-		if(ran == false)
+		}
+		if(!ran) {
 			throw new MethodNotFoundException(methodname);
+		}
 		return ret;
-		
+
 	}
-	
+
 	/**
-	 * Checks if the given Method exists in the class 
-	 * @param name the name of the method 
+	 * Checks if the given Method exists in the class
+	 * @param name the name of the method
 	 * @return true if the method exists in the class
 	 */
 	public boolean containsMethod(String name) {
 		Method[] meth = clazz.getDeclaredMethods();
 		for(Method m : meth) {
 			//System.out.println(m.getName());
-			if(m.getName().equals(name))
+			if(m.getName().equals(name)) {
 				return true;
+			}
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Generates a Class with the given NAme from the given java Code
 	 * @param name the name of the class
@@ -143,7 +146,7 @@ public class Executor {
 	    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 	    InMemoryFileManager manager = new InMemoryFileManager(compiler.getStandardFileManager(null, null, null));
 
-	    List<JavaFileObject> sourceFiles = new LinkedList<JavaFileObject>();
+	    List<JavaFileObject> sourceFiles = new LinkedList<>();
 	    		sourceFiles.add(new JavaSourceFromString(name, code));
 
 	    JavaCompiler.CompilationTask task = compiler.getTask(null, manager, diagnostics, null, null, sourceFiles);
@@ -153,12 +156,12 @@ public class Executor {
 	    if (!result) {
 	        diagnostics.getDiagnostics()
 	          .forEach(d -> System.out.println(String.valueOf(d)));
-	    } 
+	    }
 	        ClassLoader classLoader = manager.getClassLoader(null);
 	        Class<?> clazz = classLoader.loadClass(name);
 	        return clazz;
 	}
-	
+
 	/**
 	 * Generates a Class with the given NAme from the given java Code
 	 * @param name the name of the class
@@ -174,7 +177,7 @@ public class Executor {
 	    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 	    InMemoryFileManager manager = new InMemoryFileManager(compiler.getStandardFileManager(null, null, null));
 
-	    List<JavaFileObject> sourceFiles = new LinkedList<JavaFileObject>();
+	    List<JavaFileObject> sourceFiles = new LinkedList<>();
 	    		sourceFiles.add(new JavaSourceFromString(name, code));
 
 	    JavaCompiler.CompilationTask task = compiler.getTask(null, manager, diagnostics, null, null, sourceFiles);
@@ -184,10 +187,10 @@ public class Executor {
 	    if (!result) {
 	        diagnostics.getDiagnostics()
 	          .forEach(d -> System.out.println(String.valueOf(d)));
-	    } 
+	    }
 	        ClassLoader classLoader = manager.getClassLoader(null);
 	        Class<?> clazz = classLoader.loadClass(name);
 	        return clazz;
 	}
-	
+
 }

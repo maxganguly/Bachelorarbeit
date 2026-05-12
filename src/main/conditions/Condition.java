@@ -1,14 +1,14 @@
 package main.conditions;
 
 public interface Condition {
-	
+
 	public enum TYPE{
 		LITERAL,
 		VARIABLE,
 		COMPARISION,
 		COMPOUND
-	};
-	
+	}
+
 	public enum COMPARISON{
 		EQUALS,
 		NOT_EQUALS,
@@ -16,35 +16,36 @@ public interface Condition {
 		LESS_OR_EQUALS,
 		GREATER_THAN,
 		GREATER_OR_EQUALS,
-	};
-	
+	}
+
 	public enum BOOLCOMPOUND{
 		OR,
 		AND,
 		XOR,
-	};
-	
+	}
+
 	public enum NUMCOMPOUND{
 		ADDITION,
 		SUBTRACTION,
 		MULTIPLICATION,
 		DIVISION
 	}
-	
+
 	/**
-	 * Returns a 
+	 * Returns a
 	 * @return
 	 */
+	@Override
 	public String toString();
-	
+
 	/**
-	 * Returns the type of the 
+	 * Returns the type of the
 	 * @return
 	 */
 	public TYPE getType();
-	
+
 	public void add(Condition cond);
-	
+
 }
 
 

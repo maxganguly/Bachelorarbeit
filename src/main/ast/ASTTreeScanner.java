@@ -1,20 +1,61 @@
 package main.ast;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
-import com.sun.source.tree.*;
+import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssertTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.BreakTree;
+import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ContinueTree;
+import com.sun.source.tree.DoWhileLoopTree;
+import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.ReturnTree;
+import com.sun.source.tree.SwitchTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
+import com.sun.source.tree.TypeCastTree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreeScanner;
 
 public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public static final boolean DEBUG = false;
 
+	private Map<String,String> variables = new HashMap<String,String>();
 	@Override
 	public ASTTree reduce(ASTTree r1, ASTTree r2) {
-		if (r1 == null)
+		if (r1 == null) {
 			return r2;
-		if (r2 == null)
+		}
+		if (r2 == null) {
 			return r1;
+		}
 		ASTTree t = new ASTTree();
 		t.children.add(r1);
 		t.children.add(r2);
@@ -25,14 +66,17 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public ASTTree visitCompilationUnit(CompilationUnitTree node, ASTTree p) {
 		ASTTree r = new ASTTree("file", null, null, p, node.toString());
 		ASTTree temp = scan(node.getImports(), r);
-		if (temp != null)
+		if (temp != null) {
 			r.children.add(temp);
+		}
 		temp = scan(node.getTypeDecls(), r);
-		if (temp != null)
+		if (temp != null) {
 			r.children.add(temp);
+		}
 		temp = scan(node.getModule(), r);
-		if (temp != null)
+		if (temp != null) {
 			r.children.add(temp);
+		}
 		return r;
 	}
 
@@ -50,10 +94,11 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		// if anonymous
 		ASTTree result = new ASTTree("class", node.getSimpleName(), null, p, node.toString());
 		// result += node.accept(this, p+1)+'\n';
-		if (node.getMembers() != null)
+		if (node.getMembers() != null) {
 			for (Tree t : node.getMembers()) {
 				result.children.add(t.accept(this, result));
 			}
+		}
 		return result;// + super.visitClass(node, p);
 	}
 
@@ -64,12 +109,14 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 				.map(t -> (t.getType().toString())).collect(Collectors.joining(",", "(", ")")), null, p, node.toString());
 		ASTTree head = new ASTTree("head", null, null, result, node.toString());
 		result.children.add(head);
-		if (node.getParameters() != null)
+		if (node.getParameters() != null) {
 			for (Tree t : node.getParameters()) {
 				head.children.add(t.accept(this, head));
 			}
-		if (node.getBody() != null)
+		}
+		if (node.getBody() != null) {
 			result.children.add(node.getBody().accept(this, result));
+		}
 		return result;// + super.visitMethod(node, p);
 		// return super.visitMethod(node, p);
 	}
@@ -77,9 +124,13 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	@Override
 	public ASTTree visitVariable(VariableTree node, ASTTree p) {
 		debugOutput(node);
+		if(node.getType() != null) {
+			variables.put(node.getName().toString(), node.getType().toString());
+		}
 		ASTTree result = new ASTTree("var", node.getName(), node.getType(), p, node.toString());
-		if (node.getInitializer() != null)
+		if (node.getInitializer() != null) {
 			result.children.add(node.getInitializer().accept(this, result));
+		}
 		return result;
 	}
 
@@ -88,10 +139,11 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		debugOutput(node);
 		ASTTree result = new ASTTree("block", null, null, p, node.toString());
 		// result += node.accept(this, p+1)+'\n';
-		if (node.getStatements() != null)
+		if (node.getStatements() != null) {
 			for (Tree t : node.getStatements()) {
 				result.children.add(t.accept(this, result));
 			}
+		}
 		return result;// super.visitBlock(node, p);
 	}
 
@@ -222,10 +274,11 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		result.children.add(head);
 
 		ASTTree body = new ASTTree("body", null, null, result, node.toString());
-		if (node.getStatements() != null)
+		if (node.getStatements() != null) {
 			for (Tree t : node.getStatements()) {
 				body.children.add(t.accept(this, body));
 			}
+		}
 		result.children.add(body);
 
 		return result;
@@ -255,8 +308,9 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public ASTTree visitCatch(CatchTree node, ASTTree p) {
 		debugOutput(node);
 		ASTTree result = new ASTTree("catch", null, null, p, node.toString());
-		if(node.getBlock() != null)
-		result.children.add(node.getBlock().accept(this, result));
+		if(node.getBlock() != null) {
+			result.children.add(node.getBlock().accept(this, result));
+		}
 		return result;
 	}
 
@@ -287,8 +341,9 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 		head.children.add(node.getCondition().accept(this, head));
 		result.children.add(head);
 		ASTTree then = new ASTTree("then", null, null, result, node.toString());
-		if(node.getThenStatement() != null)
-		then.children.add(node.getThenStatement().accept(this, then));
+		if(node.getThenStatement() != null) {
+			then.children.add(node.getThenStatement().accept(this, then));
+		}
 		result.children.add(then);
 		if (node.getElseStatement() != null) {
 			ASTTree otherwise = new ASTTree("else", null, null, result, node.toString());
@@ -316,8 +371,9 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public ASTTree visitReturn(ReturnTree node, ASTTree p) {
 		debugOutput(node);
 		ASTTree result = new ASTTree("return", null, null, p, node.toString());
-		if (node.getExpression() != null)
+		if (node.getExpression() != null) {
 			result.children.add(node.getExpression().accept(this, result));
+		}
 		return result;
 	}
 
@@ -345,8 +401,14 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public ASTTree visitMethodInvocation(MethodInvocationTree node, ASTTree p) {
 		debugOutput(node);
 		ExpressionTree et = node.getMethodSelect();
-		if (et.getKind() == Kind.MEMBER_SELECT)
-			return visitMemberSelect((MemberSelectTree) et, p);
+		
+		if (et.getKind() == Kind.MEMBER_SELECT) {
+			ASTTree result = visitMemberSelect((MemberSelectTree) et, p);
+			for (Tree t : node.getArguments()) {
+				result.children.add(t.accept(this, result));
+			}
+			return result;
+		}
 		ASTTree result = new ASTTree("mc", node.getMethodSelect(), null, p, node.toString());
 		for (Tree t : node.getArguments()) {
 			result.children.add(t.accept(this, result));
@@ -363,16 +425,18 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 			for (Tree t : node.getDimensions()) {
 				head.children.add(t.accept(this, head));
 			}
-			if (head.children.size() > 0)
+			if (head.children.size() > 0) {
 				result.children.add(head);
+			}
 		}
 		if (node.getDimensions() != null && node.getInitializers() != null) {
 			ASTTree head = new ASTTree("initializer", null, null, result, node.toString());
 			for (Tree t : node.getInitializers()) {
 				head.children.add(t.accept(this, head));
 			}
-			if (head.children.size() > 0)
+			if (head.children.size() > 0) {
 				result.children.add(head);
+			}
 		}
 		return result;
 		// return super.visitNewArray(node, p);
@@ -390,9 +454,10 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	@Override
 	public ASTTree visitAssignment(AssignmentTree node, ASTTree p) {
 		debugOutput(node);
-		ASTTree result = new ASTTree("assign", node.getVariable().toString(), null, p, node.toString());
-		if(node.getExpression() != null)
-		result.children.add(node.getExpression().accept(this, result));
+		ASTTree result = new ASTTree("var", node.getVariable().toString(), null, p, node.toString());
+		if(node.getExpression() != null) {
+			result.children.add(node.getExpression().accept(this, result));
+		}
 		return result;
 	}
 
@@ -462,7 +527,9 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	@Override
 	public ASTTree visitMemberSelect(MemberSelectTree node, ASTTree p) {
 		debugOutput(node);
-		ASTTree result = new ASTTree("mc", node.getIdentifier().toString(), node.getExpression().toString(), p, node.toString());
+		ASTTree result = new ASTTree("mc", node.getIdentifier().toString(), null, p, node.toString());
+		ASTTree target = new ASTTree("target", node.getExpression().toString(), variables.get(node.getExpression().toString()), result);
+		result.children.add(target);
 		//result.children.add(node.getExpression().accept(this, result));
 		return result;
 		// return super.visitMemberSelect(node, p);
@@ -470,13 +537,15 @@ public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 
 	@SuppressWarnings("unused")
 	private static void debugOutput(ASTTree output) {
-		if (DEBUG)
+		if (DEBUG) {
 			System.out.println(output);
+		}
 	}
 
 	private static void debugOutput(Tree output) {
-		if (DEBUG)
+		if (DEBUG) {
 			System.out.println(output.getKind().toString());
+		}
 	}
 
 }
