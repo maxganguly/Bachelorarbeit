@@ -66,12 +66,13 @@ public class Main {
     		sb.append(method);
     		System.out.println(method);
         	sb.append('\n');
-        	var conditions = MCDCTestcaseGenerator.generateConditions(tree, method, "", true);
+        	var conditions = MCDCTestcaseGenerator.generateConditions(tree, method, "", false);
         	for(var condition: conditions) {
         		System.out.println(condition);
         		sb.append(condition);
         		sb.append('\n');
-        		String test = MCDCTestcaseGenerator.evaluate(condition);
+        		
+        		String test = MCDCTestcaseGenerator.evaluate(condition.first());
         		System.out.println(test);
         		sb.append(test);
         		sb.append('\n');

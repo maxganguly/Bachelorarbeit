@@ -62,7 +62,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	 *                   generated
 	 * @return a List of conditions for all branches of the methode
 	 */
-	public static List<DynamicTestcase> generateTestcases(ASTTree tree, String methodsignature, String preconditions, boolean clean) {
+	public static List<DynamicTestcase> generateTestcases(ASTTree tree, String methodsignature, String preconditions) {
 		List<Pair<String, Class<?>>> parameters = new LinkedList<Pair<String, Class<?>>>();
 		List<ASTTree> methods = tree.getTreesWithTag("method").stream().filter(a -> a.name.equals(methodsignature))
 				.collect(Collectors.toList());
@@ -83,14 +83,14 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		for (var p : parameters) {
 			variables.put(p.first(), p.first());
 		}
-		List<String> conditions = new LinkedList<String>();
-		getConditions(method.children.get(1), variables, conditions);
-		if(clean) {
+		var conditions = getConditions(method.children.get(1), variables, "");
 			conditions = removeConstantAndDuplicateConditions(conditions);
-		}
+		
 		System.out.println("Generated: "+conditions.size()+" conditions");
 		
-		return conditionsToTestcases(Pair.toMap(parameters), conditions, methodsignature);
+		return conditionsToTestcases(Pair.toMap(parameters), 
+				conditions.stream().map(e -> e.first()).toList()
+				, methodsignature);
 	}
 	/**
 	 * Generates all conditions for all branches for the given methode
@@ -99,13 +99,13 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	 *                   generated
 	 * @return a List of conditions for all branches of the methode
 	 */
-	public static List<String> generateConditions(ASTTree tree, String methodsignature, String preconditions, boolean clean) {
+	public static List<Pair<String,Map<String, String>>> generateConditions(ASTTree tree, String methodsignature, String preconditions, boolean clean) {
 		List<Pair<String, Class<?>>> parameters = new LinkedList<Pair<String, Class<?>>>();
 		List<ASTTree> methods = tree.getTreesWithTag("method").stream().filter(a -> a.name.equals(methodsignature))
 				.collect(Collectors.toList());
 		if (methods.size() == 0) {
 			System.err.println("No method found for signature: " + methodsignature);
-			return new LinkedList<String>();
+			return new LinkedList<Pair<String,Map<String, String>>>();
 		}
 		if (methods.size() > 1) {
 			System.err.println("Multiple methods found for signature: " + methodsignature
@@ -120,8 +120,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		for (var p : parameters) {
 			variables.put(p.first(), p.first());
 		}
-		List<String> conditions = new LinkedList<String>();
-		getConditions(method.children.get(1), variables, conditions);
+		var conditions = getConditions(method.children.get(1), variables, "");
 		if(clean) {
 			conditions = removeConstantAndDuplicateConditions(conditions);
 		}
@@ -145,169 +144,31 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	 * @param variables  (your branch) all variables currently found in the program,
 	 *                   parameters given as names otherwise relative or absolute
 	 *                   value
-	 * @param conditions (Pseudoreturn) a List to save all conditions found in the
-	 *                   method
+	 * @param precondition the current applicable conditions for the 
 	 * @return (all newly generated branches (should contain your changed
 	 *         branch))branches an List to get all generated branches from the
 	 *         function, serves as a pseudo return value
 	 */
-	private static Set<Map<String, String>> getConditions(ASTTree tree, Map<String, String> variables,
-			List<String> conditions) {
+	private static List<Pair<String,Map<String, String>>> getConditions(ASTTree tree, Map<String, String> variables, String precondition) {
 
 		// List<Map<String, String>> branches = new LinkedList<Map<String,String>>();
 		// conditions while, dowhile, for foreach
-		Set<Map<String, String>> branches = new HashSet<>();
+		List<Pair<String,Map<String, String>>> branches = new LinkedList<Pair<String,Map<String,String>>>();
 		variables = cloneMap(variables);
-		branches.add(variables);
+		branches.add(new Pair<>(precondition, variables));
 		switch (tree.tag) {
 		case "for" -> {
-			var head = tree.children.getFirst();
-			for (var t : head.children) {
-				if (t.tag.equals("init")) {
-					for (var init : t.children) {
-						toCode(init, variables);
-					}
-				}
-			}
-			ASTTree condition = null, update = null;
-			ASTTree init = null;
-			for (var t : head.children) {
-				if (t.tag.equals("init")) {
-					init = t;
-				}
-				if (t.tag.equals("condition")) {
-					condition = t;
-				}
-				if (t.tag.equals("update")) {
-					update = t;
-				}
-
-			}
-			var body = tree.children.get(1);
-			Set<Map<String, String>> nbranches = new HashSet<>();
-			nbranches.add(variables);
-			Set<Map<String, String>> temp = new HashSet<>(nbranches);
-			if (init != null) {
-				for (var in : init.children) {
-					toCode(in, variables);
-				}
-			}
-			for (int i = 0; i < loopDepth; i++) {
-				//Save new branches to nbranches, move nbranches to temp to work only with the newest branches
-				for(var branch : temp) {
-					String expression = toCode(condition.children.getFirst(), branch);
-					if(expression.contains(".length().length()"))
-						System.out.println("whut");
-					branches.add(branch);
-					conditions.add(expression);
-					conditions.add(negate(expression));
-					// add branches for all new conditions after the body has been executed
-					var nbr= getConditions(body, branch, conditions);
-					if (update != null) {
-						for (var u : update.children) {
-							for(var b: nbr)
-							toCode(u, b);
-						}
-					}
-					nbranches.addAll(nbr);
-				}
-				temp = new HashSet<>(nbranches);
-				branches.addAll(nbranches);
-				nbranches = new HashSet<>();
-			}
-			// finished evaluating the loop end recursion to let the higher order continue
-			// the program
-			return branches;
-			/*
-			// the first part after the head must be the body
-			var body = tree.children.get(1);
-			var m = variables;
-			for (int i = 0; i < loopDepth; i++) {
-				if (init != null) {
-					for (var in : init.children) {
-						toCode(in, m);
-					}
-				}
-				String expression = toCode(condition, m);
-				branches.add(m);
-				conditions.add(expression);
-				conditions.add(negate(expression));
-				// add branches for all new conditions after the body has been executed
-				branches.addAll(getConditions(body, m, conditions));
-				if (update != null) {
-					for (var u : update.children) {
-						toCode(u, m);
-					}
-				}
-			}
-			// finished evaluating the loop end recursion to let the higher order continue
-			// the program
-			return branches;
-			*/
+			return getConditionsFor(tree, variables, precondition, branches);
 		}
 		case "while" -> {
-			var head = tree.children.getFirst();
-			ASTTree condition = null;
-			for (var t : head.children) {
-
-				if (t.tag.equals("condition")) {
-					condition = t;
-				}
-			}
-			// the first part after the head must be the body
-			var body = tree.children.get(1);
-			Set<Map<String, String>> nbranches = new HashSet<>();
-			nbranches.add(variables);
-			Set<Map<String, String>> temp = new HashSet<>(nbranches);
-			for (int i = 0; i < loopDepth; i++) {
-				//Save new branches to nbranches, move nbranches to temp to work only with the newest branches
-				
-				for(var branch : temp) {
-					String expression = toCode(condition.children.getFirst(), branch);
-					branches.add(branch);
-					conditions.add(expression);
-					conditions.add(negate(expression));
-					// add branches for all new conditions after the body has been executed
-					nbranches.addAll(getConditions(body, branch, conditions));
-				}
-				temp = new HashSet<>(nbranches);
-				branches.addAll(nbranches);
-				nbranches = new HashSet<>();
-			}
-			// finished evaluating the loop end recursion to let the higher order continue
-			// the program
-			return branches;
+			return getConditionsWhile(tree, variables, precondition, branches);
+			
 		}
 		case "if" -> {
-			var head = tree.children.getFirst();
-			ASTTree condition = head.children.getFirst();
-			// the first part after the head must be the body
-			var then = tree.children.get(1);
-			var m = variables;
-			String expression = toCode(condition, m);
-			branches.add(variables);
-			conditions.add(expression);
-			conditions.add(negate(expression));
-			var el = cloneMap(m);
-			// add branches for all new conditions after the body has been executed
-			branches.addAll(getConditions(then, m, conditions));
-			// check if it has an else
-			if (tree.children.size() == 3) {
-				branches.addAll(getConditions(tree.children.get(2), el, conditions));
-			}
-			return branches;
+			return getConditionsIf(tree, variables, precondition, branches);
 		}
 		case "switch" -> {
-			String expression = toCode(tree.children.getFirst().children.getFirst(), variables);
-			// for every case
-			var m = variables;
-			for (var c : tree.children.get(1).children) {
-				m = cloneMap(m);
-				String caseExpression = "(" + expression + " == " + toCode(c.children.getFirst().children.getFirst(), m)+")";				
-				conditions.add(caseExpression);
-				branches.addAll(getConditions(c.children.get(1), m, conditions));
-			}
-			return branches;
+			return getConditionsSwitch(tree, variables, precondition, branches);
 		}
 
 		}
@@ -318,23 +179,182 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		}
 		for (var child : tree.children) {
 			// shallow copy is fine
-			var currentbranches = new HashSet<>(branches);
+			var currentbranches = branches;
+			branches = new LinkedList<Pair<String,Map<String, String>>>(branches);
 			for (var branch : currentbranches) {
 				//remove previous branch as it might be changed but will be readded
 				branches.remove(branch);
 				// change the shallow to deepcopy
-				var nbranch = cloneMap(branch);
-				var nbranches = getConditions(child, nbranch, conditions);
+				var nbranches = getConditions(child, branch.second(), branch.first());
 				branches.addAll(nbranches);
 			}
+			
 		}
+		return branches;
+	}
+
+	/**
+	 * @param tree
+	 * @param variables
+	 * @param precondition
+	 * @param branches
+	 * @return
+	 */
+	private static List<Pair<String, Map<String, String>>> getConditionsSwitch(ASTTree tree,
+			Map<String, String> variables, String precondition, List<Pair<String, Map<String, String>>> branches) {
+		String expression = toCode(tree.children.getFirst().children.getFirst(), variables);
+		// for every case
+		var m = variables;
+		for (var c : tree.children.get(1).children) {
+			m = cloneMap(m);
+			String caseExpression = "(" + expression + " == " + toCode(c.children.getFirst().children.getFirst(), m)+")";				
+			if(!precondition.isBlank()) {
+				expression = '('+precondition + " && " +  expression+')';
+			}
+			branches.addAll(getConditions(c.children.get(1), m, expression));
+		}
+		return branches;
+	}
+
+	/**
+	 * @param tree
+	 * @param variables
+	 * @param precondition
+	 * @param branches
+	 * @return
+	 */
+	private static List<Pair<String, Map<String, String>>> getConditionsIf(ASTTree tree, Map<String, String> variables,
+			String precondition, List<Pair<String, Map<String, String>>> branches) {
+		var head = tree.children.getFirst();
+		ASTTree condition = head.children.getFirst();
+		// the first part after the head must be the body
+		var then = tree.children.get(1);
+		var m = variables;
+		String expression = toCode(condition, m);
+		String nexpr = negate(expression);
+		if(!precondition.isBlank()) {
+			expression = '('+precondition + " && " +  expression+')';
+			nexpr = '('+precondition + " && " +  nexpr+')';
+		}
+		var el = cloneMap(m);
+		// add branches for all new conditions after the body has been executed
+		branches.addAll(getConditions(then, m, expression));
+		// check if it has an else
+		if (tree.children.size() == 3) {
+			branches.addAll(getConditions(tree.children.get(2), el, nexpr));
+		}
+		return branches;
+	}
+
+	/**
+	 * @param tree
+	 * @param variables
+	 * @param precondition
+	 * @param branches
+	 * @return
+	 */
+	private static List<Pair<String, Map<String, String>>> getConditionsWhile(ASTTree tree,
+			Map<String, String> variables, String precondition, List<Pair<String, Map<String, String>>> branches) {
+		var head = tree.children.getFirst();
+		ASTTree condition = null;
+		for (var t : head.children) {
+
+			if (t.tag.equals("condition")) {
+				condition = t;
+			}
+		}
+		// the first part after the head must be the body
+		var body = tree.children.get(1);
+		List<Pair<String,Map<String, String>>> nbranches = new LinkedList<Pair<String,Map<String,String>>>();
+		nbranches.add(new Pair<String,Map<String,String>>(precondition, variables));
+		for (int i = 0; i < loopDepth; i++) {
+			//Save new branches to nbranches, move nbranches to temp to work only with the newest branches
+			var temp = nbranches;
+			nbranches = new LinkedList<Pair<String,Map<String,String>>>();
+			for(var branch : temp) {
+				String expression = toCode(condition.children.getFirst(), branch.second());
+				String nexpr = negate(expression);
+				if(!branch.first().isBlank()) {
+					expression = '('+branch.first() + " && " +  expression+')';
+					nexpr = '('+branch.first() + " && " +  nexpr+')';
+				}
+				nbranches.add(new Pair<String, Map<String,String>>(expression, variables));
+				// add branches for all new conditions after the body has been executed
+				var nbr= getConditions(body, branch.second(), expression);
+				nbranches.addAll(nbr);
+			}
+			branches.addAll(nbranches);
+			nbranches = new LinkedList<Pair<String,Map<String,String>>>();
+		}
+		return branches;
+	}
+
+	/**
+	 * @param tree
+	 * @param variables
+	 * @param precondition
+	 * @param branches
+	 * @return
+	 */
+	private static List<Pair<String, Map<String, String>>> getConditionsFor(ASTTree tree, Map<String, String> variables,
+			String precondition, List<Pair<String, Map<String, String>>> branches) {
+		var head = tree.children.getFirst();
+		ASTTree condition = null, update = null;
+		ASTTree init = null;
+		for (var t : head.children) {
+			if (t.tag.equals("init")) {
+				init = t;
+			}
+			if (t.tag.equals("condition")) {
+				condition = t;
+			}
+			if (t.tag.equals("update")) {
+				update = t;
+			}
+
+		}
+		var body = tree.children.get(1);
+		List<Pair<String,Map<String, String>>> nbranches = new LinkedList<Pair<String,Map<String,String>>>();
+		if (init != null) {
+			for (var in : init.children) {
+				toCode(in, variables);
+			}
+		}
+		nbranches.add(new Pair<String,Map<String,String>>(precondition, variables));
+		for (int i = 0; i < loopDepth; i++) {
+			//Save new branches to nbranches, move nbranches to temp to work only with the newest branches
+			var temp= nbranches;
+			nbranches = new LinkedList<Pair<String,Map<String,String>>>();
+			for(var branch : temp) {
+				String expression = toCode(condition.children.getFirst(), branch.second());
+				String nexpr = negate(expression);
+				if(!branch.first().isBlank()) {
+					expression = '('+branch.first() + " && " +  expression+')';
+					nexpr = '('+branch.first() + " && " +  nexpr+')';
+				}
+				branches.add(new Pair<String, Map<String,String>>(nexpr, cloneMap(branch.second())));
+				//nbranches.add(new Pair<String, Map<String,String>>(expression, variables));
+				// add branches for all new conditions after the body has been executed
+				var nbr= getConditions(body, branch.second(), expression);
+				if (update != null) {
+					for (var u : update.children) {
+						for(var b: nbr)
+						toCode(u, b.second());
+					}
+				}
+				nbranches.addAll(nbr);
+			}
+			branches.addAll(nbranches);
+		}
+		// finished evaluating the loop end recursion to let the higher order continue
+		// the program
 		return branches;
 	}
 	
 	//currently does not remove 
-	public static List<String> removeConstantAndDuplicateConditions(List<String> conditions){
+	public static List<Pair<String,Map<String, String>>> removeConstantAndDuplicateConditions(List<Pair<String,Map<String, String>>>conditions){
 		return conditions.stream().filter(
-				s -> !s.matches("([\\^|\\(| ][a-zA-Z_]+[$| |\\)|])|^[a-zA-Z_]+")
+				s -> !s.first().matches("([\\^|\\(| ][a-zA-Z_]+[$| |\\)|])|^[a-zA-Z_]+")
 		).distinct().toList();
 	}
 	
@@ -606,7 +626,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		this.testcases = new LinkedList<DynamicTestcase>();
 		List<ASTTree> methods = tree.getTreesWithTag("method");
 		for (ASTTree t : methods) {
-			testcases.addAll(generateTestcases( t, t.name, "", true));
+			testcases.addAll(generateTestcases( t, t.name, ""));
 		}
 		return this.testcases;
 	}
