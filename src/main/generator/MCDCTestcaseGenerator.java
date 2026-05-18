@@ -269,7 +269,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		nbranches.add(new Pair<String,Map<String,String>>(precondition, variables));
 		for (int i = 0; i < loopDepth; i++) {
 			//Save new branches to nbranches, move nbranches to temp to work only with the newest branches
-			var temp = nbranches;
+			var temp= nbranches;
 			nbranches = new LinkedList<Pair<String,Map<String,String>>>();
 			for(var branch : temp) {
 				String expression = toCode(condition.children.getFirst(), branch.second());
@@ -278,14 +278,16 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 					expression = '('+branch.first() + " && " +  expression+')';
 					nexpr = '('+branch.first() + " && " +  nexpr+')';
 				}
-				nbranches.add(new Pair<String, Map<String,String>>(expression, variables));
+				branches.add(new Pair<String, Map<String,String>>(nexpr, cloneMap(branch.second())));
+				//nbranches.add(new Pair<String, Map<String,String>>(expression, variables));
 				// add branches for all new conditions after the body has been executed
 				var nbr= getConditions(body, branch.second(), expression);
 				nbranches.addAll(nbr);
 			}
 			branches.addAll(nbranches);
-			nbranches = new LinkedList<Pair<String,Map<String,String>>>();
 		}
+		// finished evaluating the loop end recursion to let the higher order continue
+		// the program
 		return branches;
 	}
 
