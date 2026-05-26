@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptEngineManager;
@@ -22,8 +23,20 @@ import javax.tools.ToolProvider;
 import com.sun.source.util.JavacTask;
 
 import main.ast.ASTScannerText;
+import main.ast.ASTTestGenerator;
 import main.ast.ASTTree;
 import main.ast.ASTTreeScanner;
+import main.conditions.Condition;
+import main.conditions.Condition.BOOLCOMPOUND;
+import main.conditions.Condition.COMPARISON;
+import main.conditions.Condition.NUMCOMPOUND;
+import main.conditions.Condition.TYPE;
+import main.conditions.ConditionBoolCompound;
+import main.conditions.ConditionComparison;
+import main.conditions.ConditionElement;
+import main.conditions.ConditionNot;
+import main.conditions.ConditionNumCompound;
+import main.conditions.ConditionUtils;
 import main.generator.MCDCTestcaseGenerator;
 
 public class Main {
@@ -35,16 +48,14 @@ public class Main {
     public static void main(String[] args) {
         // a single argument that is directory from which .java sources are scanned.
         // If no argument supplied, use the current directory
-    	/*f
+    	/*
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
     	//*/
-    	try {
-			printScriptEndineData();
-		} catch (ScriptException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    	var set = ConditionElement.existing;
+    	Condition c = ConditionUtils.toCondition("(((true && (0 < (a * a))) && (a >= 0)) && (0+1 < (a * a)))", Set.of("a"));
+    	Condition e = c.evaluate();
+    	System.out.println(e);
     	Path input = Path.of("testfiles/Test.java");
     	Path outputTestcases = Path.of("testfiles/Test_conditions.txt");
     	ASTTree tree = loadFromPath(input);
@@ -53,11 +64,11 @@ public class Main {
 			return;
 		}
     	printToFile(Path.of("testfiles/Test2.ast"), tree.toString(), true);
-    	/*
+    	//*/
     	ASTTestGenerator atg = new ASTTestGenerator(tree);
     	atg.generateTestcases();
     	atg.saveToDirectory(outputTestcases);
-    	*/
+    	
     	
     	MCDCTestcaseGenerator mcdc = new MCDCTestcaseGenerator(tree);
     	List<String> methods = tree.getTreesWithTag("method").stream().map(t -> t.name).toList();
@@ -70,11 +81,6 @@ public class Main {
         	for(var condition: conditions) {
         		System.out.println(condition);
         		sb.append(condition);
-        		sb.append('\n');
-        		
-        		String test = MCDCTestcaseGenerator.evaluate(condition.first());
-        		System.out.println(test);
-        		sb.append(test);
         		sb.append('\n');
         	}
     	}
@@ -287,14 +293,6 @@ public class Main {
         return (m/1024)+"MB " + (m) + "KB";
     }
     
-    public static void printScriptEndineData() throws ScriptException {
-        for (ScriptEngineFactory se : new ScriptEngineManager(null).getEngineFactories()) {
-            System.out.println("se = " + se.getEngineName());
-            System.out.println("se = " + se.getEngineVersion());
-            System.out.println("se = " + se.getLanguageName());
-            System.out.println("se = " + se.getLanguageVersion());
-            System.out.println("se = " + se.getNames());
-        }
-    }
+    
 
 }

@@ -22,6 +22,8 @@ import main.Data;
 import main.Main;
 import main.Pair;
 import main.ast.ASTTree;
+import main.conditions.Condition;
+import main.conditions.ConditionUtils;
 import main.dynamic.DynamicTestcase;
 
 public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
@@ -99,13 +101,12 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	 *                   generated
 	 * @return a List of conditions for all branches of the methode
 	 */
-	public static List<Pair<String,Map<String, String>>> generateConditions(ASTTree tree, String methodsignature, String preconditions, boolean clean) {
-		List<Pair<String, Class<?>>> parameters = new LinkedList<Pair<String, Class<?>>>();
+	 public static List<Condition> generateConditions(ASTTree tree, String methodsignature, String preconditions, boolean clean) {
 		List<ASTTree> methods = tree.getTreesWithTag("method").stream().filter(a -> a.name.equals(methodsignature))
 				.collect(Collectors.toList());
 		if (methods.size() == 0) {
 			System.err.println("No method found for signature: " + methodsignature);
-			return new LinkedList<Pair<String,Map<String, String>>>();
+			return new LinkedList<Condition>();
 		}
 		if (methods.size() > 1) {
 			System.err.println("Multiple methods found for signature: " + methodsignature
@@ -113,18 +114,29 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		}
 		ASTTree method = methods.getFirst();
 		// The parameters must be the first part of the method
-
+		List<Pair<String, Class<?>>> parameters;
 		parameters = getParameters(method);
+		Set<String> parms = Pair.toMap(parameters).keySet();
+		
+		return getConditionsStringMap(parameters, clean, method).stream().map(
+				e -> ConditionUtils.toCondition(e.first(), parms).evaluate()).distinct().toList();
+	}
+
+	/**
+	 * @param clean
+	 * @param method
+	 * @return
+	 */
+	private static List<Pair<String, Map<String, String>>> getConditionsStringMap(List<Pair<String, Class<?>>> parameters, boolean clean, ASTTree method) {
 				var variables = new HashMap<String, String>();
 		// Put all parameters in the var Map to "fix" their value to themselves
 		for (var p : parameters) {
 			variables.put(p.first(), p.first());
 		}
-		var conditions = getConditions(method.children.get(1), variables, "");
+		var conditions = getConditions(method.children.get(1), variables, "true");
 		if(clean) {
 			conditions = removeConstantAndDuplicateConditions(conditions);
 		}
-		System.out.println("Generated: "+conditions.size()+" conditions");
 		
 		return conditions;
 	}
@@ -209,9 +221,9 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 			m = cloneMap(m);
 			String caseExpression = "(" + expression + " == " + toCode(c.children.getFirst().children.getFirst(), m)+")";				
 			if(!precondition.isBlank()) {
-				expression = '('+precondition + " && " +  expression+')';
+				caseExpression = '('+precondition + " && " +  caseExpression+')';
 			}
-			branches.addAll(getConditions(c.children.get(1), m, expression));
+			branches.addAll(getConditions(c.children.get(1), m, caseExpression));
 		}
 		return branches;
 	}
@@ -442,11 +454,9 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	
 	
 	
-	public static String evaluate(String expression) {
-		 StringBuilder sb = new StringBuilder();
-			String[] parts = expression.split(" ");
+	public static String evaluate(String expression, Set<String> variables) {
 			
-		 return sb.toString();
+		 return ConditionUtils.toCondition(expression, variables).toString();
 	}
 
 	private static final Set<String> TOCODE_EVALUATEABLE = Set.of(
@@ -502,9 +512,9 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 			}
 			String change = "";
 			if (tree.name.contains("DECREMENT")) {
-				change = "-1";
+				change = " - 1";
 			} else {
-				change = "+1";
+				change = " + 1";
 			}
 			if (tree.name.startsWith("PRE")) {
 				replace.put(tree.children.getFirst().name,
