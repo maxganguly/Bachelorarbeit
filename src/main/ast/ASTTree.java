@@ -225,13 +225,14 @@ public class ASTTree {
 	 */
 	public boolean isAtleastAsSpecific(ASTTree tree) {
 		if (!strEqual(tree.tag,this.tag)) {
-			if (//GENERALIZE_TO_LOOP.contains(tree.tag) && this.tag.equalsIgnoreCase("loop") ||
+			if (GENERALIZE_TO_LOOP.contains(tree.tag) && this.tag.equalsIgnoreCase("loop") ||
 					GENERALIZE_TO_LOOP.contains(this.tag) && tree.tag.equalsIgnoreCase("loop")) { // check if tree has been generalized																// and this has not
 				return true;
 			}
 			return false;
 		}
-		if ((this.type !=null && !strEqual(tree.type, this.type)) || (this.name !=null && !strEqual(tree.name, this.name))) { // if not null and not the same -> false
+		if ((tree.type != null && !strEqual(tree.type, this.type)) || 
+			(tree.name !=null && !strEqual(tree.name, this.name))) { // if not null and not the same -> false
 			return false;
 		}
 		return true;

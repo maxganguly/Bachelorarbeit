@@ -96,7 +96,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 			String[] split = t.name.split("\\.");
 			split[split.length-1] += ":"+t.score+".ast";
 			Path p = Path.of(path, split);
-			if(!Main.printToFile(p, t.tree.toString(),false)) {
+			if(!Main.printToFile(p, t.tree.toString(),Main.p.getProperty("OverwriteTestcases").equalsIgnoreCase("true"))) {
 				return false;
 			}
 			Main.debug("Wrote: "+p.toString()+" to disk");

@@ -54,5 +54,12 @@ Pseudosymbolic execution to get the MC/DC Testcases
 				evaluate current statement and get newBranches
 				recursion with newBranches
 				Add new
-				
+Testen mit neuen Switch case (Pattern matching)
+INhaltsverzeichnis
+Einleitung
+Related Work
+Umsetzug 
+Evaluierung
+Conclusion
+Bin bei EP1 Testkorrektur dabei
 			

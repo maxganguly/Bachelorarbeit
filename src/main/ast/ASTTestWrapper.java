@@ -17,11 +17,14 @@ public class ASTTestWrapper extends AbstractTestWrapper {
 		String filename = solution.getFileName().toString();
 		var atg = new ASTTestGenerator(Main.generateAST(solution).getFirst());
 		//System.out.println(atg.code.code);
+		if(Main.p.getProperty("GenerateTestcases").equalsIgnoreCase("true")){
+			atg.generateTestcases();
+		}
 		String pureName = filename.substring(0, filename.lastIndexOf('.'));
 		atg.loadFromDirectory(Path.of(Main.p.getProperty("Testcases")+"/"+pureName));
 		tester = new ASTTester();
 		tester.addTestcases(atg.getTestcases());
-		if(Main.p.getProperty("SaveTestcases").equalsIgnoreCase("true")){
+		if (Main.p.getProperty("SaveTestcases").equalsIgnoreCase("true")){
 			Main.debug("Saving: "+pureName);
 			atg.saveToDirectory(Path.of(Main.p.getProperty("Testcases")+"/"+pureName));
 		}

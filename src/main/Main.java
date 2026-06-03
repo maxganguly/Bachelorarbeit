@@ -24,6 +24,9 @@ import com.sun.source.util.JavacTask;
 
 import main.ast.ASTScannerText;
 import main.ast.ASTTestGenerator;
+import main.ast.ASTTestWrapper;
+import main.ast.ASTTestcase;
+import main.ast.ASTTester;
 import main.ast.ASTTree;
 import main.ast.ASTTreeScanner;
 import main.conditions.Condition;
@@ -41,33 +44,30 @@ import main.generator.MCDCTestcaseGenerator;
 
 public class Main {
 	public static final PrintStream SYSOUT = System.out;
-	public static final boolean DEBUG = false;
+	public static final boolean DEBUG = true;
 	public static final String PROPERTIESPATH = "./autograder.properties";
 	public static final Properties p = loadProperties();
 
     public static void main(String[] args) {
-        // a single argument that is directory from which .java sources are scanned.
-        // If no argument supplied, use the current directory
-    	/*
+        /*
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
-    	//*/
+    	*/
+    	/*
     	var set = ConditionElement.existing;
-    	Condition c = ConditionUtils.toCondition("(((true && (0 < (a * a))) && (a >= 0)) && (0+1 < (a * a)))", Set.of("a"));
+    	Condition c = ConditionUtils.toCondition(
+    			"(((((0 < arr1.length()) && ((0 * 1) >= arr1.length())) && (0 < [arr1.length()].length())) && (0 >= [Math.max(arr1[i].length(),arr2[i].length())].length())) && ((0 * 1) < [arr1.length()].length()))\n"
+    			, Set.of("arr1","arr2"));
     	Condition e = c.evaluate();
     	System.out.println(e);
-    	Path input = Path.of("testfiles/Test.java");
-    	Path outputTestcases = Path.of("testfiles/Test_conditions.txt");
+    	Path input = Path.of("testfiles/Test2.java");
+    	Path outputTestcases = Path.of("testfiles/Test2_conditions.txt");
     	ASTTree tree = loadFromPath(input);
     	
     	if(tree == null) {
 			return;
 		}
     	printToFile(Path.of("testfiles/Test2.ast"), tree.toString(), true);
-    	//*/
-    	ASTTestGenerator atg = new ASTTestGenerator(tree);
-    	atg.generateTestcases();
-    	atg.saveToDirectory(outputTestcases);
     	
     	
     	MCDCTestcaseGenerator mcdc = new MCDCTestcaseGenerator(tree);
@@ -78,14 +78,16 @@ public class Main {
     		System.out.println(method);
         	sb.append('\n');
         	var conditions = MCDCTestcaseGenerator.generateConditions(tree, method, "", false);
+        	System.out.println("Generated: "+conditions.size()+" Conditions");
         	for(var condition: conditions) {
         		System.out.println(condition);
         		sb.append(condition);
         		sb.append('\n');
         	}
     	}
-    		printToFile(outputTestcases, sb.toString(), true);
+    	printToFile(outputTestcases, sb.toString(), true);
     	
+    	*/
     	
     /*
 
@@ -123,6 +125,18 @@ public class Main {
     	System.out.println("Score: "+ score);
 
         //*/
+    	
+    	 
+    	//*
+    	//Generate and run tests
+    	try {
+			Test t = new Test();
+			//t.test();
+			t.writeToResults();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	//*/
 
     }
 
@@ -277,8 +291,10 @@ public class Main {
     	p.setProperty("SolutionInputDir", "./solution");
     	p.setProperty("ToTestInputDirs", "./test");
     	p.setProperty("ResultOutputDir", "./results/");
-    	p.setProperty("PrintAllTests", "True");
-    	p.setProperty("SaveTestcases", "True");
+    	p.setProperty("GenerateTestcases", "true");
+    	p.setProperty("PrintAllTests", "true");
+    	p.setProperty("SaveTestcases", "true");
+    	p.setProperty("OverwriteTestcases", "false");
     	try {
 			p.store(new FileWriter(PROPERTIESPATH), "Properties for the Autograder");
 		} catch (IOException e) {
