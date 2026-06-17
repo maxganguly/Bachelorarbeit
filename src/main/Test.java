@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import main.ast.ASTTestWrapper;
+import main.dynamic.DynamicTestWrapper;
 
 public class Test {
 
@@ -35,10 +36,9 @@ public class Test {
 					String pureName = filename.substring(0, filename.lastIndexOf('.'));
 					var testerlist = new LinkedList<AbstractTestWrapper>();
 					testerlist.add(new ASTTestWrapper(file));
-					//TODO: Add Dynamic after implementing DynamicTestcases
-
+					testerlist.add(new DynamicTestWrapper(file));
 					testers.put(pureName, testerlist);
-
+					
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -67,6 +67,10 @@ public class Test {
 		var results = new LinkedList<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> ();
 		List<Tripel<String,Integer,Path>> srcDirs = getAllSrcDirectories();
 		for(var src: srcDirs) {
+			if(src.third() == null) {
+				Main.debug("Unable to find src directory for: "+src.toString() +"skipping...");
+				continue;
+			}
 			var student = new Pair<>(src.first(),src.second());
 			var resultsstudent = new LinkedList<Pair<String,List<Pair<String,Integer>>>>();
 			try {
@@ -87,6 +91,7 @@ public class Test {
 					resultsstudent.add(new Pair<>(pureName,resultsfile));
 				}
 			} catch (IOException e) {
+				Main.debug(src.third().toString());
 				e.printStackTrace();
 			}
 			results.add(

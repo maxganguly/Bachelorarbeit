@@ -39,7 +39,7 @@ public class ConditionComparison implements Condition {
 	public Condition evaluate() {
 		Condition eleft = left.evaluate();
 		Condition eright = right.evaluate();
-		if(eleft == eright) {
+		if(eleft.equals(eright)) {
 			//If both sides are the same check for equality checks
 			return  ConditionElement.fromBoolean(comparison == COMPARISON.EQUALS ||
 					comparison == COMPARISON.GREATER_OR_EQUALS ||
@@ -66,7 +66,7 @@ public class ConditionComparison implements Condition {
 			case LESS_THAN : return ConditionElement.fromBoolean(l<r);
 			}
 		} catch (NumberFormatException e) {}
-		return this;
+		return new ConditionComparison(cleft, comparison, cright);
 	}
 
 	@Override

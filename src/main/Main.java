@@ -137,6 +137,7 @@ public class Main {
 			e.printStackTrace();
 		}
     	//*/
+    	System.out.println("Finished");
 
     }
 
@@ -155,6 +156,7 @@ public class Main {
     	try {
     		Files.createDirectories(file.getParent());
 			Files.write(file, content.getBytes(), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING);
+			Main.debug("Wrote: "+file.toString()+" to disk");
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -194,14 +196,14 @@ public class Main {
 
     	return results;//sb.toString();
     }
-    @Deprecated
     /**
-     * Generates a textual AST in xml format
-     * Deprecated use generateAST toString
+     * Generates a textual AST in xml format<br >
+     * <b>Deprecated use generateAST toString</b>
      * @param javaSrc
      * @return
      * @throws IOException
      */
+    @Deprecated 
     public static String generateASTText(Path javaSrc) throws IOException{
         var compUnits = compiler.
                 getStandardFileManager(null, null, null).

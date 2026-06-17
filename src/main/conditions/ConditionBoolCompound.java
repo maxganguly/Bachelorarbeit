@@ -52,6 +52,18 @@ public class ConditionBoolCompound implements Condition {
 				return right;
 			if(right == ConditionElement.TRUE)
 				return left;
+			if(left instanceof ConditionComparison && right instanceof ConditionComparison) {
+				var ccl = (ConditionComparison) left;
+				var ccr = (ConditionComparison) right;
+				if(ccl.left.equals(ccr.left) && 
+						ccl.comparison == ccr.comparison.invert() &&
+						ccl.right.equals(ccr.right))
+					return ConditionElement.FALSE;
+				if(ccl.left.equals(ccr.right) && 
+						ccl.comparison == ccr.comparison &&
+						ccl.right.equals(ccr.left))
+					return ConditionElement.FALSE;
+			}
 			return new ConditionBoolCompound(left, compound, right);
 		}
 		
@@ -75,7 +87,7 @@ public class ConditionBoolCompound implements Condition {
 				return ConditionElement.TRUE;
 			return new ConditionBoolCompound(left, compound, right);
 		}
-		return null;
+		return ConditionElement.TRUE;
 	}
 	
 	@Override

@@ -5,6 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import main.Data;
+import main.Main;
 import main.Pair;
 import main.Testcase;
 
@@ -51,6 +52,9 @@ public class DynamicTestcase extends Testcase {
 		if(param == null || param.isBlank()) {
 			return null;
 		}
+		if(param.indexOf(' ')==-1) {
+			System.err.println("Something went wrong");
+		}
 		String type = param.substring(0, param.indexOf(' '));
 		String value = param.substring(param.indexOf(' ')+1);
 		if(type.equals("null")) {
@@ -77,13 +81,24 @@ public class DynamicTestcase extends Testcase {
 	private static Object get1DArray(String c, String type) {
 		String content = c.substring(1, c.length()-1);
 			switch(type) { //Oneliners simple
-				case "int": return Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
-				case "long": return Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToLong(i -> ((Long)i).longValue()).toArray();
-				case "double": return Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
-				case "String": return content.split(",");
+				case "int": if(c.equals("{}")) return new int[] {}; 
+					return Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
+				case "long":  if(c.equals("{}")) return new long[] {}; 
+				return Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToLong(i -> ((Long)i).longValue()).toArray();
+				case "double":  if(c.equals("{}")) return new double[] {}; 
+				return Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
+				case "String":  if(c.equals("{}")) return new String[] {}; 
+				return content.split(",");
 				default: break;
 			}
 			if(type.equals("byte") || type.equals("short")) {
+				 if(c.equals("{}")) {
+					 if(type.equals("byte")) {
+						 return new byte[] {}; 
+					 }
+					 return new short[] {};
+				 }
+					
 				int[] arr = Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToInt(i -> ((Integer)i).intValue()).toArray();
 				if (type.equals("byte")) {
 					byte[] barr = new byte[arr.length];
@@ -98,14 +113,18 @@ public class DynamicTestcase extends Testcase {
 					}
 					return barr;
 				}
-			} else if(type.equals("float")) {
+			} else if(type.equals("float")) { 
+				if(c.equals("{}")) return new float[] {}; 
+			
 				double[] arr = Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).mapToDouble(i -> ((Double)i).doubleValue()).toArray();
 				float[] barr = new float[arr.length];
 				for(int i = 0; i < arr.length;i++) {
 					barr[i] = (float) arr[i];
 				}
 				return barr;
-			} else if(type.equals("boolean")) {
+			} else if(type.equals("boolean")) { 
+				if(c.equals("{}")) return new boolean[] {}; 
+			
 				Boolean[] arr = (Boolean[]) Arrays.stream(content.split(",")).map(Data.STRING_TO_PRIMITIVE.get(type)).toArray();
 				boolean[] barr = new boolean[arr.length];
 				for(int i = 0; i < arr.length;i++) {

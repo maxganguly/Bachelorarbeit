@@ -22,13 +22,16 @@ public class Executor {
 
 	private PrintStream os;
 
-	public Executor(String path) {
-		this(Path.of(path));
+	public Executor(String path, boolean replaceprivate) {
+		this(Path.of(path),replaceprivate);
 	}
 
-	public Executor(Path path) {
+	public Executor(Path path, boolean replaceprivate) {
 		try {
-			this.clazz = getClass(Main.getFromPath(path));
+			String code = Main.getFromPath(path);
+			if(replaceprivate)
+				code = code.replaceAll("private", "public");
+			this.clazz = getClass(code);
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

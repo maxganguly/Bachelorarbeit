@@ -34,7 +34,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	/**
 	 * Maximum amount a loop is being recalculated to generate Testcases minimum 1
 	 */
-	public static int loopDepth = 3;
+	public static int loopDepth = 2;
 
 	/**
 	 * Takes the ASTTree of a class and generates MCDC Testcases for it

@@ -38,6 +38,18 @@ public interface Condition {
 		public String toString() {
 			return representation;
 		}
+		
+		public COMPARISON invert() {
+			switch (this){
+			case NOT_EQUALS: return EQUALS;
+			case EQUALS: return NOT_EQUALS;
+			case GREATER_THAN: return LESS_OR_EQUALS;
+			case GREATER_OR_EQUALS: return LESS_THAN;
+			case LESS_OR_EQUALS: return GREATER_THAN;
+			case LESS_THAN: return GREATER_OR_EQUALS;
+			}
+			return null;
+		}
 	}
 
 	public enum BOOLCOMPOUND{
@@ -62,6 +74,7 @@ public interface Condition {
 		public String toString() {
 			return representation;
 		}
+		
 	}
 
 	public enum NUMCOMPOUND{

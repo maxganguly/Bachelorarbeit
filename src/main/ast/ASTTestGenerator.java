@@ -99,7 +99,6 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 			if(!Main.printToFile(p, t.tree.toString(),Main.p.getProperty("OverwriteTestcases").equalsIgnoreCase("true"))) {
 				return false;
 			}
-			Main.debug("Wrote: "+p.toString()+" to disk");
 		}
 		return true;
 	}
@@ -122,7 +121,11 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 			@Override
 			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				if(!attrs.isDirectory()) {
+					
 					String name = file.getFileName().toString();
+					if(!name.endsWith(".ast")) {
+						return FileVisitResult.CONTINUE;
+					}
 					name = name.substring(0,name.lastIndexOf("."));
 					String[] elements = name.split(":");
 					if(elements.length != 2) {

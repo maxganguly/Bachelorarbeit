@@ -6,7 +6,7 @@ import java.util.List;
 
 public abstract class Tester<E extends main.Testcase> {
 
-	List<E> testcases;
+	protected List<E> testcases;
 
 	public Tester() {
 		testcases = new LinkedList<E>();
@@ -24,6 +24,7 @@ public abstract class Tester<E extends main.Testcase> {
 	 */
 	public void addTestcase(E test) {
 		this.testcases.add(test);
+		this.testcases = this.testcases.stream().distinct().toList();
 
 	}
 	/**
@@ -34,6 +35,7 @@ public abstract class Tester<E extends main.Testcase> {
 		for(E t : testcases ) {
 			addTestcase(t);
 		}
+		this.testcases = this.testcases.stream().distinct().toList();
 	}
 
 
@@ -43,6 +45,7 @@ public abstract class Tester<E extends main.Testcase> {
 	 */
 	public void addTestcases(List<E> testcases) {
 		this.testcases.addAll(testcases);
+		this.testcases = this.testcases.stream().distinct().toList();
 	}
 	/**
 	 * Runs all Testcases and returns the Result as defined in the Testcase interface

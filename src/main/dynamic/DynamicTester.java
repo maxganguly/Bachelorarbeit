@@ -27,7 +27,6 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	boolean cacheTestcases;
 	Map<DynamicTestcase,Pair<Object,String>> cache;
 	Executor solution, test;
-	List<DynamicTestcase> testcases;
 	PrintStream ps;
 	BufferedReader br;
 
@@ -56,7 +55,6 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		testcases = new LinkedList<>();
 	}
 	public DynamicTester(Executor solution, Executor test, String path) {
 		this(solution, test);
@@ -123,6 +121,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			} catch (IOException e) {
 				e.printStackTrace();
 			} catch (MethodNotFoundException e) {
+				if(!ignoreMethodNotFound)
 				e.printStackTrace();
 			}
 		}
@@ -201,22 +200,22 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			//Currently it only allows primitive Datatypes, so if it isn't a primitive dt It must be an Array of (multidimensional array)
 			//Currently allows up to 3d arrays to be compared
 			switch (o.getClass().getName()) {
-			case "[[B": return Arrays.toString((byte[][])o);
-			case "[[S": return Arrays.toString((short[][])o);
-			case "[[I": return Arrays.toString((int[][])o);
-			case "[[J": return Arrays.toString((long[][])o);
-			case "[[F": return Arrays.toString((float[][])o);
-			case "[[D": return Arrays.toString((double[][])o);
-			case "[[C": return Arrays.toString((char[][])o);
-			case "[[Z": return Arrays.toString((boolean[][])o);
-			case "[[[B": return Arrays.toString((byte[][][])o);
-			case "[[[S": return Arrays.toString((short[][][])o);
-			case "[[[I": return Arrays.toString((int[][][])o);
-			case "[[[J": return Arrays.toString((long[][][])o);
-			case "[[[F": return Arrays.toString((float[][][])o);
-			case "[[[D": return Arrays.toString((double[][][])o);
-			case "[[[C": return Arrays.toString((char[][][])o);
-			case "[[[Z": return Arrays.toString((boolean[][][])o);
+			case "[[B": return Arrays.deepToString((byte[][])o);
+			case "[[S": return Arrays.deepToString((short[][])o);
+			case "[[I": return Arrays.deepToString((int[][])o);
+			case "[[J": return Arrays.deepToString((long[][])o);
+			case "[[F": return Arrays.deepToString((float[][])o);
+			case "[[D": return Arrays.deepToString((double[][])o);
+			case "[[C": return Arrays.deepToString((char[][])o);
+			case "[[Z": return Arrays.deepToString((boolean[][])o);
+			case "[[[B": return Arrays.deepToString((byte[][][])o);
+			case "[[[S": return Arrays.deepToString((short[][][])o);
+			case "[[[I": return Arrays.deepToString((int[][][])o);
+			case "[[[J": return Arrays.deepToString((long[][][])o);
+			case "[[[F": return Arrays.deepToString((float[][][])o);
+			case "[[[D": return Arrays.deepToString((double[][][])o);
+			case "[[[C": return Arrays.deepToString((char[][][])o);
+			case "[[[Z": return Arrays.deepToString((boolean[][][])o);
 			default:
 				throw new IllegalArgumentException("Unexpected value: " + o.getClass().getName());
 			}
@@ -292,6 +291,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		return primitives.contains(o.getClass());
 	}
 
+	private Object returnTest;
 	/**
 	 * Runs a singe Testcase given as String and returns the Result
 	 * @param testcase the testcase to be run
@@ -303,7 +303,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 
 		Object returnSolution = null;
 		String outSolution = null;
-		Object returnTest;
+		returnTest = null;
 		String outTest;
 		boolean ranSolution = false;
 		try {
@@ -320,8 +320,28 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 					this.cache.put(testcase, new Pair<Object,String>(returnSolution,outSolution));
 				}
 			}
-			returnTest = test.runMethod(testcase.name, testcase.params);
+			
+			Thread t = new Thread(() -> {
+				try {
+					returnTest = test.runMethod(testcase.name, testcase.params);
+				} catch (MethodNotFoundException e) {
+					returnTest = e;
+				}
+			});
+			t.start();
+			int slept = 0;
+			try {
+				//needs to be better;
+				while(slept<= 1_000 && returnTest == null) {
+					Thread.currentThread().sleep(100);
+					slept+=100;
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if (t.isAlive()) t.interrupt();
 			outTest = readall();
+			System.out.println("done");
 		} catch (MethodNotFoundException mnfe ) {
 			if(!ranSolution) {
 				throw mnfe;
@@ -385,7 +405,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	@Override
 	public List<Pair<String, Integer>> runAllTestcases(Path p) {
 		Executor temp = this.test;
-		this.test = new Executor(p);
+		this.test = new Executor(p,true);
 		var result = runAllTestcases();
 		this.test = temp;
 		return result;
@@ -393,7 +413,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	@Override
 	public Pair<String, Integer> test(Path p, DynamicTestcase testcase) {
 		Executor temp = this.test;
-		this.test = new Executor(p);
+		this.test = new Executor(p,true);
 		var result = test(testcase);
 		this.test = temp;
 		return result;

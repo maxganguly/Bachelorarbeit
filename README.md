@@ -3,7 +3,7 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
 
 ### TODO
 
-+ [ ] Prototyp AST
++ [x] Prototyp AST
   + [x] AST Generation
   + [x] AST Vergleich
     + [x] Add Grouping, ordering (ordered, unordered) and comparision modi (none,all,any)
@@ -14,7 +14,7 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
       + [ ] ?Improve
     + [x] Score tests
 + [ ] MC/DC generate Coverage testcases
-  + [ ] Get all Conditions
+  + [x] Get all Conditions
   + [ ] Generate Testcases based on conditions
 
 + [ ] Mutation Testing to check coverages
@@ -24,6 +24,7 @@ Ein Repository um den Verlauf meiner Bachelorarbeit und ebendiese zu dokumentier
     + [x] Validate (True/False)
     + [x] Evaluate (What went wrong)
       + [ ] ?Improve
+    + [ ] Compare changed parameters
   + [x] Score Testcases
 + [x] Testcases
   + [x] Generalize Testcases
