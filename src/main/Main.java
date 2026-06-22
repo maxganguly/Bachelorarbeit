@@ -44,7 +44,7 @@ import main.generator.MCDCTestcaseGenerator;
 
 public class Main {
 	public static final PrintStream SYSOUT = System.out;
-	public static final boolean DEBUG = true;
+	public static final boolean DEBUG = false;
 	public static final String PROPERTIESPATH = "./autograder.properties";
 	public static final Properties p = loadProperties();
 
@@ -138,6 +138,7 @@ public class Main {
 		}
     	//*/
     	System.out.println("Finished");
+    	System.exit(0);
 
     }
 
@@ -274,6 +275,12 @@ public class Main {
     public static void debug(String msg) {
     	if(DEBUG) {
 			System.err.println(msg);
+		}
+    }
+    
+    public static void debug(Exception msg) {
+    	if(DEBUG) {
+			msg.printStackTrace();
 		}
     }
 

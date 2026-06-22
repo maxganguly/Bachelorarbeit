@@ -6,7 +6,7 @@ package main;
 public abstract class Testcase {
 	public final String testcase;
 	public final int score;
-
+	
 	public Testcase(String testcase, int score) {
 		this.testcase = testcase;
 		this.score = score;
@@ -19,4 +19,5 @@ public abstract class Testcase {
 	public Pair<String, Integer> testcase(){
 		return new Pair<>(testcase,score);
 	}
+	
 }

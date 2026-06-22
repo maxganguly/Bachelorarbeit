@@ -38,7 +38,7 @@ public class ASTTester extends Tester<ASTTestcase> {
 			code = temp;
 			return t;
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug(e);
 		}
 		return new LinkedList<Pair<String, Integer>>();
 	}
@@ -52,7 +52,7 @@ public class ASTTester extends Tester<ASTTestcase> {
 			code = temp;
 			return t;
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug(e);
 			return new Pair<String,Integer>(e.getMessage(),-100);
 		}
 	}

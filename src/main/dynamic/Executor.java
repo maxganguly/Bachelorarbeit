@@ -29,18 +29,21 @@ public class Executor {
 	public Executor(Path path, boolean replaceprivate) {
 		try {
 			String code = Main.getFromPath(path);
-			if(replaceprivate)
+			if(replaceprivate) {
 				code = code.replaceAll("private", "public");
+				code = code.replace("static public", "public static");
+				code = code.replace("    static", "    public static");
+			}
 			this.clazz = getClass(code);
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Main.debug(e);
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Main.debug(e);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Main.debug(e);
 		}
 	}
 
@@ -49,13 +52,13 @@ public class Executor {
 			this.clazz = getClass(name, Main.getFromPath(path));
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Main.debug(e);
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Main.debug(e);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			Main.debug(e);
 		}
 	}
 
@@ -75,7 +78,7 @@ public class Executor {
 	 * Runs the Main method of the given class
 	 * @throws MethodNotFoundException if there is no main Method in the class
 	 */
-	public void runMain() throws MethodNotFoundException {
+	public void runMain() throws MethodNotFoundException, InvocationTargetException {
 		runMethod("main", (Object) (new String[] {}));
 	}
 
@@ -86,7 +89,7 @@ public class Executor {
 	 * @return the return of the invoked method null if void
 	 * @throws MethodNotFoundException if the method was not found
 	 */
-	public Object runMethod(String methodname, Object... params) throws MethodNotFoundException {
+	public Object runMethod(String methodname, Object... params) throws MethodNotFoundException, InvocationTargetException {
 		Method[] meth = clazz.getDeclaredMethods();
 		if(os != null) {
 			System.setOut(os);
@@ -101,9 +104,10 @@ public class Executor {
 					ran = true;
 					break;
 				} catch (IllegalAccessException e) {
-					e.printStackTrace();
+					Main.debug(e);
 				} catch (InvocationTargetException e) {
-					e.printStackTrace();
+					Main.debug(e);
+					throw e;
 				} catch (IllegalArgumentException e) {
 					//When overloading Methods this might be triggered
 					//e.printStackTrace();
@@ -191,9 +195,18 @@ public class Executor {
 	        diagnostics.getDiagnostics()
 	          .forEach(d -> System.out.println(String.valueOf(d)));
 	    }
+	    	try {
 	        ClassLoader classLoader = manager.getClassLoader(null);
 	        Class<?> clazz = classLoader.loadClass(name);
 	        return clazz;
+	    	} catch(ClassNotFoundException e) {
+	    		Main.debug(e);
+	    		return null;
+	    	}
+	}
+	
+	public boolean hasClass() {
+		return this.clazz != null;
 	}
 
 }

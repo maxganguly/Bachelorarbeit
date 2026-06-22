@@ -16,4 +16,9 @@ public record Pair<X,Y> (X first, Y second) {
 		list.forEach(e -> map.put(e.first, e.second));
 		return map;
 	}
+	
+	@Override
+	public final String toString() {
+		return first.toString()+':'+second.toString();
+	}
 }

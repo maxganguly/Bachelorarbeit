@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import main.Data;
+import main.Main;
 import main.Pair;
 
 /**
@@ -50,10 +52,11 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			PipedOutputStream pos = new PipedOutputStream(pis);
 			ps = new PrintStream(pos);
 			this.br = new BufferedReader(new InputStreamReader(pis));
+			solution.setOutput(ps);
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			Main.debug(e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug(e);
 		}
 	}
 	public DynamicTester(Executor solution, Executor test, String path) {
@@ -69,7 +72,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			}
 			br.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug(e);
 		}
 	}
 
@@ -99,7 +102,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		try {
 		return analyzeTestcases(runTestcases(true));
 		} catch (MethodNotFoundException e) {
-			e.printStackTrace();
+			Main.debug(e);
 			return null;
 		}
 	}
@@ -119,10 +122,10 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			try {
 				results.add(runTestcase(dt));
 			} catch (IOException e) {
-				e.printStackTrace();
+				Main.debug(e);
 			} catch (MethodNotFoundException e) {
 				if(!ignoreMethodNotFound)
-				e.printStackTrace();
+					Main.debug(e);
 			}
 		}
 
@@ -161,10 +164,28 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			sb.append("\"");
 		}
 		if(!isEqual(testcase.expectedOutput,testcase.gottenOutput)) {
-			sb.append(" expected to print: ");
-			sb.append(testcase.expectedOutput);
-			sb.append(" but printed: ");
+			if(testcase.expectedOutput == null || testcase.expectedOutput.isBlank()) {
+				sb.append("Expected no output, ");
+			}else {
+				sb.append("Expected to print: \"");
+				sb.append(testcase.expectedOutput);
+			}
+			sb.append("\" but printed: \"");
 			sb.append(testcase.gottenOutput);
+			sb.append("\"");
+		}
+		if(!isEqual(testcase.expected_Exception,testcase.gotten_Exception())) {
+			if(testcase.expected_Exception == null) {
+				sb.append("Expected no exception, ");
+			}else {	
+				sb.append("Expected exception: ");
+				sb.append(testcase.expected_Exception);
+			}
+			sb.append(" but got: ");
+			sb.append(testcase.gotten_Exception);
+		}
+		if(testcase.optionalMessage() != null) {
+			sb.append(testcase.optionalMessage);
 		}
 		return sb.toString();
 	}
@@ -292,6 +313,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	}
 
 	private Object returnTest;
+	private Throwable gottenException;
 	/**
 	 * Runs a singe Testcase given as String and returns the Result
 	 * @param testcase the testcase to be run
@@ -299,13 +321,17 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	 * @throws IOException if the System read does not work (unlikely)
 	 * @throws MethodNotFoundException if the Method in the testcase does not exist in the solution
 	 */
-	public Result runTestcase(DynamicTestcase testcase) throws IOException, MethodNotFoundException {
+	private Result runTestcase(DynamicTestcase testcase) throws IOException, MethodNotFoundException {
 
+		if(!this.test.hasClass()) {
+			return new Result(testcase, false, null, null, null, null, null, null, "Class could not be compiled");
+		}
 		Object returnSolution = null;
 		String outSolution = null;
 		returnTest = null;
 		String outTest;
 		boolean ranSolution = false;
+		Throwable expectedException = null;
 		try {
 			if(this.cacheTestcases) {
 				if(this.cache.keySet().contains(testcase)) {
@@ -314,18 +340,25 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 					outSolution = p.second();
 					ranSolution = true;
 				}else {
+					try {
 					returnSolution = solution.runMethod(testcase.name, testcase.params);
+					} catch(InvocationTargetException e) {
+						expectedException = e.getCause();
+					}
 					outSolution = readall();
 					ranSolution = true;
 					this.cache.put(testcase, new Pair<Object,String>(returnSolution,outSolution));
 				}
 			}
-			
+			gottenException = null;
+			returnTest = null;
 			Thread t = new Thread(() -> {
 				try {
 					returnTest = test.runMethod(testcase.name, testcase.params);
 				} catch (MethodNotFoundException e) {
-					returnTest = e;
+					gottenException = e;
+				} catch(InvocationTargetException e) {
+					gottenException = e.getCause();
 				}
 			});
 			t.start();
@@ -333,22 +366,24 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			try {
 				//needs to be better;
 				while(slept<= 1_000 && returnTest == null) {
-					Thread.currentThread().sleep(100);
-					slept+=100;
+					Thread.currentThread().sleep(10);
+					slept+=10;
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				Main.debug(e);
 			}
-			if (t.isAlive()) t.interrupt();
+			if (t.isAlive()) {
+				t.interrupt();
+				
+			}
 			outTest = readall();
-			System.out.println("done");
 		} catch (MethodNotFoundException mnfe ) {
 			if(!ranSolution) {
 				throw mnfe;
 			}
-			return new Result(testcase, false, returnSolution, null, outSolution, null);
+			return new Result(testcase, false, returnSolution, null, outSolution, null, expectedException, gottenException, null);
 		}
-		return new Result(testcase, isEqual(returnSolution, returnTest) && isEqual(outSolution, outTest), returnSolution, returnTest, outSolution, outTest);
+		return new Result(testcase, isEqual(returnSolution, returnTest) && isEqual(outSolution, outTest), returnSolution, returnTest, outSolution, outTest, expectedException, gottenException, null);
 	}
 
 	/**
@@ -364,22 +399,33 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		return sb.toString();
 	}
 
-	public record Result(DynamicTestcase testcase, boolean succesfull, Object expectedResult, Object gottenResult, String expectedOutput, String gottenOutput){}
+	public record Result(
+			DynamicTestcase testcase, boolean succesfull, 
+			Object expectedResult, Object gottenResult, 
+			String expectedOutput, String gottenOutput, 
+			Throwable expected_Exception, Throwable gotten_Exception, 
+			String optionalMessage){}
 
 	@Override
 	public Pair<String, Integer> test(DynamicTestcase testcase) {
 		// TODO Auto-generated method stub
 		Result r;
+		if(ps != null) {
+			System.setOut(ps);
+		}
 		try {
 			r = runTestcase(testcase);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug(e);
+			System.setOut(Main.SYSOUT);
 			return new Pair<String,Integer>(e.toString(), -1);
 		} catch (MethodNotFoundException e) {
-			e.printStackTrace();
+			Main.debug(e);
+			System.setOut(Main.SYSOUT);
 			return new Pair<String,Integer>(e.toString(), -1);
 		}
 		String a = analyzeTestcase(r);
+		System.setOut(Main.SYSOUT);
 		return new Pair<String, Integer>(a,
 				r.succesfull? r.testcase().score : 0 );
 	}

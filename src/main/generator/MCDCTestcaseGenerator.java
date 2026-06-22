@@ -707,7 +707,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		try {
 			Files.walkFileTree(pathToDirectory, files);
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug(e);
 		}
 		return testcases;
 	}

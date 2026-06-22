@@ -73,6 +73,7 @@ public class Test {
 			}
 			var student = new Pair<>(src.first(),src.second());
 			var resultsstudent = new LinkedList<Pair<String,List<Pair<String,Integer>>>>();
+			Main.debug("Currently working on: "+ student);
 			try {
 				List<Path> children = Files.list(src.third()).toList();
 				for(Path p: children) {
@@ -109,12 +110,57 @@ public class Test {
 	public void writeToResults() {
 		var results = test();
 		String rootPath = Main.p.getProperty("ResultOutputDir");
+		StringBuilder csv = new StringBuilder("Name");
 		boolean saveEverything = Boolean.parseBoolean(Main.p.getProperty("PrintAllTests"));
+		csv.append(";Mat.Nr.");
+		String category = "";
+		String oldcat = "";
+		for(Pair<String,Integer> element: results.getFirst().second().getFirst().second()) {
+			String col = element.first();
+			category = col.substring(0, col.indexOf('('));
+			/*
+			col = col.substring(0,col.indexOf('('))+ col.substring(col.indexOf(')')+1, col.length());
+			col = col.strip();
+			col = col.substring(0, col.lastIndexOf(' '));
+			csv.append(";"+col);*/
+			if(!category.equals(oldcat)) {
+				csv.append(";"+category);
+				oldcat = category;
+			}
+		}
+		oldcat = "";
+		csv.append(System.lineSeparator());
 		for(var students: results) {
-			String studentPath = students.first().first()+"_"+students.first().second();
+			Main.SYSOUT.println("Testing: "+students.first());
+			String studentPath = students.first().first()+students.first().second();
+			csv.append(students.first().first()+";"+students.first().second());
+			csv.append(";");
+			oldcat = "";
+			StringBuilder content = new StringBuilder();
+			//content.append('\"');
 			for(var file: students.second()) {
 				StringBuilder sb = new StringBuilder("Score: "+ file.second().stream().mapToInt(p -> p.second()).sum()+"\n");
+				//csv.append('\"');
 				for(var f : file.second()) {
+					String result = f.first();
+					if(result.contains("successfull")) {
+						result = "";
+					}
+					category = f.first().substring(0, f.first().indexOf('('));
+					
+					if(!category.equals(oldcat)) {
+						
+						if(!oldcat.equals("")) {
+							content.append(";");
+						}
+						oldcat = category;
+						csv.append(content);
+						content = new StringBuilder();
+					}
+					if(!result.isBlank()) {
+						content.append(result);
+						//csv.append(System.lineSeparator());
+					}
 					if(f.second().intValue() != 0 || saveEverything) {
 						sb.append(f.first()+" score: "+f.second()+"\n");
 					} else {
@@ -122,7 +168,12 @@ public class Test {
 					}
 
 				}
-
+				if(!content.isEmpty()) {
+					//content.append('\"');
+					csv.append(content);
+				}
+				//csv.append('\"');
+				csv.append(System.lineSeparator());
 				/*text += file.second().stream()
 						//.filter(p -> (p.second().intValue() != 0 || saveEverything))
 						.map(p -> p.first()+" score: "+p.second()) .collect(Collectors.joining("\n"));
@@ -131,6 +182,7 @@ public class Test {
 			}
 
 		}
+		Main.printToFile(Path.of(rootPath, "results.csv"), csv.toString(), true);
 	}
 
 	/**
@@ -175,10 +227,12 @@ public class Test {
 			 matrnr = Integer.parseInt(names[0]);
 			 names[0] = "";
 			 name = String.join("_", names);
+			 name = name.substring(1);
 		 }else {
 			 matrnr = Integer.parseInt(names[names.length-1]);
 			 names[names.length-1] = "";
 			 name = String.join("_", names);
+			 name = name.substring(0, name.length()-1);
 		 }
 		 Path src = null;
 		 try {
@@ -190,7 +244,7 @@ public class Test {
 				}
 			}
 		} catch (IOException e) {
-			e.printStackTrace();
+			Main.debug(e);
 			return null;
 		}
 		 return new Tripel<>(name,matrnr,src);
