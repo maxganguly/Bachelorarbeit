@@ -27,7 +27,7 @@ import main.Pair;
 public class DynamicTester extends main.Tester<DynamicTestcase>{
 
 	boolean cacheTestcases;
-	Map<DynamicTestcase,Pair<Object,String>> cache;
+	Map<DynamicTestcase,FunctionCall> cache;
 	Executor solution, test;
 	PrintStream ps;
 	BufferedReader br;
@@ -46,7 +46,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		this.solution = solution;
 		this.test = test;
 		this.cacheTestcases = true;
-		this.cache = new HashMap<DynamicTestcase,Pair<Object,String>>();
+		this.cache = new HashMap<>();
 		try {
 			PipedInputStream pis = new PipedInputStream();
 			PipedOutputStream pos = new PipedOutputStream(pis);
@@ -82,7 +82,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		this.test = test;
 		this.ps = ps;
 		this.br = br;
-		this.cache = new HashMap<DynamicTestcase,Pair<Object,String>>();
+		this.cache = new HashMap<>();
 	}
 
 	/**
@@ -149,40 +149,49 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	 */
 	public String analyzeTestcase(Result testcase) {
 		String test = testcase.testcase.testcase().first();
-		if(isEqual(testcase.expectedResult,testcase.gottenResult) &&
-				isEqual(testcase.expectedOutput, testcase.gottenOutput)) {
+		if(testcase.succesfull) {
 			return "Testcase: "+ test +" successfull";
+		}
+		if(testcase.gotten == null) {
+			return testcase.optionalMessage;
 		}
 		StringBuilder sb = new StringBuilder("Testcase: ");
 		sb.append(test);
 		sb.append(" failed");
-		if(!isEqual(testcase.expectedResult,testcase.gottenResult)) {
+		if(!isEqual(testcase.expected.result,testcase.gotten.result)) {
 			sb.append(" expected: \"");
-			sb.append(toString(testcase.expectedResult));
+			sb.append(toString(testcase.expected.result));
 			sb.append("\" but recieved: \"");
-			sb.append(toString(testcase.gottenResult));
+			sb.append(toString(testcase.gotten.result));
 			sb.append("\"");
 		}
-		if(!isEqual(testcase.expectedOutput,testcase.gottenOutput)) {
-			if(testcase.expectedOutput == null || testcase.expectedOutput.isBlank()) {
+		if(!isEqual(testcase.expected.params,testcase.gotten.params)) {
+			sb.append(" expected Params to be afterwards: \"");
+			sb.append(Arrays.deepToString(testcase.expected.params));
+			sb.append("\" but recieved: \"");
+			sb.append(Arrays.deepToString(testcase.gotten.params));
+			sb.append("\"");
+		}
+		if(!isEqual(testcase.expected.output,testcase.gotten.output)) {
+			if(testcase.expected.output == null || testcase.expected.output.isBlank()) {
 				sb.append("Expected no output, ");
 			}else {
 				sb.append("Expected to print: \"");
-				sb.append(testcase.expectedOutput);
+				sb.append(testcase.expected.output);
 			}
 			sb.append("\" but printed: \"");
-			sb.append(testcase.gottenOutput);
+			sb.append(testcase.gotten.output);
 			sb.append("\"");
 		}
-		if(!isEqual(testcase.expected_Exception,testcase.gotten_Exception())) {
-			if(testcase.expected_Exception == null) {
+		if(!isEqual(testcase.expected.exception,testcase.gotten.exception())) {
+			if(testcase.expected.exception == null) {
 				sb.append("Expected no exception, ");
 			}else {	
 				sb.append("Expected exception: ");
-				sb.append(testcase.expected_Exception);
+				sb.append(testcase.expected.exception);
 			}
 			sb.append(" but got: ");
-			sb.append(testcase.gotten_Exception);
+			sb.append(testcase.gotten.exception);
 		}
 		if(testcase.optionalMessage() != null) {
 			sb.append(testcase.optionalMessage);
@@ -297,6 +306,11 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			case "[[[C": return Arrays.deepEquals((char[][][])o1, (char[][][])o2);
 			case "[[[Z": return Arrays.deepEquals((boolean[][][])o1, (boolean[][][])o2);
 			default:
+				if(o1.getClass().getName().equals("[Ljava.lang.Object;")) {
+					Object[] oarr1 = (Object[]) o1;
+					Object[] oarr2 = (Object[]) o2;
+					return Arrays.deepEquals(oarr1, oarr2);
+				}
 				throw new IllegalArgumentException("Unexpected value: " + o1.getClass().getName());
 			}
 		}
@@ -324,9 +338,12 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	private Result runTestcase(DynamicTestcase testcase) throws IOException, MethodNotFoundException {
 
 		if(!this.test.hasClass()) {
-			return new Result(testcase, false, null, null, null, null, null, null, "Class could not be compiled");
+			return new Result(testcase, false, null, null, "Class could not be compiled");
 		}
+		FunctionCall expected = null, gotten = null;
 		Object returnSolution = null;
+		Object[] expectedParams = Arrays.copyOf(testcase.params, testcase.params.length);
+		Object[] gottenParams = Arrays.copyOf(testcase.params, testcase.params.length);
 		String outSolution = null;
 		returnTest = null;
 		String outTest;
@@ -335,26 +352,26 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		try {
 			if(this.cacheTestcases) {
 				if(this.cache.keySet().contains(testcase)) {
-					var p = this.cache.get(testcase);
-					returnSolution = p.first();
-					outSolution = p.second();
+					expected = this.cache.get(testcase);
 					ranSolution = true;
 				}else {
 					try {
-					returnSolution = solution.runMethod(testcase.name, testcase.params);
-					} catch(InvocationTargetException e) {
-						expectedException = e.getCause();
+					returnSolution = solution.runMethod(testcase.name, expectedParams);
+					} catch(InvocationTargetException ite) {
+						expectedException = ite.getCause();
 					}
 					outSolution = readall();
 					ranSolution = true;
-					this.cache.put(testcase, new Pair<Object,String>(returnSolution,outSolution));
+					expected = new FunctionCall(testcase.name, expectedParams, returnSolution, outSolution , expectedException);
+					this.cache.put(testcase,expected);
 				}
 			}
+			
 			gottenException = null;
 			returnTest = null;
 			Thread t = new Thread(() -> {
 				try {
-					returnTest = test.runMethod(testcase.name, testcase.params);
+					returnTest = test.runMethod(testcase.name, gottenParams);
 				} catch (MethodNotFoundException e) {
 					gottenException = e;
 				} catch(InvocationTargetException e) {
@@ -381,9 +398,10 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			if(!ranSolution) {
 				throw mnfe;
 			}
-			return new Result(testcase, false, returnSolution, null, outSolution, null, expectedException, gottenException, null);
+			return new Result(testcase, false, expected, gotten, null);
 		}
-		return new Result(testcase, isEqual(returnSolution, returnTest) && isEqual(outSolution, outTest), returnSolution, returnTest, outSolution, outTest, expectedException, gottenException, null);
+		gotten = new FunctionCall(testcase.name, gottenParams, returnTest, outTest, gottenException);
+		return new Result(testcase, expected.equals(gotten), expected, gotten, null);
 	}
 
 	/**
@@ -401,11 +419,29 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 
 	public record Result(
 			DynamicTestcase testcase, boolean succesfull, 
-			Object expectedResult, Object gottenResult, 
-			String expectedOutput, String gottenOutput, 
-			Throwable expected_Exception, Throwable gotten_Exception, 
+			FunctionCall expected, FunctionCall gotten,
 			String optionalMessage){}
 
+	public record FunctionCall(
+			String functionname,
+			Object[] params,
+			Object result,
+			String output,
+			Throwable exception
+			) {
+		@Override
+		public final boolean equals(Object arg0) {
+			if(arg0.getClass() != FunctionCall.class)
+				return false;
+			FunctionCall fc = (FunctionCall) arg0;
+			return isEqual(functionname, fc.functionname)
+					&&isEqual(params, fc.params)
+					&&isEqual(result, fc.result)
+					&&isEqual(output, fc.output)
+					&&isEqual(exception, fc.exception);
+			
+		}
+	}
 	@Override
 	public Pair<String, Integer> test(DynamicTestcase testcase) {
 		// TODO Auto-generated method stub
@@ -440,7 +476,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 	}
 	public void setSolution(Executor solution) {
 		this.solution = solution;
-		this.cache = new HashMap<DynamicTestcase,Pair<Object,String>>();
+		this.cache = new HashMap<DynamicTestcase,FunctionCall>();
 	}
 	public Executor getTest() {
 		return test;

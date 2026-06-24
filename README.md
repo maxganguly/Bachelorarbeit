@@ -42,6 +42,10 @@ In dem File autograder.properties
 
 ### Autograder.properties
 
++ GenerateTestcases=[true/false]
+
+  Sollen Testcases generiert werden
+
 + PrintAllTests=True
 
   Sollen die Resultate aller Tests (successfull|failed) ausgegeben werden oder nur die fehlgeschlagenen
@@ -54,6 +58,10 @@ In dem File autograder.properties
 
   Sollen die generierten Testcases persistent gespeichert werden.
 
++ OverwriteTestcases=[true/false]
+
+  Sollen bereits vorhandene Testcases überschrieben werden
+
 + SolutionInputDir=./solution
 
   src Verzeichnis der Musterlösung
@@ -65,6 +73,10 @@ In dem File autograder.properties
 + ToTestInputDirs=./test
 
   Verzeichnis aller zu überprüfenden Abgaben. Erwartet den Namen `Matrikelnummer_<Name unterteilt mit _ >` oder `Matrikelnummer_<Name unterteilt mit _ >`
+
++ DelimiterCSV=#
+
+  Welcher Delimiter soll für das CSV File verwendet werden. Falls # in den Aufgaben vorkommt sollte dies geändert werden
 
 ### Overleaf
 

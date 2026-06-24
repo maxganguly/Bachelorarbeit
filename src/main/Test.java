@@ -65,7 +65,14 @@ public class Test {
 	 */
 	public List<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> test() {
 		var results = new LinkedList<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> ();
-		List<Tripel<String,Integer,Path>> srcDirs = getAllSrcDirectories();
+		List<Tripel<String,Integer,Path>> srcDirs = new LinkedList<>( getAllSrcDirectories());
+		srcDirs.sort((arg0, arg1) -> {
+			 int res = 0;
+			 res = arg0.first().compareTo(arg1.first());
+			 if(res != 0)
+				 return res;
+			 return arg0.second().compareTo(arg1.second());
+		 });
 		for(var src: srcDirs) {
 			if(src.third() == null) {
 				Main.debug("Unable to find src directory for: "+src.toString() +"skipping...");
@@ -73,7 +80,7 @@ public class Test {
 			}
 			var student = new Pair<>(src.first(),src.second());
 			var resultsstudent = new LinkedList<Pair<String,List<Pair<String,Integer>>>>();
-			Main.debug("Currently working on: "+ student);
+			Main.SYSOUT.println("Currently working on: "+ student);
 			try {
 				List<Path> children = Files.list(src.third()).toList();
 				for(Path p: children) {
@@ -130,8 +137,8 @@ public class Test {
 		}
 		oldcat = "";
 		csv.append(System.lineSeparator());
+		char delim = Main.p.get("DelimiterCSV").toString().charAt(0);
 		for(var students: results) {
-			Main.SYSOUT.println("Testing: "+students.first());
 			String studentPath = students.first().first()+students.first().second();
 			csv.append(students.first().first()+";"+students.first().second());
 			csv.append(";");
@@ -140,18 +147,24 @@ public class Test {
 			//content.append('\"');
 			for(var file: students.second()) {
 				StringBuilder sb = new StringBuilder("Score: "+ file.second().stream().mapToInt(p -> p.second()).sum()+"\n");
-				//csv.append('\"');
+				csv.append(delim);
 				for(var f : file.second()) {
 					String result = f.first();
 					if(result.contains("successfull")) {
 						result = "";
 					}
+					//result = result.replace("\"", "\\\"");
+					if(f.first().indexOf('(') != -1)
 					category = f.first().substring(0, f.first().indexOf('('));
 					
 					if(!category.equals(oldcat)) {
-						
+						String c = content.toString();
+						if(c.endsWith(System.lineSeparator())) {
+							int size = content.length();
+							content = content.delete(size-System.lineSeparator().length(), size);
+						}
 						if(!oldcat.equals("")) {
-							content.append(";");
+							content.append(delim+";"+delim);
 						}
 						oldcat = category;
 						csv.append(content);
@@ -159,7 +172,7 @@ public class Test {
 					}
 					if(!result.isBlank()) {
 						content.append(result);
-						//csv.append(System.lineSeparator());
+						content.append(System.lineSeparator());
 					}
 					if(f.second().intValue() != 0 || saveEverything) {
 						sb.append(f.first()+" score: "+f.second()+"\n");
@@ -168,12 +181,12 @@ public class Test {
 					}
 
 				}
-				if(!content.isEmpty()) {
-					//content.append('\"');
-					csv.append(content);
-				}
+				//if(!content.isEmpty()) {
+					csv.append(delim);
+					csv.append(System.lineSeparator());
+					//csv.append(content);
+				//}
 				//csv.append('\"');
-				csv.append(System.lineSeparator());
 				/*text += file.second().stream()
 						//.filter(p -> (p.second().intValue() != 0 || saveEverything))
 						.map(p -> p.first()+" score: "+p.second()) .collect(Collectors.joining("\n"));
@@ -196,6 +209,7 @@ public class Test {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		 
 		return list;
 	}
 

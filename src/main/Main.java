@@ -304,6 +304,7 @@ public class Main {
     	p.setProperty("PrintAllTests", "true");
     	p.setProperty("SaveTestcases", "true");
     	p.setProperty("OverwriteTestcases", "false");
+    	p.setProperty("DelimiterCSV", "#");
     	try {
 			p.store(new FileWriter(PROPERTIESPATH), "Properties for the Autograder");
 		} catch (IOException e) {
