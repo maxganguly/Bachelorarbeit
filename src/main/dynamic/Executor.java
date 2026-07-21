@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
@@ -99,8 +100,12 @@ public class Executor {
 		for(Method m : meth) {
 			//System.out.println(m.getName());
 			if(m.getName().equals(methodname)) {
+				if(!Modifier.isStatic(m.getModifiers())) {
+					throw new InvocationTargetException(
+							new IllegalAccessError("The method: "+m.getName()+" is not static"), methodname);
+				}
 				try {
-					ret = m.invoke(null, params);
+					ret = m.invoke(clazz.getConstructors()[0].newInstance(),params);
 					ran = true;
 					break;
 				} catch (IllegalAccessException e) {
@@ -111,6 +116,9 @@ public class Executor {
 				} catch (IllegalArgumentException e) {
 					//When overloading Methods this might be triggered
 					//e.printStackTrace();
+				} catch (InstantiationException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 			}
 		}

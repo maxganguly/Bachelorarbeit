@@ -383,7 +383,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			try {
 				//needs to be better;
 				while(slept<= 1_000 && returnTest == null) {
-					Thread.currentThread().sleep(10);
+					Thread.sleep(10);
 					slept+=10;
 				}
 			} catch (InterruptedException e) {
@@ -454,11 +454,11 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		} catch (IOException e) {
 			Main.debug(e);
 			System.setOut(Main.SYSOUT);
-			return new Pair<String,Integer>(e.toString(), -1);
+			return new Pair<String,Integer>("Testcase: "+testcase.name+" failed: "+e.toString(), -1);
 		} catch (MethodNotFoundException e) {
 			Main.debug(e);
 			System.setOut(Main.SYSOUT);
-			return new Pair<String,Integer>(e.toString(), -1);
+			return new Pair<String,Integer>("Testcase: "+testcase.name+" failed: "+e.toString(), -1);
 		}
 		String a = analyzeTestcase(r);
 		System.setOut(Main.SYSOUT);

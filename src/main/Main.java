@@ -8,47 +8,38 @@ import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.Set;
-
-import javax.script.ScriptEngineFactory;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import com.sun.source.util.JavacTask;
 
 import main.ast.ASTScannerText;
-import main.ast.ASTTestGenerator;
-import main.ast.ASTTestWrapper;
-import main.ast.ASTTestcase;
-import main.ast.ASTTester;
 import main.ast.ASTTree;
 import main.ast.ASTTreeScanner;
-import main.conditions.Condition;
-import main.conditions.Condition.BOOLCOMPOUND;
-import main.conditions.Condition.COMPARISON;
-import main.conditions.Condition.NUMCOMPOUND;
-import main.conditions.Condition.TYPE;
-import main.conditions.ConditionBoolCompound;
-import main.conditions.ConditionComparison;
-import main.conditions.ConditionElement;
-import main.conditions.ConditionNot;
-import main.conditions.ConditionNumCompound;
-import main.conditions.ConditionUtils;
-import main.generator.MCDCTestcaseGenerator;
 
 public class Main {
 	public static final PrintStream SYSOUT = System.out;
-	public static final boolean DEBUG = false;
-	public static final String PROPERTIESPATH = "./autograder.properties";
+	public static boolean DEBUG = false;
+	public static String PROPERTIESPATH = "./autograder.properties";
 	public static final Properties p = loadProperties();
+	public static boolean TIME = false;
 
     public static void main(String[] args) {
+    	for(int i = 0; i < args.length;i++) {
+    		if(args[i].trim().equals("debug"))
+    			DEBUG = true;
+    		else if(args[i].trim().equals("time"))
+    			TIME = true;
+    		else if(args[i].trim().startsWith("properties")) {
+    			String temp = args[i].trim();
+    			PROPERTIESPATH = temp.substring(temp.indexOf('=')+1);
+    			debug("Set Propertiespath to: "+ PROPERTIESPATH);
+    		}
+    	}
+    	long start = System.currentTimeMillis();
         /*
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
@@ -138,6 +129,11 @@ public class Main {
 		}
     	//*/
     	System.out.println("Finished");
+    	if(TIME) {
+    		long end = System.currentTimeMillis();
+    		long diff = end-start;
+    		System.out.printf("%2dmin, %2ds, %3dms%n",diff/60_000,(diff/1_000)%60,diff%1000);
+    	}
     	System.exit(0);
 
     }

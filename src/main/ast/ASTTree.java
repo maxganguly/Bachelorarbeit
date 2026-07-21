@@ -69,6 +69,9 @@ public class ASTTree {
 			.of(new String[] { "unary", "var", "assign", "binary", "init", "update"});
 	public final static Set<String> PURE_STRUCTURE = Set.of(
 			"method","forloop","loop","while","dowhile","if");
+	public final static Set<String> OPERATORS_COMMUTATIVE = Set.of(
+			"PLUS","MULTIPLY","EQUAL_TO","NOT_EQUAL_TO","AND","XOR","OR");
+			
 	/**
 	 * Exists only to return the original code corresponding to the ASTTree, does not exist of it has been read from xml
 	 * Maybe getCode might generate it dynamically sometime...
@@ -113,6 +116,7 @@ public class ASTTree {
 		this.name = name;
 		this.type = type;
 		this.parent = parent;
+		children.remove(null);
 		this.children = children;
 		this.order = order;
 		this.eval_mode = eval_mode;
@@ -212,6 +216,7 @@ public class ASTTree {
 			sb.append(System.lineSeparator());
 			line = br.readLine();
 		}
+		br.close();
 		return new ASTTree(sb.toString());
 	}
 
@@ -547,7 +552,9 @@ public class ASTTree {
 		}
 
 		//if this is a filler or is at least as specific as the searched element
-		if (evaluation.tag == null || evaluation.tag.equals("") || this.isAtleastAsSpecific(evaluation)) {
+		if (evaluation.tag == null || 
+				evaluation.tag.isBlank() || 
+				this.isAtleastAsSpecific(evaluation)) {
 			// if root type is accepted check if any child has all children of the searched
 			//if (evaluation.order == null || evaluation.order == ORDER.UNORDERED) {
 
@@ -586,23 +593,28 @@ public class ASTTree {
 					}
 				}
 				//If all children of the evaluation node have been found return true
-				return (count_found == evaluation.children.size());
+				//Flips the result if eval mode none
+				return (count_found == evaluation.children.size()) ^ (evaluation.eval_mode == EVALUATION_MODE.NONE);
 			//}
 		} else {
 			boolean matched = false;
-			this.children.remove(null);//Somewhere null is added to the children
-			for (ASTTree a1 : this.children) {
+			this.children.remove(null);//Somewhere null is added to the children}
+			//As this is not as specifics as the searched we can go to the 
+			var list = this.getAll(t -> t.isAtleastAsSpecific(evaluation), false);
+			
+			for (ASTTree a1 : list) {
 				if(a1 == null) {
 					continue;
 				}
 				matched = a1.evaluate(evaluation);
 				if (matched) {
-					if(evaluation.eval_mode == EVALUATION_MODE.NONE) {
-						return false;
-					}
+					//No need to check for none as it is checked in the deeper recursion
 					return true;
 				}
 			}
+			if(!matched && (evaluation.eval_mode == EVALUATION_MODE.NONE))
+				return true;
+			
 		}
 		return false;
 	}
@@ -628,9 +640,11 @@ public class ASTTree {
 		LinkedList<ASTTree> ll = new LinkedList<>();
 		if (filter.test(this)) {
 			ll.add(this);
+			if(!depth)
 			return ll;
 		}
 		for (ASTTree t : children) {
+			if(t!= null)
 			ll.addAll(t.getAll(filter, depth));
 		}
 		return ll;
@@ -688,9 +702,14 @@ public class ASTTree {
 		if (!GENERALIZE_KEEP_NAMES.contains(tag)) { // remove all names exept literals
 			name = null;
 		}
+		
 		ASTTree astTree = new ASTTree(tag, name, null, parent);
+		
 		ASTTree temp;
+		children.remove(null);
 		for (ASTTree child : children) {
+			if(child == null)
+				continue;
 			temp = child.generalize();
 			if (temp != null) {
 				astTree.children.add(temp);
@@ -705,7 +724,7 @@ public class ASTTree {
 	 * @param generalize_to the generalize Rules e.g (for -> loop)
 	 * @param remove        tags to remove e.g (unary)
 	 * @return A new generalized ASTTree
-	 */
+	 
 	public ASTTree generalize(Map<String, String> generalize_to, Set<String> remove) {
 		String tag = this.tag;
 		String name = this.name;
@@ -727,7 +746,7 @@ public class ASTTree {
 			}
 		}
 		return astTree;
-	}
+	}*/
 
 	public ASTTree keepOnlyStructure() {
 		return keepOnly(PURE_STRUCTURE);

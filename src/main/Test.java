@@ -124,6 +124,7 @@ public class Test {
 		String oldcat = "";
 		for(Pair<String,Integer> element: results.getFirst().second().getFirst().second()) {
 			String col = element.first();
+			if(col.indexOf('(') != -1)
 			category = col.substring(0, col.indexOf('('));
 			/*
 			col = col.substring(0,col.indexOf('('))+ col.substring(col.indexOf(')')+1, col.length());
@@ -181,6 +182,7 @@ public class Test {
 					}
 
 				}
+				csv.append(content);
 				//if(!content.isEmpty()) {
 					csv.append(delim);
 					csv.append(System.lineSeparator());

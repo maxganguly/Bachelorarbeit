@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import main.Data;
-import main.Main;
 import main.Pair;
 import main.Testcase;
 
@@ -17,7 +16,7 @@ public class DynamicTestcase extends Testcase {
 
 
 	public DynamicTestcase(String testcase) {
-		super(testcase.substring(0, testcase.lastIndexOf(' ')),Integer.parseInt(testcase.substring(testcase.lastIndexOf(' ')+1)));
+		super(getMethodcall(testcase),getScore(testcase));
 		this.name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));
 		String p = testcase.substring(testcase.indexOf('(')+1, testcase.lastIndexOf(')'));
 		if(p.isBlank()) {
@@ -26,7 +25,36 @@ public class DynamicTestcase extends Testcase {
 			params = Arrays.stream(p.split(", ")).map(s -> getParam(s)).toArray();
 		}
 	}
+	
+	/**
+	 * Returns the methodcall e.g. void main from the given testcase
+	 * @param testcase a testcase e.g. void main(String[] {abba,baab}) 1
+	 * @return the methodcall e.g. void main from the given testcase or the whole testcase if it was not found
+	 */
+	public static String getMethodcall(String testcase) {
+		if(testcase.charAt(testcase.lastIndexOf(' ')-1) == ')')
+			return testcase.substring(0, testcase.lastIndexOf(' '));
+		return testcase;
+	}
+	
+	/**
+	 * Returns the score from the given testcase or 1 if no score was found
+	 * @param testcase a testcase e.g. void main(String[] {abba,baab}) 1
+	 * @return the methodcall from the given testcase or 1 if no score was found or could be parsed to Integer
+	 */
+	public static Integer getScore(String testcase) {
+		try {
+		return Integer.parseInt(testcase.substring(testcase.lastIndexOf(' ')+1));
+		}catch(NumberFormatException e) {
+			return 1;
+		}
+	}
 
+	/**
+	 * Casts a Testcase tp a dynamic testcase
+	 * @param t 
+	 * @return a dynamic testcase
+	 */
 	public static DynamicTestcase toDynamicTestcase(Testcase t) {
 		if(t instanceof DynamicTestcase) {
 			return (DynamicTestcase)t;
@@ -53,6 +81,18 @@ public class DynamicTestcase extends Testcase {
 			return null;
 		}
 		if(param.indexOf(' ')==-1) {
+			//No values
+			if(param.contains("[")) {
+				String[] res = param.split("\\[");
+				String[] splits = new String[res.length-1];
+				System.arraycopy(res, 1, splits, 0, splits.length);
+				int[] dims = new int[splits.length];
+				for(int i = 0; i < splits.length; i++) {
+					splits[i] = splits[i].replace("]", "");
+					dims[i] = Integer.parseInt(splits[i]);
+				}
+				return getArray(res[0], dims);
+			}
 			System.err.println("Something went wrong");
 		}
 		String type = param.substring(0, param.indexOf(' '));
@@ -194,6 +234,47 @@ public class DynamicTestcase extends Testcase {
 
 		return array;//elements.stream().map(s -> getArray(s, dimensions-1, type)).toArray();
 
+	}
+	
+	private static Object get1DArray(String c, int dimension) {
+		switch(c) {
+		case "byte": return new byte[dimension];
+		case "short": return new short[dimension];
+		case "char": return new char[dimension];
+		case "int": return new int[dimension];
+		case "long": return new long[dimension];
+		case "float": return new float[dimension];
+		case "double": return new double[dimension];
+		case "boolean": return new boolean[dimension];
+		case "String": return new String[dimension];
+		}
+		return null;
+	}
+	
+	/**
+	 * Generates an empty Multidimensional array with the given dimensions and type
+	 * currently only int arrays can be multidimensional
+	 * @param type the type of the underlying datatype
+	 * @param dimensions the dimensions of the array
+	 * @return the multidimensional array cast to Object
+	 */
+	private static Object getArray(String type, int... dimensions) {
+		if(dimensions.length == 1) {
+			return get1DArray(type, dimensions[0]);
+		}
+		if(type.equals("int")) {
+			if(dimensions.length == 2) {
+				return new int[dimensions[0]][dimensions[1]];
+			} else if(dimensions.length == 3) {
+				return new int[dimensions[0]][dimensions[1]][dimensions[2]];
+			} else if(dimensions.length == 4) {
+				return new int[dimensions[0]][dimensions[1]][dimensions[2]][dimensions[3]];
+			}else {
+				throw new IllegalArgumentException("Arrays with more than 4 dimensions are currently not allowed, feel free to add them in the function DynamicTester.getArray");
+			}
+		}else {
+			throw new IllegalArgumentException("Type: "+type+"not currently implemented \n only int arrays are currently implemented");
+		}
 	}
 
 	public String getMethodName() {

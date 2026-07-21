@@ -7,8 +7,6 @@ import java.util.List;
 import main.AbstractTestWrapper;
 import main.Main;
 import main.Pair;
-import main.ast.ASTTestGenerator;
-import main.ast.ASTTester;
 
 public class DynamicTestWrapper extends AbstractTestWrapper {
 

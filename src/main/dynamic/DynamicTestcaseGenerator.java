@@ -38,7 +38,7 @@ public class DynamicTestcaseGenerator extends Generator<DynamicTestcase> {
 	@Override
 	public List<DynamicTestcase> loadFromDirectory(Path pathToDirectory) {
 
-		String root = pathToDirectory.getFileName().toString();
+		//String root = pathToDirectory.getFileName().toString();
 		FileVisitor<Path> files = new FileVisitor<>() {
 
 			@Override
@@ -57,6 +57,7 @@ public class DynamicTestcaseGenerator extends Generator<DynamicTestcase> {
 					String[] testtext = Main.getFromPath(file)
 							.split(System.lineSeparator());
 					for(String testcase : testtext) {
+						if(!testcase.isBlank())
 						testcases.add(new DynamicTestcase(testcase));
 					}
 				}

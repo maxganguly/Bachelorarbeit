@@ -7,16 +7,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
 
 import main.Data;
 import main.Main;
@@ -30,7 +25,6 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 
 	private ASTTree tree;
 	private List<DynamicTestcase> testcases;
-	private String[] methods;
 	/**
 	 * Maximum amount a loop is being recalculated to generate Testcases minimum 1
 	 */
@@ -51,11 +45,12 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	 *
 	 * @param tree    the ASTTree of the class
 	 * @param strings the names of the methods mc/dc testcases should be generated
-	 */
+	 
 	public MCDCTestcaseGenerator(ASTTree tree, String... strings) {
 		this(tree);
 		this.methods = strings;
 	}
+	*/
 
 	/**
 	 * Generates all conditions for all branches for the given methode
@@ -392,7 +387,6 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		if (condition.charAt(0) == '!') {
 			return condition.substring(1);
 		}
-		String outermost = "";
 		int temp = 0;
 		String operator = "";
 		String left = "", right = "";
