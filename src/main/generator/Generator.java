@@ -3,7 +3,10 @@ package main.generator;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
-
+/**
+ * A abstract class to generate Testcases
+ * @param <E>
+ */
 public abstract class Generator<E extends main.Testcase> {
 	protected List<E> testcases;
 	public Generator() {

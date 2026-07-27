@@ -42,7 +42,9 @@ import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.TreeScanner;
-
+/**
+ * A class to read a Compilation Tree and evaluate it to an AST
+ */
 public class ASTTreeScanner extends TreeScanner<ASTTree, ASTTree> {
 	public static final boolean DEBUG = false;
 

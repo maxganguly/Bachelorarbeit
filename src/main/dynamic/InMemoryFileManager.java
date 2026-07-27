@@ -9,7 +9,9 @@ import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardJavaFileManager;
-
+/**
+ * A class to manage files in memory
+ */
 public class InMemoryFileManager extends ForwardingJavaFileManager<JavaFileManager> {
 
     private Map<String, JavaClassAsBytes> compiledClasses;

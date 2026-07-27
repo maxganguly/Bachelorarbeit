@@ -19,14 +19,36 @@ import com.sun.source.util.JavacTask;
 import main.ast.ASTScannerText;
 import main.ast.ASTTree;
 import main.ast.ASTTreeScanner;
-
+/**
+ * Main Class entrypoint of the jar, loads properties and handles IO Operations
+ */
 public class Main {
+	/**
+	 * Reference to the original System.out stream, to be used for prints to the console
+	 */
 	public static final PrintStream SYSOUT = System.out;
+	/**
+	 * Should debug notifications be printed, may be set with "debug" flag when called
+	 */
 	public static boolean DEBUG = false;
+	/**
+	 * Path to the properties File may be set with "properties=\<path\>" when called
+	 */
 	public static String PROPERTIESPATH = "./autograder.properties";
-	public static final Properties p = loadProperties();
+	
+	/**
+	 * Loaded Properties, to be used  
+	 */
+	public static Properties p = loadProperties();
+	/**
+	 * Should the Program be timed
+	 */
 	public static boolean TIME = false;
 
+	/**
+	 * Main for the package, evaluates the flags, loads the properties and runs the tests
+	 * @param args
+	 */
     public static void main(String[] args) {
     	for(int i = 0; i < args.length;i++) {
     		if(args[i].trim().equals("debug"))
@@ -37,6 +59,7 @@ public class Main {
     			String temp = args[i].trim();
     			PROPERTIESPATH = temp.substring(temp.indexOf('=')+1);
     			debug("Set Propertiespath to: "+ PROPERTIESPATH);
+    			p = loadProperties();
     		}
     	}
     	long start = System.currentTimeMillis();
@@ -248,6 +271,11 @@ public class Main {
 		return getFromPath(Path.of(p));
 	}
 
+    /**
+     * Generates and AST from the java File at the given path
+     * @param p the path to the .java file
+     * @return an AST or null if not successfull,, errors are written to System.err
+     */
     public static ASTTree loadFromPath(Path p) {
         if (p.toFile().exists()) {
     	 if (p.getFileName().toString().endsWith(".java")) {
@@ -268,12 +296,20 @@ public class Main {
 		return null;
     }
 
+    /**
+     * Print the Debug message if the debug flag is set
+     * @param msg the message to be printed
+     */
     public static void debug(String msg) {
     	if(DEBUG) {
 			System.err.println(msg);
 		}
     }
     
+    /**
+     * Print the Debug message if the debug flag is set
+     * @param msg the message to be printed
+     */
     public static void debug(Exception msg) {
     	if(DEBUG) {
 			msg.printStackTrace();
@@ -281,7 +317,10 @@ public class Main {
     }
 
 
-
+    /**
+     * Loads the properties of the properties file at the globally set path, generates a new one if no file exists
+     * @return the loaded properties
+     */
     public static Properties loadProperties() {
 		Properties p = new Properties();
     	if(Files.exists(Path.of(PROPERTIESPATH))) {

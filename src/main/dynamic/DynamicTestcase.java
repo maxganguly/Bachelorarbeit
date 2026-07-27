@@ -7,14 +7,19 @@ import java.util.List;
 import main.Data;
 import main.Pair;
 import main.Testcase;
-
+/**
+ * Testcase for dynamic Tests
+ */
 public class DynamicTestcase extends Testcase {
 
 	String name;
 	Object returntype;
 	Object[] params;
 
-
+	/**
+	 * Constructor
+	 * @param testcase expected something like: <br > int test(int[] {1,2,3},String abba, int 12) 3
+	 */
 	public DynamicTestcase(String testcase) {
 		super(getMethodcall(testcase),getScore(testcase));
 		this.name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));

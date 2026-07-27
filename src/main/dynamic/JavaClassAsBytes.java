@@ -5,7 +5,9 @@ import java.io.OutputStream;
 import java.net.URI;
 
 import javax.tools.SimpleJavaFileObject;
-
+/**
+ * A class to serialize a Java class as a byte stream
+ */
 public class JavaClassAsBytes extends SimpleJavaFileObject {
 
     protected ByteArrayOutputStream bos =

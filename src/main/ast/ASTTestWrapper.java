@@ -7,7 +7,9 @@ import java.util.List;
 import main.AbstractTestWrapper;
 import main.Main;
 import main.Pair;
-
+/**
+ * An implementation of the TestWrapper for static (AST) tests
+ */
 public class ASTTestWrapper extends AbstractTestWrapper {
 
 	ASTTester tester;

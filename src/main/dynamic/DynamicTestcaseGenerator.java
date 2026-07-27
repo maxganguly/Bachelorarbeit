@@ -10,7 +10,10 @@ import java.util.List;
 
 import main.Main;
 import main.generator.Generator;
-
+/**
+ * A class to generate Dynamic Testcases based on an example
+ * Does not yet work
+ */
 public class DynamicTestcaseGenerator extends Generator<DynamicTestcase> {
 
 	@Override

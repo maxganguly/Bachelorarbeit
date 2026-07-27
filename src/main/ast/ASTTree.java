@@ -11,10 +11,14 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
+/**
+ * Tree data structure to contain the ASTree 
+ */
 public class ASTTree {
 	public static final String OFFSET = "    ";
-
+	/**
+	 * Enum to define if the children should be ordered or the order is irrelevant
+	 */
 	public enum ORDER {
 		ORDERED, UNORDERED;
 
@@ -28,7 +32,9 @@ public class ASTTree {
 			return null;
 		}
 	}
-
+	/**
+	 * Enum to define the checking options for the AST Evaluation
+	 */
 	public enum EVALUATION_MODE {
 		ALL, ANY, NONE, OPTIONAL;// Currently optional will be ignored as it will always return true
 
@@ -53,11 +59,11 @@ public class ASTTree {
 	public final String name;
 	public final String type;
 	/**
-	 * default UNORDERED
+	 * default null == UNORDERED
 	 */
 	public ORDER order;
 	/**
-	 * default ALL
+	 * default null == ALL
 	 */
 	public EVALUATION_MODE eval_mode;
 	public final ASTTree parent;
@@ -540,6 +546,11 @@ public class ASTTree {
 		return false;
 	}
 
+	/**
+	 * Evaluates the this AST against the given
+	 * @param evaluation the AST to be evaluated against
+	 * @return true if the AST was evaluated successfully and false otherwise
+	 */
 	public boolean evaluate(ASTTree evaluation) {
 		if(evaluation.tag == null || evaluation.tag.isBlank()) {
 			return true;
@@ -649,7 +660,11 @@ public class ASTTree {
 		}
 		return ll;
 	}
-	
+	/**
+	 * Returns the first AST where the given Predicate evaluates to true, checks recursively
+	 * @param filter the predicate to be applied on this AST
+	 * @return the first successfully checked AST or null if none was found
+	 */
 	public ASTTree getFirst(Predicate<ASTTree> filter) {
 		if (filter.test(this)) {
 			return this;
@@ -747,19 +762,36 @@ public class ASTTree {
 		}
 		return astTree;
 	}*/
-
+	
+	/**
+	 * Returns a copy of this reduced to pure structure 
+	 * @return a reduced AST
+	 */
 	public ASTTree keepOnlyStructure() {
 		return keepOnly(PURE_STRUCTURE);
 	}
 
+	/**
+	 * Returns a copy of this reduced to only keep the given tags
+	 * @param s tags to keep
+	 * @return a reduced AST
+	 */
 	public ASTTree keepOnly(String... s) {
 		return keepOnly(Set.of(s));
 	}
-
+	/**
+	 * Returns a copy of this reduced to only keep the given tags
+	 * @param tagsToKeep tags to keep
+	 * @return a reduced AST
+	 */
 	public ASTTree keepOnly(Set<String> tagsToKeep) {
 		return keepOnly(s -> tagsToKeep.contains(s.tag));
 	}
-
+	/**
+	 * Returns a copy of this reduced to only keep elements where the given predicate evaluates to true
+	 * @param tagsToKeep tags to keep
+	 * @return a reduced AST
+	 */
 	public ASTTree keepOnly(Predicate<ASTTree> toKeep) {
 		ASTTree astTree;
 		if(toKeep.test(this)) {
@@ -785,6 +817,11 @@ public class ASTTree {
 		return astTree;
 	}
 
+	/**
+	 * Generates a new AST where the function is applied to every Element
+	 * @param apply the function to apply
+	 * @return a copy of this with the function applied
+	 */
 	public ASTTree apply(Function<ASTTree,ASTTree> apply) {
 		ASTTree astTree = apply.apply(this);
 		for (ASTTree child : astTree.children) {
@@ -793,6 +830,10 @@ public class ASTTree {
 		return astTree;
 	}
 
+	/**
+	 * Returns the depth of the AST
+	 * @return the maximal depth of the ast
+	 */
 	public int depth() {
 		int d = (this.tag != null && !this.tag.isBlank())?1:0;
 		if(this.children.size() == 0) {
@@ -823,12 +864,20 @@ public class ASTTree {
 		return new ASTTree(tag,name,type,null,new LinkedList<>(),order,eval_mode, code);
 	}
 
+	/**
+	 * Walks through every element of the AST (preorder) and applied the given consumer
+	 * @param consumer the consumer to be applied
+	 */
 	public void walk(Consumer<ASTTree> consumer) {
 		consumer.accept(this);
 		for(ASTTree child : this.children) {
 			child.walk(consumer);
 		}
 	}
+	/**
+	 * Walks through every element of the AST (postorder) and applied the given consumer
+	 * @param consumer the consumer to be applied
+	 */
 	public void walkBack(Consumer<ASTTree> consumer) {
 		for(ASTTree child : this.children) {
 			child.walk(consumer);

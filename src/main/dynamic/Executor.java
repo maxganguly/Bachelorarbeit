@@ -14,8 +14,10 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
-import main.Data;
 import main.Main;
+/**
+ * A class to bundele the creation and execution of java classes and methods in runtime
+ */
 public class Executor {
 
 
@@ -123,7 +125,7 @@ public class Executor {
 			}
 		}
 		if(os != null) {
-			System.setOut(Data.SYSOUT);
+			System.setOut(Main.SYSOUT);
 		}
 		if(!ran) {
 			throw new MethodNotFoundException(methodname);

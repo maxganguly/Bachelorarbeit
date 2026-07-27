@@ -8,20 +8,22 @@ import java.util.List;
 import main.Main;
 import main.Pair;
 import main.Tester;
-
+/**
+ * Tester for AST
+ */
 public class ASTTester extends Tester<ASTTestcase> {
 
 	ASTTree code;
-	ASTTree generalized;
+//	ASTTree generalized;
 
 	public ASTTester() {
 		this.code = null;
-		this.generalized = null;
+//		this.generalized = null;
 	}
-
+	
 	public ASTTester(ASTTree tree) {
 		this.code = tree;
-		this.generalized = code.generalize();
+//		this.generalized = code.generalize();
 	}
 
 	@Override
@@ -36,12 +38,12 @@ public class ASTTester extends Tester<ASTTestcase> {
 	public List<Pair<String, Integer>> runAllTestcases(Path p) {
 		try {
 			ASTTree temp = code;
-			ASTTree tempg = generalized;
+//			ASTTree tempg = generalized;
 			code =  Main.generateAST(p).getFirst();
-			this.generalized = code.generalize();
+//			this.generalized = code.generalize();
 			var t= this.runAllTestcases();
 			code = temp;
-			this.generalized = tempg;
+//			this.generalized = tempg;
 			return t;
 		} catch (IOException e) {
 			Main.debug(e);

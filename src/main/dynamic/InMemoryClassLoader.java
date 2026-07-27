@@ -1,7 +1,9 @@
 package main.dynamic;
 
 import java.util.Map;
-
+/**
+ * An Class to load a class in memory
+ */
 public class InMemoryClassLoader extends ClassLoader{
 
 	private InMemoryFileManager manager;

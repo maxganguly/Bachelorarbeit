@@ -1,7 +1,10 @@
 package main.ast;
 
 import com.sun.source.util.TreeScanner;
-
+/**
+ * Generates a AST from a TreeScanner
+ * @Deprecated use ASTTreeScanner
+ */
 @Deprecated
 public class ASTScannerText extends TreeScanner<String, Integer> {
 	/*

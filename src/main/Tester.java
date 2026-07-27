@@ -3,11 +3,20 @@ package main;
 import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
-
+/**
+ * Wrapper for a Tester allows to save testcases and run them on submissions
+ * @param <E>
+ */
 public abstract class Tester<E extends main.Testcase> {
 
+	/**
+	 * Saves the testcases
+	 */
 	protected List<E> testcases;
 
+	/**
+	 * Constructor 
+	 */
 	public Tester() {
 		testcases = new LinkedList<E>();
 	}

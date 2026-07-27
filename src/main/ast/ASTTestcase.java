@@ -2,6 +2,9 @@ package main.ast;
 
 import main.Testcase;
 
+/**
+ * AST Testcase, a static Testcase containing the name and an ASTree to check
+ */
 public class ASTTestcase extends Testcase {
 
 	public final String name;

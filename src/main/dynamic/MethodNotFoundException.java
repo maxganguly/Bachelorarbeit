@@ -1,5 +1,7 @@
 package main.dynamic;
-
+/**
+ * A class to show that a method was not found
+ */
 public class MethodNotFoundException extends Exception {
 
 	private static final long serialVersionUID = 1L;

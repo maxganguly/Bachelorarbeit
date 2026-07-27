@@ -3,7 +3,9 @@ package main.dynamic;
 import java.net.URI;
 
 import javax.tools.SimpleJavaFileObject;
-
+/**
+ * A class to instantiate a Java class from a String source code
+ */
 public class JavaSourceFromString extends SimpleJavaFileObject {
 
     private String sourceCode;

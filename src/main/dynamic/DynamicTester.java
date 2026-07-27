@@ -22,7 +22,7 @@ import main.Main;
 import main.Pair;
 
 /**
- *
+ * An implementation of the {@link main.Tester} with dynamic testcases to simplify the dynamic testing
  */
 public class DynamicTester extends main.Tester<DynamicTestcase>{
 
@@ -42,6 +42,11 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			char[].class,
 			boolean[].class);
 
+	/**
+	 * Constructor, saves the solution and the test
+	 * @param solution the exemplary solution
+	 * @param test the submission to be tested, can be null but needs to be given later
+	 */
 	public DynamicTester(Executor solution, Executor test) {
 		this.solution = solution;
 		this.test = test;
@@ -59,6 +64,12 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			Main.debug(e);
 		}
 	}
+	/**
+	 * Constructor, saves the solution and the test
+	 * @param solution the exemplary solution
+	 * @param test the submission to be tested, can be null but needs to be given later
+	 * @param path the path to a file with dynamic testcases, will write a Debug statement if it can't be read
+	 */
 	public DynamicTester(Executor solution, Executor test, String path) {
 		this(solution, test);
 		if( path == null || path.isBlank()) {
@@ -129,7 +140,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			}
 		}
 
-		System.setOut(Data.SYSOUT);
+		System.setOut(Main.SYSOUT);
 		return results;
 	}
 

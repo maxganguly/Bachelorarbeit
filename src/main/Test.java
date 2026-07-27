@@ -13,12 +13,17 @@ import java.util.Map;
 
 import main.ast.ASTTestWrapper;
 import main.dynamic.DynamicTestWrapper;
-
+/**
+ * A class to Test multiple soultions against multiple submissions
+ */
 public class Test {
 
 	private Map<String,List<? extends AbstractTestWrapper>> testers;
 
-
+	/**
+	 * Constructor, generates a test Wrapper for every .java file in the property:SolutionInputDir path
+	 * @throws IOException if there is a problem with reading the files
+	 */
 	public Test() throws IOException {
 		this.testers = new HashMap<>();
 		//Get the Solution files to generate the Testcase
@@ -232,6 +237,11 @@ public class Test {
         }
     }
 
+    /**
+     * Takes a Matnr_First_Last directory and searches for the first src subfolder
+     * @param path the path of the Matnr_First_Last directory
+     * @return A Tripel of First_Last:Matnr:src directory
+     */
     private static Tripel<String,Integer,Path> getSrcDirectory(Path path){
     	String[] names = path.getFileName().toString().split("_");
     	if(names.length < 2) {

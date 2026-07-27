@@ -7,7 +7,9 @@ import java.util.List;
 import main.AbstractTestWrapper;
 import main.Main;
 import main.Pair;
-
+/**
+ * A wrapper for dynamic tests
+ */
 public class DynamicTestWrapper extends AbstractTestWrapper {
 
 	
