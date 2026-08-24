@@ -20,9 +20,9 @@ import main.ast.ASTScannerText;
 import main.ast.ASTTree;
 import main.ast.ASTTreeScanner;
 /**
- * Main Class entrypoint of the jar, loads properties and handles IO Operations
+ * Start Class entrypoint of the jar, loads properties and handles IO Operations
  */
-public class Main {
+public class Start {
 	/**
 	 * Reference to the original System.out stream, to be used for prints to the console
 	 */
@@ -46,7 +46,7 @@ public class Main {
 	public static boolean TIME = false;
 
 	/**
-	 * Main for the package, evaluates the flags, loads the properties and runs the tests
+	 * Start for the package, evaluates the flags, loads the properties and runs the tests
 	 * @param args
 	 */
     public static void main(String[] args) {
@@ -74,15 +74,17 @@ public class Main {
     			, Set.of("arr1","arr2"));
     	Condition e = c.evaluate();
     	System.out.println(e);
-    	Path input = Path.of("testfiles/Test2.java");
-    	Path outputTestcases = Path.of("testfiles/Test2_conditions.txt");
+    	*/
+    	Path input = Path.of("testfiles/Test.java");
+    	//Path outputTestcases = Path.of("testfiles/Test2_conditions.txt");
     	ASTTree tree = loadFromPath(input);
     	
     	if(tree == null) {
 			return;
 		}
-    	printToFile(Path.of("testfiles/Test2.ast"), tree.toString(), true);
-    	
+    	printToFile(Path.of("testfiles/Test.ast"), tree.toString(), true);
+    	printToFile(Path.of("testfiles/Test_generalized.ast"), tree.generalize().toString(), true);
+    	/*
     	
     	MCDCTestcaseGenerator mcdc = new MCDCTestcaseGenerator(tree);
     	List<String> methods = tree.getTreesWithTag("method").stream().map(t -> t.name).toList();
@@ -141,7 +143,7 @@ public class Main {
         //*/
     	
     	 
-    	//*
+    	/*
     	//Generate and run tests
     	try {
 			Test t = new Test();
@@ -176,7 +178,7 @@ public class Main {
     	try {
     		Files.createDirectories(file.getParent());
 			Files.write(file, content.getBytes(), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING);
-			Main.debug("Wrote: "+file.toString()+" to disk");
+			Start.debug("Wrote: "+file.toString()+" to disk");
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;

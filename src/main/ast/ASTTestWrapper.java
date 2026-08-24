@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import main.AbstractTestWrapper;
-import main.Main;
+import main.Start;
 import main.Pair;
 /**
  * An implementation of the TestWrapper for static (AST) tests
@@ -17,18 +17,18 @@ public class ASTTestWrapper extends AbstractTestWrapper {
 	public ASTTestWrapper(Path solution) throws IOException{
 		super(solution);
 		String filename = solution.getFileName().toString();
-		var atg = new ASTTestGenerator(Main.generateAST(solution).getFirst());
+		var atg = new ASTTestGenerator(Start.generateAST(solution).getFirst());
 		//System.out.println(atg.code.code);
-		if(Main.p.getProperty("GenerateTestcases").equalsIgnoreCase("true")){
+		if(Start.p.getProperty("GenerateTestcases").equalsIgnoreCase("true")){
 			atg.generateTestcases();
 		}
 		String pureName = filename.substring(0, filename.lastIndexOf('.'));
-		atg.loadFromDirectory(Path.of(Main.p.getProperty("Testcases")+"/"+pureName));
+		atg.loadFromDirectory(Path.of(Start.p.getProperty("Testcases")+"/"+pureName));
 		tester = new ASTTester();
 		tester.addTestcases(atg.getTestcases());
-		if (Main.p.getProperty("SaveTestcases").equalsIgnoreCase("true")){
-			Main.debug("Saving: "+pureName);
-			atg.saveToDirectory(Path.of(Main.p.getProperty("Testcases")+"/"+pureName));
+		if (Start.p.getProperty("SaveTestcases").equalsIgnoreCase("true")){
+			Start.debug("Saving: "+pureName);
+			atg.saveToDirectory(Path.of(Start.p.getProperty("Testcases")+"/"+pureName));
 		}
 	}
 

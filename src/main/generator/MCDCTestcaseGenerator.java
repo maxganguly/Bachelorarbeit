@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import main.Data;
-import main.Main;
+import main.Start;
 import main.Pair;
 import main.ast.ASTTree;
 import main.conditions.Condition;
@@ -650,7 +650,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 	@Override
 	public boolean saveToDirectory(Path pathToDirectory) {
 		Path p = Path.of(pathToDirectory.toString(), "MCDCTestcases.dt");
-		return Main.printToFile(p, String.join("\n", this.testcases.stream().map(dt -> dt.toString()).toList()), false);
+		return Start.printToFile(p, String.join("\n", this.testcases.stream().map(dt -> dt.toString()).toList()), false);
 	}
 
 	private String prefix = "";
@@ -674,11 +674,11 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 				if (!attrs.isDirectory()) {
 					String name = file.getFileName().toString();
 					if (!name.endsWith(".dt")) {
-						main.Main.debug("The file: \"" + file.getFileName().toString()
+						main.Start.debug("The file: \"" + file.getFileName().toString()
 								+ "\" does not fit the given structure of *.dt and has been skipped");
 						return FileVisitResult.TERMINATE;
 					}
-					String[] split = Main.getFromPath(file).split("\n");
+					String[] split = Start.getFromPath(file).split("\n");
 					for (String s : split) {
 						testcases.add(new DynamicTestcase(s));
 					}
@@ -701,7 +701,7 @@ public class MCDCTestcaseGenerator extends Generator<DynamicTestcase> {
 		try {
 			Files.walkFileTree(pathToDirectory, files);
 		} catch (IOException e) {
-			Main.debug(e);
+			Start.debug(e);
 		}
 		return testcases;
 	}

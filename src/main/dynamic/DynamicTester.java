@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import main.Data;
-import main.Main;
+import main.Start;
 import main.Pair;
 
 /**
@@ -59,9 +59,9 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			this.br = new BufferedReader(new InputStreamReader(pis));
 			solution.setOutput(ps);
 		} catch (FileNotFoundException e) {
-			Main.debug(e);
+			Start.debug(e);
 		} catch (IOException e) {
-			Main.debug(e);
+			Start.debug(e);
 		}
 	}
 	/**
@@ -83,7 +83,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			}
 			br.close();
 		} catch (IOException e) {
-			Main.debug(e);
+			Start.debug(e);
 		}
 	}
 
@@ -113,7 +113,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		try {
 		return analyzeTestcases(runTestcases(true));
 		} catch (MethodNotFoundException e) {
-			Main.debug(e);
+			Start.debug(e);
 			return null;
 		}
 	}
@@ -133,14 +133,14 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 			try {
 				results.add(runTestcase(dt));
 			} catch (IOException e) {
-				Main.debug(e);
+				Start.debug(e);
 			} catch (MethodNotFoundException e) {
 				if(!ignoreMethodNotFound)
-					Main.debug(e);
+					Start.debug(e);
 			}
 		}
 
-		System.setOut(Main.SYSOUT);
+		System.setOut(Start.SYSOUT);
 		return results;
 	}
 
@@ -398,7 +398,7 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 					slept+=10;
 				}
 			} catch (InterruptedException e) {
-				Main.debug(e);
+				Start.debug(e);
 			}
 			if (t.isAlive()) {
 				t.interrupt();
@@ -463,16 +463,16 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		try {
 			r = runTestcase(testcase);
 		} catch (IOException e) {
-			Main.debug(e);
-			System.setOut(Main.SYSOUT);
+			Start.debug(e);
+			System.setOut(Start.SYSOUT);
 			return new Pair<String,Integer>("Testcase: "+testcase.name+" failed: "+e.toString(), -1);
 		} catch (MethodNotFoundException e) {
-			Main.debug(e);
-			System.setOut(Main.SYSOUT);
+			Start.debug(e);
+			System.setOut(Start.SYSOUT);
 			return new Pair<String,Integer>("Testcase: "+testcase.name+" failed: "+e.toString(), -1);
 		}
 		String a = analyzeTestcase(r);
-		System.setOut(Main.SYSOUT);
+		System.setOut(Start.SYSOUT);
 		return new Pair<String, Integer>(a,
 				r.succesfull? r.testcase().score : 0 );
 	}

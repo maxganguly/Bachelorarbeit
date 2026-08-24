@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import java.util.LinkedList;
 import java.util.List;
 
-import main.Main;
+import main.Start;
 import main.Pair;
 import main.Tester;
 /**
@@ -39,14 +39,14 @@ public class ASTTester extends Tester<ASTTestcase> {
 		try {
 			ASTTree temp = code;
 //			ASTTree tempg = generalized;
-			code =  Main.generateAST(p).getFirst();
+			code =  Start.generateAST(p).getFirst();
 //			this.generalized = code.generalize();
 			var t= this.runAllTestcases();
 			code = temp;
 //			this.generalized = tempg;
 			return t;
 		} catch (IOException e) {
-			Main.debug(e);
+			Start.debug(e);
 		}
 		return new LinkedList<Pair<String, Integer>>();
 	}
@@ -55,12 +55,12 @@ public class ASTTester extends Tester<ASTTestcase> {
 	public Pair<String, Integer> test(Path p, ASTTestcase testcase) {
 		try {
 			ASTTree temp = code;
-			code = Main.generateAST(p).getFirst();
+			code = Start.generateAST(p).getFirst();
 			var t= this.test(testcase);
 			code = temp;
 			return t;
 		} catch (IOException e) {
-			Main.debug(e);
+			Start.debug(e);
 			return new Pair<String,Integer>(e.getMessage(),-100);
 		}
 	}

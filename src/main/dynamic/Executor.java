@@ -14,7 +14,7 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
-import main.Main;
+import main.Start;
 /**
  * A class to bundele the creation and execution of java classes and methods in runtime
  */
@@ -31,7 +31,7 @@ public class Executor {
 
 	public Executor(Path path, boolean replaceprivate) {
 		try {
-			String code = Main.getFromPath(path);
+			String code = Start.getFromPath(path);
 			if(replaceprivate) {
 				code = code.replaceAll("private", "public");
 				code = code.replace("static public", "public static");
@@ -40,28 +40,28 @@ public class Executor {
 			this.clazz = getClass(code);
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			Main.debug(e);
+			Start.debug(e);
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
-			Main.debug(e);
+			Start.debug(e);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			Main.debug(e);
+			Start.debug(e);
 		}
 	}
 
 	public Executor(Path path, String name) {
 		try {
-			this.clazz = getClass(name, Main.getFromPath(path));
+			this.clazz = getClass(name, Start.getFromPath(path));
 		} catch (ClassNotFoundException e) {
 			// TODO Auto-generated catch block
-			Main.debug(e);
+			Start.debug(e);
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
-			Main.debug(e);
+			Start.debug(e);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			Main.debug(e);
+			Start.debug(e);
 		}
 	}
 
@@ -78,7 +78,7 @@ public class Executor {
 	}
 
 	/**
-	 * Runs the Main method of the given class
+	 * Runs the Start method of the given class
 	 * @throws MethodNotFoundException if there is no main Method in the class
 	 */
 	public void runMain() throws MethodNotFoundException, InvocationTargetException {
@@ -111,9 +111,9 @@ public class Executor {
 					ran = true;
 					break;
 				} catch (IllegalAccessException e) {
-					Main.debug(e);
+					Start.debug(e);
 				} catch (InvocationTargetException e) {
-					Main.debug(e);
+					Start.debug(e);
 					throw e;
 				} catch (IllegalArgumentException e) {
 					//When overloading Methods this might be triggered
@@ -125,7 +125,7 @@ public class Executor {
 			}
 		}
 		if(os != null) {
-			System.setOut(Main.SYSOUT);
+			System.setOut(Start.SYSOUT);
 		}
 		if(!ran) {
 			throw new MethodNotFoundException(methodname);
@@ -210,7 +210,7 @@ public class Executor {
 	        Class<?> clazz = classLoader.loadClass(name);
 	        return clazz;
 	    	} catch(ClassNotFoundException e) {
-	    		Main.debug(e);
+	    		Start.debug(e);
 	    		return null;
 	    	}
 	}

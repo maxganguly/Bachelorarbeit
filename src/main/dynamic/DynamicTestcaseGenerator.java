@@ -8,7 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 
-import main.Main;
+import main.Start;
 import main.generator.Generator;
 /**
  * A class to generate Dynamic Testcases based on an example
@@ -31,10 +31,10 @@ public class DynamicTestcaseGenerator extends Generator<DynamicTestcase> {
 		for (DynamicTestcase t : testcases) {
 			content.append(t.toString());
 		}
-		if(!Main.printToFile(p,content.toString() ,Main.p.getProperty("OverwriteTestcases").equalsIgnoreCase("true"))) {
+		if(!Start.printToFile(p,content.toString() ,Start.p.getProperty("OverwriteTestcases").equalsIgnoreCase("true"))) {
 			return false;
 		}
-		Main.debug("Wrote: "+p.toString()+" to disk");
+		Start.debug("Wrote: "+p.toString()+" to disk");
 		return true;
 	}
 	
@@ -57,7 +57,7 @@ public class DynamicTestcaseGenerator extends Generator<DynamicTestcase> {
 					if(!name.endsWith(".dt")) {
 						return FileVisitResult.CONTINUE;
 					}
-					String[] testtext = Main.getFromPath(file)
+					String[] testtext = Start.getFromPath(file)
 							.split(System.lineSeparator());
 					for(String testcase : testtext) {
 						if(!testcase.isBlank())
@@ -80,7 +80,7 @@ public class DynamicTestcaseGenerator extends Generator<DynamicTestcase> {
 		try {
 			Files.walkFileTree(pathToDirectory, files);
 		} catch (IOException e) {
-			Main.debug("File unable to be loaded");
+			Start.debug("File unable to be loaded");
 		}
 		return testcases;
 	}

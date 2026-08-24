@@ -60,7 +60,7 @@ public class Test {
 			}
 
 		};
-		Files.walkFileTree(Path.of(Main.p.getProperty("SolutionInputDir")), files);
+		Files.walkFileTree(Path.of(Start.p.getProperty("SolutionInputDir")), files);
 	}
 
 	/**
@@ -80,12 +80,12 @@ public class Test {
 		 });
 		for(var src: srcDirs) {
 			if(src.third() == null) {
-				Main.debug("Unable to find src directory for: "+src.toString() +"skipping...");
+				Start.debug("Unable to find src directory for: "+src.toString() +"skipping...");
 				continue;
 			}
 			var student = new Pair<>(src.first(),src.second());
 			var resultsstudent = new LinkedList<Pair<String,List<Pair<String,Integer>>>>();
-			Main.SYSOUT.println("Currently working on: "+ student);
+			Start.SYSOUT.println("Currently working on: "+ student);
 			try {
 				List<Path> children = Files.list(src.third()).toList();
 				for(Path p: children) {
@@ -104,7 +104,7 @@ public class Test {
 					resultsstudent.add(new Pair<>(pureName,resultsfile));
 				}
 			} catch (IOException e) {
-				Main.debug(src.third().toString());
+				Start.debug(src.third().toString());
 				e.printStackTrace();
 			}
 			results.add(
@@ -121,9 +121,9 @@ public class Test {
 	 */
 	public void writeToResults() {
 		var results = test();
-		String rootPath = Main.p.getProperty("ResultOutputDir");
+		String rootPath = Start.p.getProperty("ResultOutputDir");
 		StringBuilder csv = new StringBuilder("Name");
-		boolean saveEverything = Boolean.parseBoolean(Main.p.getProperty("PrintAllTests"));
+		boolean saveEverything = Boolean.parseBoolean(Start.p.getProperty("PrintAllTests"));
 		csv.append(";Mat.Nr.");
 		String category = "";
 		String oldcat = "";
@@ -143,7 +143,7 @@ public class Test {
 		}
 		oldcat = "";
 		csv.append(System.lineSeparator());
-		char delim = Main.p.get("DelimiterCSV").toString().charAt(0);
+		char delim = Start.p.get("DelimiterCSV").toString().charAt(0);
 		for(var students: results) {
 			String studentPath = students.first().first()+students.first().second();
 			csv.append(students.first().first()+";"+students.first().second());
@@ -198,11 +198,11 @@ public class Test {
 						//.filter(p -> (p.second().intValue() != 0 || saveEverything))
 						.map(p -> p.first()+" score: "+p.second()) .collect(Collectors.joining("\n"));
 						*/
-				Main.printToFile(Path.of(rootPath,studentPath,file.first()), sb.toString(), true);
+				Start.printToFile(Path.of(rootPath,studentPath,file.first()), sb.toString(), true);
 			}
 
 		}
-		Main.printToFile(Path.of(rootPath, "results.csv"), csv.toString(), true);
+		Start.printToFile(Path.of(rootPath, "results.csv"), csv.toString(), true);
 	}
 
 	/**
@@ -212,7 +212,7 @@ public class Test {
 	public static List<Tripel<String,Integer,Path>> getAllSrcDirectories(){
 		var list = new LinkedList<Tripel<String,Integer,Path>>();
 		 try {
-			return Files.walk(Path.of(Main.p.getProperty("ToTestInputDirs")), 1).map(Test::getSrcDirectory).filter(t -> t != null).toList();
+			return Files.walk(Path.of(Start.p.getProperty("ToTestInputDirs")), 1).map(Test::getSrcDirectory).filter(t -> t != null).toList();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -270,7 +270,7 @@ public class Test {
 				}
 			}
 		} catch (IOException e) {
-			Main.debug(e);
+			Start.debug(e);
 			return null;
 		}
 		 return new Tripel<>(name,matrnr,src);

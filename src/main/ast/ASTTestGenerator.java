@@ -11,9 +11,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import main.Main;
+import main.Start;
 import main.generator.Generator;
-
+/**
+ * Generates AST testcases based on example
+ */
 public class ASTTestGenerator extends Generator<ASTTestcase>{
 
 	ASTTree code;
@@ -31,6 +33,11 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 		return testcases;
 	}
 
+	/**
+	 * Generates general Testcases based on the given method
+	 * @param method
+	 * @return
+	 */
 	public List<ASTTestcase> generateTestcases(ASTTree method) {
 		var list = new LinkedList<ASTTestcase>();
 
@@ -67,7 +74,12 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 		}
 		return list;
 	}
-
+	
+	/**
+	 * Generates a new AST with all unique methodcalls from the given AST
+	 * @param tree the AST to be pruned
+	 * @return an AST containing only method calls
+	 */
 	private ASTTree getAllMethodCalls(ASTTree tree) {
 		Set<String> existingmethods = new HashSet<>();
 		var mc = tree.getTreesWithTag("mc").stream().map(t -> t.keepOnly(
@@ -76,6 +88,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 		t.children.addAll(mc);
 		return t;
 	}
+	
 	private ASTTree getHighestNestedLoop(ASTTree tree) {
 		return tree.keepOnly("loop");
 	}
@@ -96,7 +109,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 			String[] split = t.name.split("\\.");
 			split[split.length-1] += ":"+t.score+".ast";
 			Path p = Path.of(path, split);
-			if(!Main.printToFile(p, t.tree.toString(),Main.p.getProperty("OverwriteTestcases").equalsIgnoreCase("true"))) {
+			if(!Start.printToFile(p, t.tree.toString(),Start.p.getProperty("OverwriteTestcases").equalsIgnoreCase("true"))) {
 				return false;
 			}
 		}
@@ -129,10 +142,10 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 					name = name.substring(0,name.lastIndexOf("."));
 					String[] elements = name.split(":");
 					if(elements.length != 2) {
-						main.Main.debug("The file: \""+file.getFileName().toString()+"\" does not fit the given structure of <Name>:<Score>.ast and has been skipped");
+						main.Start.debug("The file: \""+file.getFileName().toString()+"\" does not fit the given structure of <Name>:<Score>.ast and has been skipped");
 						return FileVisitResult.CONTINUE;
 					}
-					testcases.add(new ASTTestcase(prefix+elements[0], new ASTTree(Main.getFromPath(file)), Integer.parseInt(elements[1])));
+					testcases.add(new ASTTestcase(prefix+elements[0], new ASTTree(Start.getFromPath(file)), Integer.parseInt(elements[1])));
 				}
 				return FileVisitResult.CONTINUE;
 			}
@@ -156,7 +169,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 		try {
 			Files.walkFileTree(pathToDirectory, files);
 		} catch (IOException e) {
-			Main.debug("File unable to be loaded");
+			Start.debug("File unable to be loaded");
 		}
 		return testcases;
 	}
