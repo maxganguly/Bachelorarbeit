@@ -4,10 +4,15 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
@@ -44,6 +49,10 @@ public class Start {
 	 * Should the Program be timed
 	 */
 	public static boolean TIME = false;
+	
+	public static boolean GENERATEONLY = false;
+	
+	private static OutputStream logWriter;
 
 	/**
 	 * Start for the package, evaluates the flags, loads the properties and runs the tests
@@ -55,6 +64,8 @@ public class Start {
     			DEBUG = true;
     		else if(args[i].trim().equals("time"))
     			TIME = true;
+    		else if(args[i].trim().equals("generate"))
+    			GENERATEONLY = true;
     		else if(args[i].trim().startsWith("properties")) {
     			String temp = args[i].trim();
     			PROPERTIESPATH = temp.substring(temp.indexOf('=')+1);
@@ -63,6 +74,13 @@ public class Start {
     		}
     	}
     	long start = System.currentTimeMillis();
+    	String logpath = p.getProperty("LogPath", "./");
+    	logpath += "Log-"+LocalDateTime.now().toString()+".txt";
+		try {
+			logWriter = Files.newOutputStream(Path.of(logpath, args), StandardOpenOption.CREATE , StandardOpenOption.TRUNCATE_EXISTING);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
         /*
     	String input = "src/testfiles/Aufgabe3.java";
     	String output = "src/output/Aufgabe3.txt";
@@ -74,7 +92,7 @@ public class Start {
     			, Set.of("arr1","arr2"));
     	Condition e = c.evaluate();
     	System.out.println(e);
-    	*/
+    	
     	Path input = Path.of("testfiles/Test.java");
     	//Path outputTestcases = Path.of("testfiles/Test2_conditions.txt");
     	ASTTree tree = loadFromPath(input);
@@ -143,12 +161,14 @@ public class Start {
         //*/
     	
     	 
-    	/*
+    	//*
     	//Generate and run tests
     	try {
 			Test t = new Test();
 			//t.test();
-			t.writeToResults();
+			var testcases = t.getAllTestcases();
+			if(!GENERATEONLY)
+				t.writeToResults();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -300,9 +320,18 @@ public class Start {
 
     /**
      * Print the Debug message if the debug flag is set
+     * Writes also to the log if one can be found
      * @param msg the message to be printed
      */
     public static void debug(String msg) {
+    	if(logWriter != null) {
+    		try {
+				logWriter.write(
+						(LocalTime.now().toString() +" : "+msg).getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
     	if(DEBUG) {
 			System.err.println(msg);
 		}
@@ -310,9 +339,18 @@ public class Start {
     
     /**
      * Print the Debug message if the debug flag is set
+     * Writes also to the log if one can be found
      * @param msg the message to be printed
      */
     public static void debug(Exception msg) {
+    	if(logWriter != null) {
+    		try {
+				logWriter.write(
+						(LocalTime.now().toString() +" : "+msg).getBytes());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+    	}
     	if(DEBUG) {
 			msg.printStackTrace();
 		}
@@ -342,6 +380,7 @@ public class Start {
     	p.setProperty("SaveTestcases", "true");
     	p.setProperty("OverwriteTestcases", "false");
     	p.setProperty("DelimiterCSV", "#");
+    	p.setProperty("LogPath", "./");
     	try {
 			p.store(new FileWriter(PROPERTIESPATH), "Properties for the Autograder");
 		} catch (IOException e) {

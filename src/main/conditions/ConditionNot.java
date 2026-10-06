@@ -30,6 +30,8 @@ public class ConditionNot implements Condition{
 			return ConditionElement.FALSE;		
 		else if(e == ConditionElement.FALSE)
 				return ConditionElement.TRUE;
+		if(condition instanceof ConditionNot)
+			return ((ConditionNot) condition).condition;
 		return this;
 	}
 

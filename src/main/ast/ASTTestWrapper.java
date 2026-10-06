@@ -6,6 +6,7 @@ import java.util.List;
 
 import main.AbstractTestWrapper;
 import main.Start;
+import main.Testcase;
 import main.Pair;
 /**
  * An implementation of the TestWrapper for static (AST) tests
@@ -37,4 +38,8 @@ public class ASTTestWrapper extends AbstractTestWrapper {
 		return tester.runAllTestcases(submission);
 	}
 
+	@Override
+	public List<ASTTestcase> getAllTestcases() {
+		return tester.getTestcases();
+	}
 }

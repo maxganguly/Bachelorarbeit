@@ -62,14 +62,28 @@ public class Test {
 		};
 		Files.walkFileTree(Path.of(Start.p.getProperty("SolutionInputDir")), files);
 	}
-
+	
+	public List<Testcase> getAllTestcases(){
+		List<Testcase> all = new LinkedList<Testcase>();
+		for(var testerlist : testers.values()) {
+			for(var testers: testerlist) {
+				all.addAll(testers.getAllTestcases());
+			}
+		}
+		return all;
+	}
+	/**
+	 * Cache the results from test()
+	 */
+	private List<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> results;
 	/**
 	 * Evaluates all testcases for all students and all files
 	 * Maybe there exists a better way the store the data than in this godless Thing
 	 * @return a List of pairs of Name:Matrikelnr and a list of the file with each testcase output
 	 */
 	public List<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> test() {
-		var results = new LinkedList<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> ();
+		if(this.results == null)
+			results = new LinkedList<Pair<Pair<String,Integer>,List<Pair<String,List<Pair<String,Integer>>>>>> ();
 		List<Tripel<String,Integer,Path>> srcDirs = new LinkedList<>( getAllSrcDirectories());
 		srcDirs.sort((arg0, arg1) -> {
 			 int res = 0;
@@ -120,15 +134,17 @@ public class Test {
 	 * defined directory
 	 */
 	public void writeToResults() {
-		var results = test();
+		if(results == null)
+			results= test();
 		String rootPath = Start.p.getProperty("ResultOutputDir");
 		StringBuilder csv = new StringBuilder("Name");
 		boolean saveEverything = Boolean.parseBoolean(Start.p.getProperty("PrintAllTests"));
 		csv.append(";Mat.Nr.");
 		String category = "";
 		String oldcat = "";
-		for(Pair<String,Integer> element: results.getFirst().second().getFirst().second()) {
-			String col = element.first();
+		var testcases = getAllTestcases();
+		for(var element: testcases) {
+			String col = element.name;
 			if(col.indexOf('(') != -1)
 			category = col.substring(0, col.indexOf('('));
 			/*
@@ -137,8 +153,12 @@ public class Test {
 			col = col.substring(0, col.lastIndexOf(' '));
 			csv.append(";"+col);*/
 			if(!category.equals(oldcat)) {
-				csv.append(";"+category);
 				oldcat = category;
+				if(!category.contains(" "))
+					category = "Dynamic Testcase: " + category;
+				else 
+					category = "Static " + category;
+				csv.append(";"+category);
 			}
 		}
 		oldcat = "";

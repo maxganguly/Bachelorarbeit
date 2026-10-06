@@ -6,10 +6,12 @@ package main;
 public abstract class Testcase {
 	public final String testcase;
 	public final int score;
+	public final String name;
 	
-	public Testcase(String testcase, int score) {
+	public Testcase(String testcase, int score, String name) {
 		this.testcase = testcase;
 		this.score = score;
+		this.name = name;
 	}
 
 	/**

@@ -122,7 +122,7 @@ public class ASTTestGenerator extends Generator<ASTTestcase>{
 	 */
 	public List<ASTTestcase> loadFromDirectory(Path pathToDirectory) {
 
-		String root = pathToDirectory.getFileName().toString();
+		//String root = pathToDirectory.getFileName().toString();
 		FileVisitor<Path> files = new FileVisitor<>() {
 
 			@Override

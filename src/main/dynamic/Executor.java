@@ -14,9 +14,11 @@ import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
 import javax.tools.ToolProvider;
 
+import com.sun.jdi.InvocationException;
+
 import main.Start;
 /**
- * A class to bundele the creation and execution of java classes and methods in runtime
+ * A class to bundle the creation and execution of java classes and methods in runtime
  */
 public class Executor {
 
@@ -44,11 +46,11 @@ public class Executor {
 		} catch (InstantiationException e) {
 			// TODO Auto-generated catch block
 			Start.debug(e);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			Start.debug(e);
 		}
-	}
+	} 
 
 	public Executor(Path path, String name) {
 		try {
@@ -80,8 +82,10 @@ public class Executor {
 	/**
 	 * Runs the Start method of the given class
 	 * @throws MethodNotFoundException if there is no main Method in the class
+	 * @throws InvocationException if the method was not found
+	 * @throws ClassNotFoundException if no class has been loaded
 	 */
-	public void runMain() throws MethodNotFoundException, InvocationTargetException {
+	public void runMain() throws MethodNotFoundException, InvocationTargetException, ClassNotFoundException {
 		runMethod("main", (Object) (new String[] {}));
 	}
 
@@ -91,11 +95,15 @@ public class Executor {
 	 * @param params the parameters to be given to the method
 	 * @return the return of the invoked method null if void
 	 * @throws MethodNotFoundException if the method was not found
+	 * @throws InvocationException if the method was not found
+	 * @throws ClassNotFoundException if no class has been loaded
 	 */
-	public Object runMethod(String methodname, Object... params) throws MethodNotFoundException, InvocationTargetException {
+	public Object runMethod(String methodname, Object... params) throws MethodNotFoundException, InvocationTargetException, ClassNotFoundException {
+		if(this.clazz == null)
+			throw new ClassNotFoundException("No compiled class found");
 		Method[] meth = clazz.getDeclaredMethods();
 		if(os != null) {
-			System.setOut(os);
+			//System.setOut(os);
 		}
 		Object ret = null;
 		boolean ran = false;
@@ -125,7 +133,7 @@ public class Executor {
 			}
 		}
 		if(os != null) {
-			System.setOut(Start.SYSOUT);
+			//System.setOut(Start.SYSOUT);
 		}
 		if(!ran) {
 			throw new MethodNotFoundException(methodname);
@@ -158,7 +166,7 @@ public class Executor {
 	 * @throws ClassNotFoundException if there is no viable class in the java File
 	 * @throws InstantiationException if the class can't be instantiated/Compiler errors
 	 */
-	public static Class<?> getClass(String name, String code) throws ClassNotFoundException, InstantiationException {
+	private static Class<?> getClass(String name, String code) throws ClassNotFoundException, InstantiationException {
 	    JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
 	    InMemoryFileManager manager = new InMemoryFileManager(compiler.getStandardFileManager(null, null, null));
@@ -183,12 +191,14 @@ public class Executor {
 	 * Generates a Class with the given NAme from the given java Code
 	 * @param name the name of the class
 	 * @param code the source code of the class
-	 * @return an inmemory compiled class
+	 * @return an inmemory compiled class or null if no class name could be found
 	 * @throws ClassNotFoundException if there is no viable class in the java File
 	 * @throws InstantiationException if the class can't be instantiated/Compiler errors
 	 */
-	public static Class<?> getClass(String code) throws ClassNotFoundException, InstantiationException {
-	    String name = code.substring(code.indexOf("class")+6);
+	private static Class<?> getClass(String code) throws ClassNotFoundException, InstantiationException {
+	    if(!code.contains("class"))
+	    	return null;
+		String name = code.substring(code.indexOf("class")+6);
 	    name = name.substring(0,Math.min(name.indexOf(' '),name.indexOf('{')));
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	    DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();

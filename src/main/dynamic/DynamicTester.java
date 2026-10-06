@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import main.Data;
 import main.Start;
 import main.Pair;
 
@@ -353,8 +352,8 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 		}
 		FunctionCall expected = null, gotten = null;
 		Object returnSolution = null;
-		Object[] expectedParams = Arrays.copyOf(testcase.params, testcase.params.length);
-		Object[] gottenParams = Arrays.copyOf(testcase.params, testcase.params.length);
+		Object[] expectedParams = Arrays.copyOf(testcase.getParams(), testcase.getParams().length);
+		Object[] gottenParams = Arrays.copyOf(testcase.getParams(), testcase.getParams().length);
 		String outSolution = null;
 		returnTest = null;
 		String outTest;
@@ -370,6 +369,9 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 					returnSolution = solution.runMethod(testcase.name, expectedParams);
 					} catch(InvocationTargetException ite) {
 						expectedException = ite.getCause();
+					} catch (ClassNotFoundException e) {
+						Start.SYSOUT.println("Solution for testcase: "+testcase.name+" could not be compiled, Stacktrace is in debug mode");
+						Start.debug(e);
 					}
 					outSolution = readall();
 					ranSolution = true;
@@ -387,6 +389,8 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 					gottenException = e;
 				} catch(InvocationTargetException e) {
 					gottenException = e.getCause();
+				} catch (ClassNotFoundException e) {
+					gottenException = e;
 				}
 			});
 			t.start();
@@ -404,6 +408,8 @@ public class DynamicTester extends main.Tester<DynamicTestcase>{
 				t.interrupt();
 				
 			}
+			if(gottenException instanceof ClassNotFoundException)
+				return new Result(testcase, false, null, null, "Class could not be compiled");
 			outTest = readall();
 		} catch (MethodNotFoundException mnfe ) {
 			if(!ranSolution) {

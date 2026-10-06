@@ -6,6 +6,7 @@ import java.util.List;
 
 import main.AbstractTestWrapper;
 import main.Start;
+import main.Testcase;
 import main.Pair;
 /**
  * A wrapper for dynamic tests
@@ -37,6 +38,11 @@ public class DynamicTestWrapper extends AbstractTestWrapper {
 	@Override
 	public List<Pair<String, Integer>> test(Path submission) {
 		return tester.runAllTestcases(submission);
+	}
+	
+	@Override
+	public List<DynamicTestcase> getAllTestcases() {
+		return tester.getTestcases();
 	}
 
 }

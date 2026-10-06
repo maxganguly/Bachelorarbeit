@@ -1,6 +1,5 @@
 package main;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -27,5 +26,11 @@ public abstract class AbstractTestWrapper {
 	 * @return a List of all executed testcases with name and score 
 	 */
 	public abstract List<Pair<String,Integer>> test(Path submission);
+	
+	/**
+	 * Returns all test cases currently expecting to test
+	 * @return a List of all test cases
+	 */
+	public abstract List<? extends Testcase> getAllTestcases();
 
 }

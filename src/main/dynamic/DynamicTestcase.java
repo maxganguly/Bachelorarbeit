@@ -12,17 +12,15 @@ import main.Testcase;
  */
 public class DynamicTestcase extends Testcase {
 
-	String name;
-	Object returntype;
-	Object[] params;
+	private Object returntype;
+	private Object[] params;
 
 	/**
 	 * Constructor
 	 * @param testcase expected something like: <br > int test(int[] {1,2,3},String abba, int 12) 3
 	 */
 	public DynamicTestcase(String testcase) {
-		super(getMethodcall(testcase),getScore(testcase));
-		this.name = testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('('));
+		super(getMethodcall(testcase),getScore(testcase),testcase.substring(testcase.indexOf(' ')+1, testcase.indexOf('(')));
 		String p = testcase.substring(testcase.indexOf('(')+1, testcase.lastIndexOf(')'));
 		if(p.isBlank()) {
 			params = null;
@@ -283,7 +281,11 @@ public class DynamicTestcase extends Testcase {
 	}
 
 	public String getMethodName() {
-		return this.name;
+		return super.name;
+	}
+	
+	public Object[] getParams() {
+		return this.params.clone();
 	}
 
 }
